@@ -39,20 +39,26 @@
     media = {
       enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media.nix, arr.nix)";
 
-      cleanuparrPort = lib.mkOption {
-        type = lib.types.port;
-        default = 11011;
-        description = "Cleanuparr web UI port.";
+      cleanuparr = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 11011;
+          description = "Cleanuparr web UI port.";
+        };
       };
-      pulsarrPort = lib.mkOption {
-        type = lib.types.port;
-        default = 3003;
-        description = "Pulsarr web UI port.";
+      pulsarr = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 3003;
+          description = "Pulsarr web UI port.";
+        };
       };
-      maintainerrPort = lib.mkOption {
-        type = lib.types.port;
-        default = 6246;
-        description = "Maintainerr web UI port.";
+      maintainerr = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 6246;
+          description = "Maintainerr web UI port.";
+        };
       };
     };
 

@@ -7,9 +7,9 @@ let
   lan = config.host.lanCidr;
   m = config.host.media;
   ports = [
-    m.cleanuparrPort
-    m.pulsarrPort
-    m.maintainerrPort
+    m.cleanuparr.port
+    m.pulsarr.port
+    m.maintainerr.port
   ];
 in
 {
@@ -31,7 +31,7 @@ in
           PUID = "99";
           PGID = "100";
           UMASK = "002";
-          PORT = toString m.cleanuparrPort;
+          PORT = toString m.cleanuparr.port;
         };
         # Same path as qBittorrent sees, so the torrent paths it reports resolve.
         volumes = [
@@ -47,7 +47,7 @@ in
           TZ = tz;
           PUID = "99";
           PGID = "100";
-          listenPort = toString m.pulsarrPort;
+          listenPort = toString m.pulsarr.port;
         };
         volumes = [ "/var/lib/pulsarr:/app/data" ];
         extraOptions = [ "--network=host" ];
@@ -58,7 +58,7 @@ in
         user = "99:100";
         environment = {
           TZ = tz;
-          UI_PORT = toString m.maintainerrPort;
+          UI_PORT = toString m.maintainerr.port;
         };
         volumes = [ "/var/lib/maintainerr:/opt/data" ];
         extraOptions = [ "--network=host" ];

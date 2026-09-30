@@ -11,9 +11,9 @@ let
     jackett = s.jackett.port;
     qbittorrent = s.qbittorrent.webuiPort;
     tdarr = s.tdarr.server.webUIPort;
-    cleanuparr = config.host.media.cleanuparrPort;
-    pulsarr = config.host.media.pulsarrPort;
-    maintainerr = config.host.media.maintainerrPort;
+    cleanuparr = config.host.media.cleanuparr.port;
+    pulsarr = config.host.media.pulsarr.port;
+    maintainerr = config.host.media.maintainerr.port;
   };
   public = {
     seerr = s.seerr.port;
