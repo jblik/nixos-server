@@ -9,11 +9,8 @@ let
   fan2go = pkgs.fan2go.override { enableNVML = true; };
 
   platform = "nct6798";
-  cpuFanChannel = 2;
-  caseFanChannels = [
-    1
-    3
-  ];
+  # The only header reporting RPM; the others read 0 even at full PWM.
+  fanChannels = [ 5 ];
 
   disks = {
     hdd-disk1 = {
@@ -93,26 +90,15 @@ let
       }
     ];
 
-    fans = [
-      {
-        id = "cpu-fan";
-        hwmon = {
-          inherit platform;
-          rpmChannel = cpuFanChannel;
-        };
-        neverStop = false;
-        curve = "cpu";
-      }
-    ]
-    ++ map (channel: {
-      id = "case-fan-${toString channel}";
+    fans = map (channel: {
+      id = "fan-${toString channel}";
       hwmon = {
         inherit platform;
         rpmChannel = channel;
       };
       neverStop = false;
       curve = "case";
-    }) caseFanChannels;
+    }) fanChannels;
   };
 
   configFile = (pkgs.formats.yaml { }).generate "fan2go.yaml" settings;
