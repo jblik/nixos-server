@@ -16,6 +16,7 @@ in
           SSH_PORT = sshPort;
           SSH_LISTEN_PORT = sshPort;
         };
+        repository.DEFAULT_BRANCH = "master";
         service.DISABLE_REGISTRATION = true;
         session.COOKIE_SECURE = true;
       };
