@@ -37,7 +37,7 @@ in
         environmentFile = "/var/lib/secrets/cloudflare.env";
       };
       certs.${internalDomain} = {
-        publicDomain = "*.${internalDomain}";
+        domain = "*.${internalDomain}";
         group = s.nginx.group;
       };
     };
