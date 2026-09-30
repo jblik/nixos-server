@@ -71,6 +71,7 @@ in
         lib.nameValuePair "${name}.${domain}" {
           forceSSL = true;
           enableACME = true;
+          acmeRoot = null; # Otherwise nginx sets a webroot and lego tries HTTP-01, which needs port 80 forwarded.
           locations."/" = proxyTo port;
         }
       ) public;
