@@ -8,7 +8,7 @@
 # `ollama.service` is one of the units released when the GPU is handed to a VM
 # (see host.gpu.hostServices).
 let
-  inherit (config.host.ai) ollamaPort openWebuiPort;
+  inherit (config.host.ai) apiPort openWebuiPort;
 in
 {
   services.ollama = {
@@ -17,7 +17,7 @@ in
     package = pkgs.ollama-cuda;
     # Listen on all interfaces so other LAN services can use it.
     host = "0.0.0.0";
-    port = ollamaPort;
+    port = apiPort;
   };
 
   services.open-webui = {
@@ -25,7 +25,7 @@ in
     host = "0.0.0.0";
     port = openWebuiPort;
     environment = {
-      OLLAMA_BASE_URL = "http://127.0.0.1:${toString ollamaPort}";
+      OLLAMA_BASE_URL = "http://127.0.0.1:${toString apiPort}";
       # Disable outbound telemetry / model auto-download checks.
       ANONYMIZED_TELEMETRY = "False";
       DO_NOT_TRACK = "True";

@@ -4,7 +4,7 @@
 let
   inherit (config.host) lanCidr;
   lanPorts = [
-    config.host.ai.ollamaPort
+    config.host.ai.apiPort
     config.host.ai.openWebuiPort
     config.host.immich.machineLearningPort
   ];
