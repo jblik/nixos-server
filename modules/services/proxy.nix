@@ -11,9 +11,9 @@ let
     jackett = s.jackett.port;
     qbittorrent = s.qbittorrent.webuiPort;
     tdarr = s.tdarr.server.webUIPort;
-    cleanuparr = 11011;
-    pulsarr = 3003;
-    maintainerr = 6246;
+    cleanuparr = config.host.media.cleanuparrPort;
+    pulsarr = config.host.media.pulsarrPort;
+    maintainerr = config.host.media.maintainerrPort;
   };
   public = {
     seerr = s.seerr.port;
@@ -45,36 +45,35 @@ in
       recommendedOptimisation = true;
       recommendedGzipSettings = true;
 
-      virtualHosts =
-        {
-          "_" = {
-            default = true;
-            rejectSSL = true;
-            locations."/".return = "444";
-          };
+      virtualHosts = {
+        "_" = {
+          default = true;
+          rejectSSL = true;
+          locations."/".return = "444";
+        };
+      }
+      // lib.mapAttrs' (
+        name: port:
+        lib.nameValuePair "${name}.${internal}" {
+          forceSSL = true;
+          useACMEHost = internal;
+          locations."/" = proxyTo port;
+          extraConfig = ''
+            allow ${config.host.lanCidr};
+            allow 100.64.0.0/10;
+            allow fd7a:115c:a1e0::/48;
+            deny all;
+          '';
         }
-        // lib.mapAttrs' (
-          name: port:
-          lib.nameValuePair "${name}.${internal}" {
-            forceSSL = true;
-            useACMEHost = internal;
-            locations."/" = proxyTo port;
-            extraConfig = ''
-              allow ${config.host.lanCidr};
-              allow 100.64.0.0/10;
-              allow fd7a:115c:a1e0::/48;
-              deny all;
-            '';
-          }
-        ) private
-        // lib.mapAttrs' (
-          name: port:
-          lib.nameValuePair "${name}.${domain}" {
-            forceSSL = true;
-            enableACME = true;
-            locations."/" = proxyTo port;
-          }
-        ) public;
+      ) private
+      // lib.mapAttrs' (
+        name: port:
+        lib.nameValuePair "${name}.${domain}" {
+          forceSSL = true;
+          enableACME = true;
+          locations."/" = proxyTo port;
+        }
+      ) public;
     };
 
     networking.firewall.allowedTCPPorts = [ 443 ];

@@ -5,10 +5,11 @@ let
   inherit (config.host.storage) bulkMount;
   tz = config.time.timeZone;
   lan = config.host.lanCidr;
+  m = config.host.media;
   ports = [
-    11011 # cleanuparr
-    3003 # pulsarr
-    6246 # maintainerr
+    m.cleanuparrPort
+    m.pulsarrPort
+    m.maintainerrPort
   ];
 in
 {
@@ -30,7 +31,7 @@ in
           PUID = "99";
           PGID = "100";
           UMASK = "002";
-          PORT = "11011";
+          PORT = toString m.cleanuparrPort;
         };
         # Same path as qBittorrent sees, so the torrent paths it reports resolve.
         volumes = [
@@ -46,6 +47,7 @@ in
           TZ = tz;
           PUID = "99";
           PGID = "100";
+          listenPort = toString m.pulsarrPort;
         };
         volumes = [ "/var/lib/pulsarr:/app/data" ];
         extraOptions = [ "--network=host" ];
@@ -54,7 +56,10 @@ in
       maintainerr = {
         image = "ghcr.io/maintainerr/maintainerr:latest";
         user = "99:100";
-        environment.TZ = tz;
+        environment = {
+          TZ = tz;
+          UI_PORT = toString m.maintainerrPort;
+        };
         volumes = [ "/var/lib/maintainerr:/opt/data" ];
         extraOptions = [ "--network=host" ];
       };
