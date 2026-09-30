@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ lib, ... }:
 # Central, easily-changeable knobs for this server.
 # Everything hardware- or site-specific should be expressed here and consumed
 # by the other modules via `config.host.*`, so the rest of the tree stays generic.
@@ -23,9 +23,7 @@
       ];
       default = "amd";
       description = ''
-        CPU vendor. Drives microcode and the IOMMU kernel parameter
-        (amd_iommu=on vs intel_iommu=on). Flip this single value if the
-        assumption is wrong.
+        CPU vendor. Drives which microcode updates are loaded.
       '';
     };
 
@@ -33,59 +31,18 @@
       type = lib.types.str;
       default = "192.168.0.0/16";
       description = ''
-        LAN subnet allowed to reach the AI / ML endpoints. Tighten this to
+        LAN subnet allowed to reach the web UIs and APIs. Tighten this to
         your actual subnet (e.g. "192.168.1.0/24").
       '';
     };
 
-    gpu = {
-      # PCI vendor:device IDs of the GPU *and its HDMI-audio function*, used to
-      # reserve the card for vfio-pci. Find them with `lspci -nn | grep -i nvidia`
-      # e.g. [ "10de:2204" "10de:1aef" ]  (GPU + audio).
-      vendorIds = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "10de:2204"
-          "10de:1aef"
-        ];
-        description = "PCI vendor:device IDs to reserve for VFIO passthrough.";
-      };
-
-      # PCI bus addresses of the same functions, used by libvirt hooks /
-      # helper scripts to detach/attach. Find with `lspci -D | grep -i nvidia`
-      # e.g. [ "0000:01:00.0" "0000:01:00.1" ].
-      busIds = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ ];
-        example = [
-          "0000:01:00.0"
-          "0000:01:00.1"
-        ];
-        description = "PCI bus addresses of the GPU functions for passthrough.";
-      };
-
-      # systemd units that hold the GPU on the host. They are stopped before a
-      # passthrough VM starts and restarted after it shuts down.
-      hostServices = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [
-          (if config.host.ai.backend == "ollama" then "ollama.service" else "llama-swap.service")
-          "podman-immich-machine-learning.service"
-        ];
-        description = "Host units to stop/start around GPU passthrough.";
-      };
-
-      # libvirt domain names that receive the GPU. The qemu hook only performs
-      # the unbind/rebind dance for these guests.
-      passthroughVms = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [ "steamos" ];
-        description = "Domains that trigger GPU detach/attach via the qemu hook.";
-      };
+    media = {
+      enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media.nix, arr.nix)";
     };
 
     ai = {
+      enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
+
       backend = lib.mkOption {
         type = lib.types.enum [
           "ollama"
@@ -103,8 +60,6 @@
             matters because this GPU is shared with Immich ML and NVENC.
           - "ollama": simpler, model registry, but its VRAM heuristic is opaque
             and it tracks a vendored llama.cpp fork.
-
-          See docs/AI-BACKEND.md for the full comparison.
         '';
       };
 
@@ -162,7 +117,7 @@
                   default = 8192;
                   description = ''
                     Context window. This is real VRAM, so it is set explicitly
-                    rather than inherited — see docs/AI-BACKEND.md §4.
+                    rather than inherited.
                   '';
                 };
 
@@ -213,17 +168,6 @@
       };
     };
 
-    immich = {
-      machineLearningPort = lib.mkOption {
-        type = lib.types.port;
-        default = 3003;
-        description = ''
-          Port the offloaded Immich machine-learning container listens on.
-          Point the Immich server on unraid at http://<nixos>:<port> via
-          IMMICH_MACHINE_LEARNING_URL.
-        '';
-      };
-    };
     storage = {
       # --- Fast tier: ZFS mirror for service state, databases, models, VM images ---
       fastPool = lib.mkOption {
@@ -254,11 +198,15 @@
       # --- Bulk tier: mergerfs union over per-disk XFS, parity by SnapRAID ---
       bulkMount = lib.mkOption {
         type = lib.types.str;
-        default = "/mnt/storage";
+        default = "/data";
         description = ''
           Mountpoint of the mergerfs union that services see as one filesystem.
           Keep downloads and the media library both under here, or hardlinks
           between them break and every import becomes a full copy.
+
+          `/data` is what Sonarr and Radarr saw inside their unraid containers,
+          so their root folders and download paths stay valid if that appdata
+          is ever imported.
         '';
       };
 

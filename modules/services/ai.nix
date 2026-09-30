@@ -20,16 +20,13 @@
 #
 #   "ollama"      the simpler option — model registry, no GGUF wrangling — at the
 #                 cost of an opaque VRAM heuristic and a vendored llama.cpp fork.
-#
-# docs/AI-BACKEND.md has the full comparison. The active unit is also the one the
-# GPU-passthrough hook releases (see host.gpu.hostServices).
 let
   cfg = config.host.ai;
   inherit (cfg) apiPort openWebuiPort;
 
   # CUDA build of upstream llama.cpp. NOTE: this is not in the official binary
   # cache — add the CUDA community cache before the first rebuild or it compiles
-  # locally, which takes hours on a 2700X (docs/AI-BACKEND.md §6).
+  # locally, which takes hours on a 2700X.
   llama-cpp-cuda = pkgs.llama-cpp.override { cudaSupport = true; };
   llama-server = lib.getExe' llama-cpp-cuda "llama-server";
 
@@ -64,62 +61,68 @@ let
     // lib.optionalAttrs (m.aliases != [ ]) { inherit (m) aliases; };
 in
 {
-  config = lib.mkMerge [
-    # --- Backend: llama.cpp behind llama-swap -------------------------------
-    (lib.mkIf (cfg.backend == "llama-swap") {
-      services.llama-swap = {
-        enable = true;
-        listenAddress = "0.0.0.0"; # reachable from the LAN; firewall scopes it
-        port = apiPort;
-        settings = {
-          # A cold llama-server has to load weights from disk before it answers.
-          healthCheckTimeout = 120;
-          models = lib.mapAttrs mkModel cfg.models;
+  config = lib.mkIf cfg.enable (
+    lib.mkMerge [
+      # --- Backend: llama.cpp behind llama-swap -------------------------------
+      (lib.mkIf (cfg.backend == "llama-swap") {
+        services.llama-swap = {
+          enable = true;
+          listenAddress = "0.0.0.0"; # reachable from the LAN; firewall scopes it
+          port = apiPort;
+          settings = {
+            # A cold llama-server has to load weights from disk before it answers.
+            healthCheckTimeout = 120;
+            models = lib.mapAttrs mkModel cfg.models;
+          };
         };
-      };
 
-      # llama-swap runs as a DynamicUser, so the weights must be readable by it.
-      systemd.tmpfiles.rules = [ "d ${cfg.modelsDir} 0755 root root -" ];
+        # llama-swap runs as a DynamicUser, so the weights must be readable by it.
+        systemd.tmpfiles.rules = [ "d ${cfg.modelsDir} 0755 root root -" ];
 
-      environment.systemPackages = [ llama-cpp-cuda ];
+        environment.systemPackages = [ llama-cpp-cuda ];
 
-      warnings = lib.optional (cfg.models == { }) ''
-        host.ai.backend is "llama-swap" but host.ai.models is empty: the API will
-        start and serve no models. Drop GGUF files in ${cfg.modelsDir} and declare
-        them in host.ai.models.
-      '';
-    })
+        warnings = lib.optional (cfg.models == { }) ''
+          host.ai.backend is "llama-swap" but host.ai.models is empty: the API will
+          start and serve no models. Drop GGUF files in ${cfg.modelsDir} and declare
+          them in host.ai.models.
+        '';
+      })
 
-    # --- Backend: Ollama ----------------------------------------------------
-    (lib.mkIf (cfg.backend == "ollama") {
-      services.ollama = {
-        enable = true;
-        package = pkgs.ollama-cuda;
-        host = "0.0.0.0";
-        port = apiPort;
-      };
-    })
-
-    # --- Frontend, shared by both backends ----------------------------------
-    {
-      services.open-webui = {
-        enable = true;
-        host = "0.0.0.0";
-        port = openWebuiPort;
-        environment = {
-          # Both backends speak the OpenAI API on the same port, so this is the
-          # one setting that would otherwise need to change with the backend.
-          OPENAI_API_BASE_URL = "http://127.0.0.1:${toString apiPort}/v1";
-          OPENAI_API_KEY = "sk-no-key-required";
-          # Disable outbound telemetry / model auto-download checks.
-          ANONYMIZED_TELEMETRY = "False";
-          DO_NOT_TRACK = "True";
-          SCARF_NO_ANALYTICS = "True";
-        }
-        // lib.optionalAttrs (cfg.backend == "ollama") {
-          OLLAMA_BASE_URL = "http://127.0.0.1:${toString apiPort}";
+      # --- Backend: Ollama ----------------------------------------------------
+      (lib.mkIf (cfg.backend == "ollama") {
+        services.ollama = {
+          enable = true;
+          package = pkgs.ollama-cuda;
+          host = "0.0.0.0";
+          port = apiPort;
         };
-      };
-    }
-  ];
+      })
+
+      # --- Frontend, shared by both backends ----------------------------------
+      {
+        networking.firewall.extraInputRules = ''
+          ip saddr ${config.host.lanCidr} tcp dport { ${toString apiPort}, ${toString openWebuiPort} } accept
+        '';
+
+        services.open-webui = {
+          enable = true;
+          host = "0.0.0.0";
+          port = openWebuiPort;
+          environment = {
+            # Both backends speak the OpenAI API on the same port, so this is the
+            # one setting that would otherwise need to change with the backend.
+            OPENAI_API_BASE_URL = "http://127.0.0.1:${toString apiPort}/v1";
+            OPENAI_API_KEY = "sk-no-key-required";
+            # Disable outbound telemetry / model auto-download checks.
+            ANONYMIZED_TELEMETRY = "False";
+            DO_NOT_TRACK = "True";
+            SCARF_NO_ANALYTICS = "True";
+          }
+          // lib.optionalAttrs (cfg.backend == "ollama") {
+            OLLAMA_BASE_URL = "http://127.0.0.1:${toString apiPort}";
+          };
+        };
+      }
+    ]
+  );
 }

@@ -1,15 +1,7 @@
-{ config, lib, ... }:
-# Hostname + firewall. AI/ML endpoints are reachable from the LAN only;
-# SSH is open on all interfaces (lock down further via router/VPN if desired).
-let
-  inherit (config.host) lanCidr;
-  lanPorts = [
-    config.host.ai.apiPort
-    config.host.ai.openWebuiPort
-    config.host.immich.machineLearningPort
-  ];
-  portSet = lib.concatMapStringsSep ", " toString lanPorts;
-in
+{ config, ... }:
+# Hostname + firewall. SSH is open on all interfaces; service modules add their
+# own LAN-only rules via `networking.firewall.extraInputRules`, scoped to
+# `host.lanCidr`.
 {
   networking = {
     hostName = config.host.hostname;
@@ -19,10 +11,6 @@ in
     firewall = {
       enable = true;
       allowedTCPPorts = [ 22 ];
-      # Restrict the compute endpoints to the LAN subnet.
-      extraInputRules = ''
-        ip saddr ${lanCidr} tcp dport { ${portSet} } accept
-      '';
     };
   };
 }

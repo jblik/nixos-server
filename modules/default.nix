@@ -5,6 +5,5 @@
     ./hardware
     ./storage
     ./services
-    ./virtualisation
   ];
 }

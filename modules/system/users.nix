@@ -1,5 +1,5 @@
 { pkgs, ... }:
-# Primary admin user. Member of the groups needed to manage VMs and containers.
+# Primary admin user.
 {
   users.users.jblik = {
     isNormalUser = true;
@@ -7,9 +7,6 @@
     extraGroups = [
       "wheel" # sudo
       "networkmanager"
-      "libvirtd" # manage VMs without root
-      "kvm"
-      "podman" # manage the ML offload container
       "video"
       "render"
     ];
