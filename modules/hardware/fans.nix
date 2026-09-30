@@ -9,8 +9,12 @@ let
   fan2go = pkgs.fan2go.override { enableNVML = true; };
 
   platform = "nct6798";
-  # The only header reporting RPM; the others read 0 even at full PWM.
-  fanChannels = [ 5 ];
+  # Headers with a fan reporting RPM; 3, 4, 6 and 7 stay on the BIOS curve.
+  fanChannels = [
+    1
+    2
+    5
+  ];
 
   disks = {
     hdd-disk1 = {
