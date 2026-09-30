@@ -60,7 +60,9 @@ Unraid's `data` share maps to `/data`; its 99:100 ownership already matches, no 
 - Secrets (sops-nix) first; several of these carry API keys and passwords. Move the
   Cloudflare tokens in `/var/lib/secrets` there too.
 - ZFS fast pool on the two SATA SSDs for service state.
-- paperless (also replaces tika and gotenberg), immich, forgejo, microbin,
+- **Forgejo:** running at `https://git.steenblik.ch`, registration off. Create the admin:
+  `sudo -u forgejo forgejo --work-path /var/lib/forgejo admin user create --admin --username <name> --email <email> --random-password`
+- paperless (also replaces tika and gotenberg), immich, microbin,
   speedtest-tracker, pihole (last; set a second DNS server on the router first),
   lazylibrarian, minecraft (with a backup timer), laundry-notifier,
   barracudas4-website.
