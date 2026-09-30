@@ -27,6 +27,8 @@ in
 
     networking.hostId = hostId;
     boot.supportedFilesystems = [ "zfs" ];
+    # Only pools referenced by fileSystems are imported otherwise.
+    boot.zfs.extraPools = [ fastPool ];
 
     # The NVIDIA driver and ZFS both build against the kernel; if a rebuild ever
     # fails on one of them, pin boot.kernelPackages to a version both support.

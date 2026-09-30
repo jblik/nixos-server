@@ -203,7 +203,8 @@
           handling, so the bulk array can be used on its own.
 
           Create the pool once, by hand, before enabling this:
-            zpool create -o ashift=12 -O compression=zstd -O atime=off fast \
+            zpool create -o ashift=12 -O compression=zstd -O atime=off \
+              -O xattr=sa -O acltype=posixacl -O mountpoint=none fast \
               mirror /dev/disk/by-id/<ssd-a> /dev/disk/by-id/<ssd-b>
         '';
       };

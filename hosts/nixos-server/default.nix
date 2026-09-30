@@ -18,11 +18,9 @@
     forgejo.enable = true;
 
     storage = {
-      # Fast tier (sdb + sdc), not created yet:
-      #   zpool create -o ashift=12 -O compression=zstd -O atime=off fast \
-      #     mirror /dev/disk/by-id/<ssd-a> /dev/disk/by-id/<ssd-b>
-      # fastPool = "fast";
-      # hostId = "xxxxxxxx";   # head -c 8 /etc/machine-id
+      # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
+      fastPool = "fast";
+      hostId = "c60968bd";
 
       # Bulk tier. disk1 is the 10 TB, holding data with no parity; it becomes
       # the parity disk at the end of the migration (docs/MIGRATION.md).
