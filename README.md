@@ -12,11 +12,22 @@ modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
 modules/hardware/            nvidia driver
 modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spin-down
-modules/services/            media stack, *arr, AI (off)
+modules/services/            media stack, *arr, nginx reverse proxy, AI (off)
 ```
 
-Firewall: SSH and Plex are open; every other UI is LAN-only (`host.lanCidr`) or over
-Tailscale (`tailscale0` is trusted).
+Firewall: SSH, Plex and HTTPS (443) are open; every other UI is LAN-only (`host.lanCidr`)
+or over Tailscale (`tailscale0` is trusted).
+
+## Reverse proxy
+
+nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
+at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
+(`modules/services/proxy.nix`, only Seerr) are at `https://<app>.steenblik.ch`, through
+443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
+
+Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed. The
+Cloudflare token is placed by hand until sops-nix: `/var/lib/secrets/cloudflare.env`
+(`CF_DNS_API_TOKEN=...`) and `/var/lib/secrets/cloudflare-dyndns.token` (token only).
 
 ## Deploy
 

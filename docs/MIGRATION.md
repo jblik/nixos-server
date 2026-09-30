@@ -13,8 +13,8 @@ Until step 6 the array has no parity: a dead disk loses its files.
 ## 1. 10 TB as `disk1`, media stack on it
 
 Done: disk formatted and mounted under `/data`, all services running, GPU working,
-Tailscale up as an exit node. Left: first-time app setup, all on
-`http://nixos-server:<port>`. The apps reach each other on `localhost`.
+Tailscale up as an exit node, nginx in front of every UI. Left: first-time app setup,
+all on `https://<app>.internal.steenblik.ch`. The apps reach each other on `localhost`.
 
 - **Plex:** the first claim must come from localhost:
   `ssh -L 32400:localhost:32400 nixos-server`, then open `http://localhost:32400/web`.
@@ -22,12 +22,15 @@ Tailscale up as an exit node. Left: first-time app setup, all on
   (needs Plex Pass).
 - **qBittorrent:** temporary password is in `journalctl -u qbittorrent`. Default save
   path `/data/torrents`, categories `tv` and `movies`. Enable "Keep incomplete torrents
-  in" `/scratch/incomplete`.
+  in" `/scratch/incomplete`. Add `qbittorrent.internal.steenblik.ch` to the WebUI server
+  domains (or turn off host header validation), or logins through the proxy fail.
 - **Sonarr / Radarr:** root folders `/data/media/tv` and `/data/media/movies`.
   Download client qBittorrent at `localhost:8080`. Indexers from Jackett.
 - **Jackett:** FlareSolverr at `http://localhost:8191`.
 - **Bazarr, Seerr, Cleanuparr, Pulsarr, Maintainerr:** point them at Plex and the *arr
   apps on `localhost`.
+- **Seerr:** Application URL `https://seerr.steenblik.ch`, and turn on "Enable Proxy
+  Support".
 - **Tdarr:** libraries under `/data/media`, transcode cache `/scratch/transcode`.
 
 ## 2. Test end to end
@@ -54,11 +57,12 @@ Unraid's `data` share maps to `/data`; its 99:100 ownership already matches, no 
 
 ## 4. Remaining services
 
-- Secrets (sops-nix) first; several of these carry API keys and passwords.
+- Secrets (sops-nix) first; several of these carry API keys and passwords. Move the
+  Cloudflare tokens in `/var/lib/secrets` there too.
 - ZFS fast pool on the two SATA SSDs for service state.
 - paperless (also replaces tika and gotenberg), immich, forgejo, microbin,
   speedtest-tracker, pihole (last; set a second DNS server on the router first),
-  cloudflared + DDNS, lazylibrarian, minecraft (with a backup timer), laundry-notifier,
+  lazylibrarian, minecraft (with a backup timer), laundry-notifier,
   barracudas4-website.
 - Disk health (`smartd`/`scrutiny`), off-box backups.
 - **AI:** `host.ai.enable = true`, after adding the CUDA binary cache
