@@ -3,11 +3,12 @@
 #
 #   /data/torrents/{tv,movies}   qBittorrent downloads
 #   /data/media/{tv,movies}      the library (Plex, Sonarr, Radarr, Bazarr)
-#   /data/transcode              Tdarr cache (excluded from SnapRAID)
+#   /scratch/incomplete          qBittorrent in-progress downloads (fast storage)
+#   /scratch/transcode           Tdarr cache (fast storage)
 #
 # Downloads and library share one mount so imports are hardlinks, not copies.
 let
-  inherit (config.host.storage) bulkMount;
+  inherit (config.host.storage) bulkMount scratchDir;
   lan = config.host.lanCidr;
   mediaServices = [
     "plex"
@@ -21,29 +22,42 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
-    systemd.tmpfiles.rules = map (d: "d ${bulkMount}/${d} 2775 root users -") [
-      "torrents"
-      "torrents/tv"
-      "torrents/movies"
-      "media"
-      "media/tv"
-      "media/movies"
-      "transcode"
-    ];
+    systemd.tmpfiles.rules =
+      map (d: "d ${bulkMount}/${d} 2775 root users -") [
+        "torrents"
+        "torrents/tv"
+        "torrents/movies"
+        "media"
+        "media/tv"
+        "media/movies"
+      ]
+      ++ map (d: "d ${scratchDir}/${d} 2775 root users -") [
+        "incomplete"
+        "transcode"
+      ];
 
     # Every service that touches /data runs in the `users` group (gid 100) with
     # umask 002, the same ownership unraid gave these files (99:100), so the
     # unraid disks can be adopted without a chown.
     systemd.services = lib.mkMerge [
       (lib.genAttrs mediaServices (_: {
-        unitConfig.RequiresMountsFor = [ bulkMount ];
+        unitConfig.RequiresMountsFor = [
+          bulkMount
+          scratchDir
+        ];
         serviceConfig.UMask = lib.mkForce "0002";
       }))
       # The Tdarr module only lets it write to its own state; it has to replace
-      # files in the library and use the cache under /data.
+      # files in the library and use the cache under scratchDir.
       {
-        tdarr-server.serviceConfig.ReadWritePaths = [ bulkMount ];
-        tdarr-node-main.serviceConfig.ReadWritePaths = [ bulkMount ];
+        tdarr-server.serviceConfig.ReadWritePaths = [
+          bulkMount
+          scratchDir
+        ];
+        tdarr-node-main.serviceConfig.ReadWritePaths = [
+          bulkMount
+          scratchDir
+        ];
       }
     ];
 

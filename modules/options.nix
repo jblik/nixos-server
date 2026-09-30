@@ -210,6 +210,19 @@
         '';
       };
 
+      scratchDir = lib.mkOption {
+        type = lib.types.str;
+        default = "/scratch";
+        description = ''
+          Fast-storage directory for churning, disposable media files: in-progress
+          downloads (`incomplete/`) and the Tdarr transcode cache (`transcode/`).
+          It sits on the NVMe root until the fast pool exists; later a ZFS dataset
+          can be mounted here without the apps noticing.
+
+          Completed downloads still land in `bulkMount`, so imports stay hardlinks.
+        '';
+      };
+
       dataDisks = lib.mkOption {
         type = lib.types.attrsOf lib.types.str;
         default = { };
@@ -256,7 +269,7 @@
           ".AppleDouble"
           "._AppleDouble"
           ".DS_Store"
-          "/downloads/incomplete/"
+          "/incomplete/"
           "/transcode/"
         ];
         description = ''

@@ -34,19 +34,21 @@ reach each other on `localhost`.
   Libraries: `/data/media/movies`, `/data/media/tv`. Turn on hardware transcoding
   (needs Plex Pass).
 - **qBittorrent:** temporary password is in `journalctl -u qbittorrent`. Default save
-  path `/data/torrents`, categories `tv` and `movies`.
+  path `/data/torrents`, categories `tv` and `movies`. Enable "Keep incomplete torrents
+  in" `/scratch/incomplete`.
 - **Sonarr / Radarr:** root folders `/data/media/tv` and `/data/media/movies`.
   Download client qBittorrent at `localhost:8080`. Indexers from Jackett.
 - **Jackett:** FlareSolverr at `http://localhost:8191`.
 - **Bazarr, Seerr, Cleanuparr, Pulsarr, Maintainerr:** point them at Plex and the *arr
   apps on `localhost`.
-- **Tdarr:** libraries under `/data/media`, transcode cache `/data/transcode`.
+- **Tdarr:** libraries under `/data/media`, transcode cache `/scratch/transcode`.
 
 ## 2. Test end to end
 
 Request something in Seerr, then check each step:
 
-1. Sonarr/Radarr search it, and qBittorrent downloads into `/data/torrents/...`.
+1. Sonarr/Radarr search it, qBittorrent downloads into `/scratch/incomplete` and moves
+   it to `/data/torrents/...` when done.
 2. The import is a hardlink: `ls -li` shows the same inode in torrents and media.
 3. Plex picks it up, and a forced transcode shows up in `nvidia-smi`.
 4. Bazarr fetches subtitles, and Tdarr processes the file on the GPU.

@@ -37,8 +37,9 @@ picking an older entry in the boot menu.
   sizes, disks spin down on their own, and losing a disk only loses that disk's files.
 - **Fast (planned):** ZFS mirror on the two SATA SSDs for service state.
 
-`/data` layout: `torrents/{tv,movies}`, `media/{tv,movies}`, `transcode/`. Downloads and
-the library share one mount so imports are hardlinks.
+`/data` layout: `torrents/{tv,movies}`, `media/{tv,movies}`. Downloads and the library
+share one mount so imports are hardlinks. In-progress downloads and the Tdarr cache live
+on fast storage in `/scratch/{incomplete,transcode}`.
 
 ## Services
 
