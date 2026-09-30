@@ -1,5 +1,5 @@
 {
-  description = "NixOS GPU/compute server (AI + ML offload + VFIO passthrough VMs)";
+  description = "NixOS home server replacing unraid (storage array, media stack, local AI)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -26,7 +26,7 @@
       };
 
       mkHost =
-        hostPath: moduleSet:
+        hostPath:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = { inherit inputs pkgs-unstable; };
@@ -35,24 +35,14 @@
               nixpkgs.hostPlatform = system;
               system.configurationRevision = self.rev or self.dirtyRev or null;
             }
-            moduleSet
+            ./modules
             hostPath
           ];
         };
-
-      # Base OS only (MIGRATION phase 2): no NVIDIA/CUDA, storage, services or
-      # VMs, so it installs from the binary cache without compiling anything.
-      baseModules = {
-        imports = [
-          ./modules/options.nix
-          ./modules/system
-        ];
-      };
     in
     {
       formatter = nixpkgs.lib.genAttrs formatterSystems (s: nixpkgs.legacyPackages.${s}.nixfmt-tree);
 
-      nixosConfigurations."nixos-server" = mkHost ./hosts/nixos-server ./modules;
-      nixosConfigurations."nixos-server-base" = mkHost ./hosts/nixos-server baseModules;
+      nixosConfigurations."nixos-server" = mkHost ./hosts/nixos-server;
     };
 }
