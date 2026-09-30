@@ -62,6 +62,9 @@ Unraid's `data` share maps to `/data`; its 99:100 ownership already matches, no 
 - ZFS fast pool on the two SATA SSDs for service state.
 - **Forgejo:** running at `https://git.steenblik.ch`, registration off. Create the admin:
   `sudo -u forgejo forgejo --work-path /var/lib/forgejo admin user create --admin --username <name> --email <email> --random-password`
+  SSH clones use `ssh://forgejo@git.steenblik.ch:2222/...`; forward TCP 2222 on the router.
+  The router has no NAT loopback, so the unraid Pi-hole resolves `git.steenblik.ch` to
+  this box; recreate that record when pihole moves here.
 - paperless (also replaces tika and gotenberg), immich, microbin,
   speedtest-tracker, pihole (last; set a second DNS server on the router first),
   lazylibrarian, minecraft (with a backup timer), laundry-notifier,

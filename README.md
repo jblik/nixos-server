@@ -15,7 +15,7 @@ modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spi
 modules/services/            media stack, *arr, forgejo, nginx reverse proxy, AI (off)
 ```
 
-Firewall: SSH, Plex and HTTPS (443) are open; every other UI is LAN-only (`host.lanCidr`)
+Firewall: SSH, Plex, HTTPS (443) and Forgejo SSH (2222) are open; every other UI is LAN-only (`host.lanCidr`)
 or over Tailscale (`tailscale0` is trusted).
 
 ## Reverse proxy
@@ -62,5 +62,5 @@ picking an older entry in the boot menu.
 | Seerr | 5055 | native |
 | Tdarr | 8265 | native, GPU node |
 | Cleanuparr / Pulsarr / Maintainerr | 11011 / 3003 / 6246 | podman containers |
-| Forgejo (git.steenblik.ch, SSH as `forgejo@`) | 3000 (localhost) | native |
+| Forgejo (git.steenblik.ch) | 3000 (localhost), SSH 2222 | native |
 | Tailscale (exit node) | — | native |
