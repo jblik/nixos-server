@@ -62,6 +62,8 @@
       };
     };
 
+    forgejo.enable = lib.mkEnableOption "the Forgejo git forge (modules/services/forgejo.nix)";
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 

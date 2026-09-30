@@ -15,6 +15,7 @@
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
+    forgejo.enable = true;
 
     storage = {
       # Fast tier (sdb + sdc), not created yet:

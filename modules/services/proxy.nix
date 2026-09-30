@@ -3,7 +3,7 @@ let
   s = config.services;
   domain = "steenblik.ch";
   internal = "internal.${domain}";
-  private = {
+  private = lib.optionalAttrs config.host.media.enable {
     plex = 32400;
     sonarr = s.sonarr.settings.server.port;
     radarr = s.radarr.settings.server.port;
@@ -15,16 +15,20 @@ let
     pulsarr = config.host.media.pulsarr.port;
     maintainerr = config.host.media.maintainerr.port;
   };
-  public = {
-    seerr = s.seerr.port;
-  };
+  public =
+    lib.optionalAttrs config.host.media.enable {
+      seerr = s.seerr.port;
+    }
+    // lib.optionalAttrs config.host.forgejo.enable {
+      git = s.forgejo.settings.server.HTTP_PORT;
+    };
   proxyTo = port: {
     proxyPass = "http://127.0.0.1:${toString port}";
     proxyWebsockets = true;
   };
 in
 {
-  config = lib.mkIf config.host.media.enable {
+  config = {
     security.acme = {
       acceptTerms = true;
       defaults = {
