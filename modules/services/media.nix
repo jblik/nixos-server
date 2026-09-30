@@ -22,6 +22,18 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
+    # gpac 26.07 turns strcpy/strncpy into #error in its headers, which breaks
+    # ccextractor (a Tdarr dependency). Drop once NixOS/nixpkgs#557024 is fixed.
+    nixpkgs.overlays = [
+      (final: prev: {
+        ccextractor = prev.ccextractor.overrideAttrs (old: {
+          env = old.env // {
+            NIX_CFLAGS_COMPILE = "-DGPAC_ALLOW_UNSAFE_STRFUNC";
+          };
+        });
+      })
+    ];
+
     systemd.tmpfiles.rules =
       map (d: "d ${bulkMount}/${d} 2775 root users -") [
         "torrents"
