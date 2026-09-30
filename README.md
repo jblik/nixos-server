@@ -19,12 +19,12 @@ Firewall: SSH and Plex are open; every other UI is LAN-only (`host.lanCidr`).
 
 ## Deploy
 
-Edit on the Mac, then:
+Edit on the Mac and `jj commit` (the flake only sees committed files), then build and
+switch on the server:
 
 ```sh
-rsync -a --delete --exclude .git --exclude .jj --exclude .idea --exclude .claude \
-  --exclude unraid-export ./ nixos-server:nixos-server/
-ssh -t nixos-server 'sudo nixos-rebuild switch --flake ~/nixos-server#nixos-server'
+nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server \
+  --target-host nixos-server --build-host nixos-server --sudo --ask-sudo-password
 ```
 
 A bad generation can be rolled back with `sudo nixos-rebuild switch --rollback`, or by
