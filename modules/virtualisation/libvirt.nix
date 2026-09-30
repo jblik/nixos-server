@@ -9,11 +9,8 @@
     qemu = {
       package = pkgs.qemu_kvm;
       runAsRoot = true;
-      swtpm.enable = true;
-      ovmf = {
-        enable = true;
-        packages = [ pkgs.OVMFFull.fd ];
-      };
+      swtpm.enable = true; # TPM 2.0 for modern guests
+      # OVMF/UEFI firmware ships with QEMU by default in 26.05.
     };
   };
 

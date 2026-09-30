@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 # Local AI server: Ollama (CUDA) exposing an OpenAI-compatible API to the whole
 # LAN, with Open WebUI as a browser frontend.
 #
@@ -13,7 +13,8 @@ in
 {
   services.ollama = {
     enable = true;
-    acceleration = "cuda";
+    # CUDA-accelerated build (replaces the removed `acceleration` option).
+    package = pkgs.ollama-cuda;
     # Listen on all interfaces so other LAN services can use it.
     host = "0.0.0.0";
     port = ollamaPort;

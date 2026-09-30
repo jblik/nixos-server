@@ -30,9 +30,7 @@ let
     ${pkgs.pciutils}/bin/lspci -nnk -d 10de: || true
     echo
     echo "== Host GPU services =="
-    ${systemctl} --no-pager --plain list-units '${
-      lib.concatStringsSep "' '" config.host.gpu.hostServices
-    }' || true
+    ${systemctl} --no-pager --plain list-units '${lib.concatStringsSep "' '" config.host.gpu.hostServices}' || true
   '';
 in
 {
