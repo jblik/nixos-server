@@ -10,11 +10,10 @@
     hostname = "nixos-server";
     timezone = "Europe/Brussels";
 
-    # Assumed AMD; flip to "intel" if needed (see modules/options.nix).
     cpuVendor = "amd";
 
     # Tighten to your real subnet.
-    lanCidr = "192.168.0.0/16";
+    lanCidr = "192.168.1.0/24";
 
     # === FILL IN ON THE REAL MACHINE ===
     # lspci -nn  | grep -i nvidia   -> vendorIds (GPU + HDMI audio)
