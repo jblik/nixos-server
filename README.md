@@ -35,6 +35,8 @@ picking an older entry in the boot menu.
 - **Bulk:** one XFS filesystem per HDD at `/mnt/diskN`, merged by mergerfs into
   `/data`, parity by SnapRAID (enabled once `parityFiles` is set). Like unraid: mixed
   sizes, disks spin down on their own, and losing a disk only loses that disk's files.
+  For now the 10 TB is `disk1` with no parity; it becomes the parity disk at the end of
+  the migration.
 - **Fast (planned):** ZFS mirror on the two SATA SSDs for service state.
 
 `/data` layout: `torrents/{tv,movies}`, `media/{tv,movies}`. Downloads and the library
