@@ -75,6 +75,14 @@
         ];
         description = "Host units to stop/start around GPU passthrough.";
       };
+
+      # libvirt domain names that receive the GPU. The qemu hook only performs
+      # the unbind/rebind dance for these guests.
+      passthroughVms = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ "steamos" ];
+        description = "Domains that trigger GPU detach/attach via the qemu hook.";
+      };
     };
 
     ai = {

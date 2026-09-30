@@ -92,8 +92,10 @@ desktop single-GPU passthrough — there is no display manager / Xorg holding th
 Requirements wired up in this config:
 - **IOMMU** enabled via kernel params (`amd_iommu=on iommu=pt`, switchable to Intel).
 - **vfio** modules available; GPU bound to `nvidia` at boot for AI.
-- **libvirt qemu hooks** automate the stop→unbind→VM and VM→rebind→start dance.
-- Helper scripts `gpu-to-vm` / `gpu-to-host` for manual control / debugging.
+- **libvirt qemu hooks** automate the stop→unbind→VM and VM→rebind→start dance
+  for the domains listed in `host.gpu.passthroughVms` — just `virsh start
+  steamos` / shut the VM down and the GPU is handed over and reclaimed for you.
+- A `gpu-status` helper command shows the current driver binding + service state.
 
 > **Cleaner future option:** add a second cheap GPU (or use an AMD iGPU) for the host +
 > AI, and dedicate the big NVIDIA card permanently to passthrough. That removes the
