@@ -60,6 +60,9 @@ in
       };
     };
 
+    # Podman fails with exit 125 if the bind-mount source is missing.
+    systemd.services.podman-cleanuparr.unitConfig.RequiresMountsFor = [ bulkMount ];
+
     networking.firewall.extraInputRules = ''
       ip saddr ${lan} tcp dport { ${lib.concatMapStringsSep ", " toString ports} } accept
     '';

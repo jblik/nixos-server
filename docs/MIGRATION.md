@@ -16,8 +16,7 @@ Until step 6 the array has no parity: a dead disk loses its files.
 ## 1. 10 TB as `disk1`, media stack on it
 
 Status: wiped, mounted at `/mnt/disk1` under `/data`, deployed, NVIDIA driver working.
-Left: `podman-cleanuparr` fails to start (exit 125, see its journal), `tailscale up`,
-and the app setup below.
+Left: `tailscale up` and the app setup below.
 
 The 10 TB is the first data disk and stays one until step 6. Wipe it before the first
 deploy: `/mnt/disk1` is mounted without `nofail`, so an unformatted disk fails the
