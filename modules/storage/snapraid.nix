@@ -2,7 +2,7 @@
 # Bulk tier, part 2: parity.
 #
 # SnapRAID computes parity across the data disks on a schedule, so a failed disk
-# can be rebuilt. Two things to keep in mind, both covered in docs/STORAGE.md §3:
+# can be rebuilt. Two things to keep in mind:
 #
 #   * Parity is point-in-time. Anything written since the last sync is unprotected
 #     until the next one. Fine for media; useless for databases — which is exactly
@@ -11,15 +11,22 @@
 #     disk dying, not a mistake.
 let
   cfg = config.host.storage;
-  enabled = cfg.dataDisks != { };
+  hasDisks = cfg.dataDisks != { };
+  enabled = hasDisks && cfg.parityFiles != [ ];
 
   # SnapRAID wants at least (parity + 1) content files, on different disks.
   # One per data disk satisfies that for any sane parity count.
   derivedContent = map (mnt: "${mnt}/snapraid.content") (lib.attrValues cfg.dataDisks);
 in
 {
-  config = lib.mkIf enabled {
-    services.snapraid = {
+  config = {
+    warnings = lib.optional (hasDisks && !enabled) ''
+      host.storage.dataDisks is set but host.storage.parityFiles is empty: the
+      bulk array has NO parity and a single disk failure loses that disk's data.
+      This is only acceptable while building the array out (docs/MIGRATION.md).
+    '';
+
+    services.snapraid = lib.mkIf enabled {
       enable = true;
       dataDisks = cfg.dataDisks;
       parityFiles = cfg.parityFiles;
@@ -43,12 +50,5 @@ in
         autosave 500
       '';
     };
-
-    warnings = lib.optional (cfg.parityFiles == [ ]) ''
-      host.storage.dataDisks is set but host.storage.parityFiles is empty: the
-      bulk array has NO parity and a single disk failure loses that disk's data.
-      This is only acceptable while building the array out (docs/MIGRATION.md
-      phase 3).
-    '';
   };
 }
