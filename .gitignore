@@ -10,3 +10,6 @@ result-*
 # Local secrets (never commit)
 secrets/*.key
 *.age
+
+# Unraid container export (contains secrets, never commit)
+unraid-export/
