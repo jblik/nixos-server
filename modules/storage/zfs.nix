@@ -9,7 +9,7 @@
 # The pool itself is created once by hand (it cannot be declared) — see the
 # `host.storage.fastPool` description. This module only manages it afterwards.
 let
-  inherit (config.host.storage) fastPool hostId;
+  inherit (config.host.storage) fastPool fastDatasets hostId;
   enabled = fastPool != null;
 in
 {
@@ -29,6 +29,15 @@ in
     boot.supportedFilesystems = [ "zfs" ];
     # Only pools referenced by fileSystems are imported otherwise.
     boot.zfs.extraPools = [ fastPool ];
+
+    # mountpoint=legacy datasets, so the mounts are ordered before the services.
+    fileSystems = lib.mapAttrs' (
+      name: mountPoint:
+      lib.nameValuePair mountPoint {
+        device = "${fastPool}/${name}";
+        fsType = "zfs";
+      }
+    ) fastDatasets;
 
     # The NVIDIA driver and ZFS both build against the kernel; if a rebuild ever
     # fails on one of them, pin boot.kernelPackages to a version both support.

@@ -21,6 +21,20 @@
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
       fastPool = "fast";
       hostId = "c60968bd";
+      fastDatasets = {
+        forgejo = "/var/lib/forgejo";
+        plex = "/var/lib/plex";
+        sonarr = "/var/lib/sonarr";
+        radarr = "/var/lib/radarr";
+        bazarr = "/var/lib/bazarr";
+        jackett = "/var/lib/jackett";
+        qbittorrent = "/var/lib/qBittorrent";
+        seerr = "/var/lib/private/seerr"; # DynamicUser: /var/lib/seerr is a symlink
+        tdarr = "/var/lib/tdarr";
+        cleanuparr = "/var/lib/cleanuparr";
+        pulsarr = "/var/lib/pulsarr";
+        maintainerr = "/var/lib/maintainerr";
+      };
 
       # Bulk tier. disk1 is the 10 TB, holding data with no parity; it becomes
       # the parity disk at the end of the migration (docs/MIGRATION.md).
@@ -39,12 +53,6 @@
     device = "/dev/disk/by-id/ata-ST10000NE0008-2PL103_ZS5072G6-part1";
     fsType = "xfs";
     options = [ "noatime" ];
-  };
-
-  # mountpoint=legacy datasets, so the mounts are ordered before the services.
-  fileSystems."/var/lib/forgejo" = {
-    device = "fast/forgejo";
-    fsType = "zfs";
   };
 
   # Do not change after install unless you know what you're doing.

@@ -68,17 +68,16 @@ Unraid's `data` share maps to `/data`; its 99:100 ownership already matches, no 
   sudo zpool create -o ashift=12 -O compression=zstd -O atime=off \
     -O xattr=sa -O acltype=posixacl -O mountpoint=none fast mirror $S $P
   ```
-  Move a service's state onto its own dataset (here Forgejo), before its `fileSystems`
-  entry is deployed:
+  Move each entry of `host.storage.fastDatasets` onto its dataset before deploying it
+  (stop the services first; the `.old` copies are the rollback):
   ```sh
-  sudo zfs create -o mountpoint=legacy fast/forgejo
-  sudo systemctl stop forgejo
-  sudo mkdir -p /mnt/tmp && sudo mount -t zfs fast/forgejo /mnt/tmp
-  sudo rsync -aHAX /var/lib/forgejo/ /mnt/tmp/ && sudo umount /mnt/tmp
-  sudo mv /var/lib/forgejo /var/lib/forgejo.old
+  mv_ds() { sudo zfs create -o mountpoint=legacy fast/$1 && sudo mount -t zfs fast/$1 /mnt/tmp &&
+    sudo rsync -aHAX --numeric-ids "$2/" /mnt/tmp/ && sudo umount /mnt/tmp && sudo mv "$2" "$2.old"; }
+  sudo mkdir -p /mnt/tmp
+  mv_ds forgejo /var/lib/forgejo   # ...and so on per entry
   ```
-  Deploy, `sudo systemctl start forgejo`, check `findmnt /var/lib/forgejo`, then delete
-  the `.old` copy.
+  Deploy, start the services, check `findmnt -t zfs`, then delete the `.old` copies.
+  Point Plex's transcoder temporary directory at `/scratch/transcode`, off the pool.
 - **Forgejo:** running at `https://git.steenblik.ch`, registration off. Create the admin:
   `sudo -u forgejo forgejo --work-path /var/lib/forgejo admin user create --admin --username <name> --email <email> --random-password`
   SSH clones use `ssh://forgejo@git.steenblik.ch:2222/...`; forward TCP 2222 on the router.

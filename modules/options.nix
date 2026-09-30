@@ -209,6 +209,19 @@
         '';
       };
 
+      fastDatasets = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = { };
+        example = {
+          forgejo = "/var/lib/forgejo";
+        };
+        description = ''
+          Datasets on the fast pool, as dataset name -> mountpoint. Each is mounted
+          as `<fastPool>/<name>`; create it first with
+          `zfs create -o mountpoint=legacy <fastPool>/<name>` and copy the data over.
+        '';
+      };
+
       hostId = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
