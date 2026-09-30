@@ -1,0 +1,12 @@
+# Build artifacts
+result
+result-*
+
+# Editor / OS
+.DS_Store
+.idea/*
+*.swp
+
+# Local secrets (never commit)
+secrets/*.key
+*.age
