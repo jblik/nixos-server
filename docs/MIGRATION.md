@@ -64,7 +64,8 @@ other on `localhost`.
 - **Bazarr, Seerr, Cleanuparr, Pulsarr, Maintainerr:** point them at Plex and the *arr
   apps on `localhost`.
 - **Tdarr:** libraries under `/data/media`, transcode cache `/scratch/transcode`.
-- **Tailscale:** `sudo tailscale up`, then approve the exit node in the admin console.
+- **Tailscale:** `sudo tailscale up --advertise-exit-node` (a bare first `up` drops the
+  flag the module set), then approve the exit node in the admin console.
 
 ## 2. Test end to end
 

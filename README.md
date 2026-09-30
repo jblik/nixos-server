@@ -15,7 +15,8 @@ modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spi
 modules/services/            media stack, *arr, AI (off)
 ```
 
-Firewall: SSH and Plex are open; every other UI is LAN-only (`host.lanCidr`).
+Firewall: SSH and Plex are open; every other UI is LAN-only (`host.lanCidr`) or over
+Tailscale (`tailscale0` is trusted).
 
 ## Deploy
 
