@@ -59,7 +59,26 @@ Unraid's `data` share maps to `/data`; its 99:100 ownership already matches, no 
 
 - Secrets (sops-nix) first; several of these carry API keys and passwords. Move the
   Cloudflare tokens in `/var/lib/secrets` there too.
-- ZFS fast pool on the two SATA SSDs for service state.
+- **ZFS fast pool** on the two SATA SSDs, for service state. The first deploy with
+  `fastPool` set loads ZFS; `zfs-import-fast` fails until the pool exists. Then (wipes both SSDs):
+  ```sh
+  S=/dev/disk/by-id/ata-SanDisk_SSD_PLUS_240GB_1838D3805791
+  P=/dev/disk/by-id/ata-PEAQ_SSD_256GB_67007Y8J3000079
+  sudo wipefs -a $S-part1 $P-part1 $S $P
+  sudo zpool create -o ashift=12 -O compression=zstd -O atime=off \
+    -O xattr=sa -O acltype=posixacl -O mountpoint=none fast mirror $S $P
+  ```
+  Move a service's state onto its own dataset (here Forgejo), before its `fileSystems`
+  entry is deployed:
+  ```sh
+  sudo zfs create -o mountpoint=legacy fast/forgejo
+  sudo systemctl stop forgejo
+  sudo mkdir -p /mnt/tmp && sudo mount -t zfs fast/forgejo /mnt/tmp
+  sudo rsync -aHAX /var/lib/forgejo/ /mnt/tmp/ && sudo umount /mnt/tmp
+  sudo mv /var/lib/forgejo /var/lib/forgejo.old
+  ```
+  Deploy, `sudo systemctl start forgejo`, check `findmnt /var/lib/forgejo`, then delete
+  the `.old` copy.
 - **Forgejo:** running at `https://git.steenblik.ch`, registration off. Create the admin:
   `sudo -u forgejo forgejo --work-path /var/lib/forgejo admin user create --admin --username <name> --email <email> --random-password`
   SSH clones use `ssh://forgejo@git.steenblik.ch:2222/...`; forward TCP 2222 on the router.

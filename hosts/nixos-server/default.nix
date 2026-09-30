@@ -41,6 +41,12 @@
     options = [ "noatime" ];
   };
 
+  # mountpoint=legacy datasets, so the mounts are ordered before the services.
+  fileSystems."/var/lib/forgejo" = {
+    device = "fast/forgejo";
+    fsType = "zfs";
+  };
+
   # Do not change after install unless you know what you're doing.
   system.stateVersion = "26.05";
 }
