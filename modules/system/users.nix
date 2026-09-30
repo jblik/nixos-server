@@ -14,11 +14,10 @@
       "render"
     ];
 
-    # CHANGE THIS after first boot (`passwd`), or replace with SSH keys below.
-    initialPassword = "changeme";
+    initialPassword = "password";
 
     openssh.authorizedKeys.keys = [
-      # "ssh-ed25519 AAAA... you@host"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIBfHf/iYhriCr1edvZcQZD+vdxjNwBzOqrh/k7zZlgi jblik@Mac.lan"
     ];
   };
 
