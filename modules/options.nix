@@ -169,7 +169,7 @@
     };
 
     storage = {
-      # --- Fast tier: ZFS mirror for service state, databases, models, VM images ---
+      # --- Fast tier: ZFS mirror for service state, databases and models ---
       fastPool = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;

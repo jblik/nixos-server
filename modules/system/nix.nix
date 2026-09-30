@@ -15,6 +15,6 @@
     options = "--delete-older-than 14d";
   };
 
-  # Required for the NVIDIA driver, CUDA, and Steam.
+  # Required for the NVIDIA driver, Plex and CUDA.
   nixpkgs.config.allowUnfree = true;
 }

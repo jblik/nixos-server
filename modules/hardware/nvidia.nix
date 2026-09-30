@@ -12,8 +12,8 @@
     nvidiaSettings = false; # headless, no GUI control panel
     powerManagement.enable = false;
 
-    # Proprietary kernel modules. Switch to `true` for the open modules if you
-    # have a Turing-or-newer card and prefer them.
+    # Proprietary kernel modules. The 3060 (Ampere) also supports the open
+    # modules; switch to `true` to use them.
     open = false;
 
     package = config.boot.kernelPackages.nvidiaPackages.stable;

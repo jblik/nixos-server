@@ -42,8 +42,8 @@ in
     };
 
     # Snapshots, so a bad nixos-rebuild or a botched service upgrade is a
-    # rollback rather than an incident. Replication targets are configured per
-    # site with services.syncoid (docs/MIGRATION.md).
+    # rollback rather than an incident. Off-box replication (services.syncoid) is
+    # still to do (docs/MIGRATION.md, step 4).
     services.sanoid = {
       enable = true;
       datasets."${fastPool}" = {

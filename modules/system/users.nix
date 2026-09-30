@@ -15,7 +15,7 @@
     ];
   };
 
-  # Allow wheel members to sudo.
+  # Deploys pass the password with `nixos-rebuild --ask-sudo-password` (README).
   security.sudo.wheelNeedsPassword = true;
 
   environment.systemPackages = with pkgs; [
@@ -23,7 +23,7 @@
     git
     htop
     nvtopPackages.nvidia # GPU monitoring
-    pciutils # lspci — needed to find GPU PCI IDs
+    pciutils # lspci
     vim
   ];
 }

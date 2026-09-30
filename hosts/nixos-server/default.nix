@@ -23,8 +23,8 @@
       # fastPool = "fast";
       # hostId = "xxxxxxxx";   # head -c 8 /etc/machine-id
 
-      # Bulk tier. disk1 is the 10 TB test disk; it becomes parity once the
-      # unraid disks move over (docs/MIGRATION.md).
+      # Bulk tier. disk1 is the 10 TB, holding data with no parity; it becomes
+      # the parity disk at the end of the migration (docs/MIGRATION.md).
       dataDisks = {
         d1 = "/mnt/disk1";
       };

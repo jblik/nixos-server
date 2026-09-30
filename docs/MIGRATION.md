@@ -15,6 +15,10 @@ Until step 6 the array has no parity: a dead disk loses its files.
 
 ## 1. 10 TB as `disk1`, media stack on it
 
+Status: wiped, mounted at `/mnt/disk1` under `/data`, deployed, NVIDIA driver working.
+Left: `podman-cleanuparr` fails to start (exit 125, see its journal), `tailscale up`,
+and the app setup below.
+
 The 10 TB is the first data disk and stays one until step 6. Wipe it before the first
 deploy: `/mnt/disk1` is mounted without `nofail`, so an unformatted disk fails the
 switch and drops the next boot into emergency mode.
@@ -26,12 +30,14 @@ switch and drops the next boot into emergency mode.
    lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS /dev/sdX
    ```
 2. Stop the old Synology RAID. For every `mdN` in `/proc/mdstat` that lists an `sdX`
-   partition (if `lsblk` shows LVM on it, `sudo vgchange -an` first):
+   partition (if `lsblk` shows LVM on it, `sudo vgchange -an` first). No
+   `/proc/mdstat` at all means nothing was assembled:
    ```sh
    cat /proc/mdstat
    sudo nix run nixpkgs#mdadm -- --stop /dev/mdN
    ```
-3. Wipe, partition and format:
+3. Wipe, partition and format, as one command: an interactive `sudo nix shell` resets
+   PATH and loses `parted`.
    ```sh
    sudo nix shell nixpkgs#parted nixpkgs#xfsprogs -c bash -c '
      D=/dev/disk/by-id/ata-ST10000NE0008-2PL103_ZS5072G6
@@ -41,8 +47,9 @@ switch and drops the next boot into emergency mode.
    ```
 4. Check: `lsblk -f /dev/sdX` shows one `xfs` partition labelled `disk1`.
 
-Then deploy (README) and reboot once for the NVIDIA driver. First-time setup, all on
-`http://nixos-server:<port>`. The apps reach each other on `localhost`.
+Then deploy (README) and reboot once for the NVIDIA driver (`nvidia-smi` should list
+the 3060). First-time setup, all on `http://nixos-server:<port>`. The apps reach each
+other on `localhost`.
 
 - **Plex:** the first claim must come from localhost:
   `ssh -L 32400:localhost:32400 nixos-server`, then open `http://localhost:32400/web`.

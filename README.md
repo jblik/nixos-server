@@ -9,7 +9,7 @@ Progress and next steps: [docs/MIGRATION.md](docs/MIGRATION.md).
 flake.nix                    nixosConfigurations.nixos-server
 hosts/nixos-server/          hardware config + site knobs (disks, subnet, what's enabled)
 modules/options.nix          the `host.*` knobs
-modules/system/              boot, network/firewall, nix, users, ssh
+modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
 modules/hardware/            nvidia driver
 modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spin-down
 modules/services/            media stack, *arr, AI (off)
@@ -54,3 +54,4 @@ on fast storage in `/scratch/{incomplete,transcode}`.
 | Seerr | 5055 | native |
 | Tdarr | 8265 | native, GPU node |
 | Cleanuparr / Pulsarr / Maintainerr | 11011 / 3003 / 6246 | podman containers |
+| Tailscale (exit node) | — | native |
