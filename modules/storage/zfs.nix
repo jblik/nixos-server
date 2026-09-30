@@ -1,7 +1,6 @@
 { config, lib, ... }:
 # Fast tier: a ZFS mirror holding everything small, hot and constantly changing —
-# service state, PostgreSQL (immich, paperless), Redis, VM images, GGUF models,
-# transcode scratch. See docs/STORAGE.md §2.
+# service state, PostgreSQL (immich, paperless), Redis and GGUF models.
 #
 # ZFS is used *here* and deliberately not for the bulk array: it buys checksums,
 # atomic snapshots and `zfs send` replication, which matter for live databases and
@@ -44,7 +43,7 @@ in
 
     # Snapshots, so a bad nixos-rebuild or a botched service upgrade is a
     # rollback rather than an incident. Replication targets are configured per
-    # site with services.syncoid (see docs/MIGRATION.md phase 6).
+    # site with services.syncoid (docs/MIGRATION.md).
     services.sanoid = {
       enable = true;
       datasets."${fastPool}" = {
