@@ -6,10 +6,7 @@
 }:
 # Idle spin-down for the bulk disks.
 #
-# unraid did this out of the box; NixOS does not. On a box that idles most of the
-# day, a media array that never spins down is the difference between ~10 W and
-# ~60 W of disks, plus the noise. hd-idle watches per-device IO rather than relying
-# on the drive's own (often ignored) APM timer.
+# hd-idle watches per-device IO rather than relying on the drive's own APM timer.
 #
 # Do not point this at SSDs.
 let

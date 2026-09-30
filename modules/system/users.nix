@@ -1,5 +1,4 @@
 { pkgs, ... }:
-# Primary admin user.
 {
   users.users.jblik = {
     isNormalUser = true;
@@ -10,8 +9,6 @@
       "video"
       "render"
     ];
-
-    initialPassword = "password";
 
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIBfHf/iYhriCr1edvZcQZD+vdxjNwBzOqrh/k7zZlgi jblik@Mac.lan"
