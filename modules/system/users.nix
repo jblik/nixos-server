@@ -19,10 +19,11 @@
   security.sudo.wheelNeedsPassword = true;
 
   environment.systemPackages = with pkgs; [
+    ghostty.terminfo # fix for ssh sessions from ghostty: `'xterm-ghostty': unknown terminal type.`
     git
-    vim
     htop
-    pciutils # lspci — needed to find GPU PCI IDs
     nvtopPackages.nvidia # GPU monitoring
+    pciutils # lspci — needed to find GPU PCI IDs
+    vim
   ];
 }
