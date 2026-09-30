@@ -1,9 +1,9 @@
 { config, lib, ... }:
 let
   s = config.services;
-  domain = "steenblik.ch";
-  internal = "internal.${domain}";
-  private = lib.optionalAttrs config.host.media.enable {
+  publicDomain = "steenblik.ch";
+  internalDomain = "internal.${publicDomain}";
+  privateServices = lib.optionalAttrs config.host.media.enable {
     plex = 32400;
     sonarr = s.sonarr.settings.server.port;
     radarr = s.radarr.settings.server.port;
@@ -15,7 +15,7 @@ let
     pulsarr = config.host.media.pulsarr.port;
     maintainerr = config.host.media.maintainerr.port;
   };
-  public =
+  publicServices =
     lib.optionalAttrs config.host.media.enable {
       seerr = s.seerr.port;
     }
@@ -36,8 +36,8 @@ in
         dnsProvider = "cloudflare";
         environmentFile = "/var/lib/secrets/cloudflare.env";
       };
-      certs.${internal} = {
-        domain = "*.${internal}";
+      certs.${internalDomain} = {
+        publicDomain = "*.${internalDomain}";
         group = s.nginx.group;
       };
     };
@@ -57,10 +57,10 @@ in
         };
       }
       // lib.mapAttrs' (
-        name: port:
-        lib.nameValuePair "${name}.${internal}" {
+        serviceName: port:
+        lib.nameValuePair "${serviceName}.${internalDomain}" {
           forceSSL = true;
-          useACMEHost = internal;
+          useACMEHost = internalDomain;
           locations."/" = proxyTo port;
           extraConfig = ''
             allow ${config.host.lanCidr};
@@ -69,16 +69,16 @@ in
             deny all;
           '';
         }
-      ) private
+      ) privateServices
       // lib.mapAttrs' (
-        name: port:
-        lib.nameValuePair "${name}.${domain}" {
+        serviceName: port:
+        lib.nameValuePair "${serviceName}.${publicDomain}" {
           forceSSL = true;
           enableACME = true;
           acmeRoot = null; # Otherwise nginx sets a webroot and lego tries HTTP-01, which needs port 80 forwarded.
           locations."/" = proxyTo port;
         }
-      ) public;
+      ) publicServices;
     };
 
     networking.firewall.allowedTCPPorts = [ 443 ];
@@ -86,7 +86,7 @@ in
     services.cloudflare-dyndns = {
       enable = true;
       apiTokenFile = "/var/lib/secrets/cloudflare-dyndns.token";
-      domains = map (n: "${n}.${domain}") (lib.attrNames public);
+      domains = map (serviceName: "${serviceName}.${publicDomain}") (lib.attrNames publicServices);
     };
   };
 }
