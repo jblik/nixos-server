@@ -1,127 +1,192 @@
-# Homelab Architecture
+# Architecture
 
-Two machines on the same LAN, split by **data gravity** vs **compute gravity**.
+**Goal (revised):** collapse the two-machine homelab into **one** NixOS server that
+replaces the unraid box entirely — storage array included — while keeping the GPU
+workloads (AI, Immich ML, transcoding) it was originally built for.
 
-| | Unraid (existing) | NixOS (this repo) |
-|---|---|---|
-| Strength | Storage array, many disks, always-on | Fast CPU + single NVIDIA GPU |
-| Role | The **store** + low-compute always-on services | **Compute/GPU**: AI, ML offload, VMs |
-| Reboots | Rare (it's the storage backbone) | Occasional (GPU handed to VMs) |
-
-The guiding rule: **services live next to the data they need, unless they need the GPU.**
-The array lives on unraid, so storage-bound services stay there. GPU-bound work moves
-to NixOS, reaching back to unraid data over the network (NFS/SMB) where needed.
+This document supersedes the earlier two-machine "data gravity vs compute gravity"
+split. That design assumed unraid stays; it does not.
 
 ---
 
-## What runs where
+## 1. The hardware, and what it can honestly do
 
-### Stays on Unraid (storage-bound / low-compute / must-be-up)
+| | |
+|---|---|
+| CPU | AMD Ryzen 7 2700X — 8C/16T, Zen+, 3.7 GHz base, 105 W |
+| GPU | NVIDIA GeForce RTX 3060 12 GB (GA106, Ampere) |
+| RAM | **unknown — must be confirmed** (see open questions) |
+| Disks | **unknown — must be inventoried** (see open questions) |
 
-These sit next to the array and barely touch the GPU. Moving them buys nothing.
+Facts that constrain the design:
 
-- **Media automation (\*arr):** sonarr, radarr, bazarr, lazylibrarian, jackett,
-  flaresolverr, qbittorrent — IO-bound, live next to the downloads/media shares.
-- **Requests & curation:** seerr (overseerr), maintainerr.
-- **Documents:** paperless-ngx + apache-tika + gotenberg — OCR is light and the docs
-  live on the array. (Could later offload OCR to the GPU, but not worth it day one.)
-- **Web/util:** microbin, barracudas4-website, redis.
-- **Network & ingress (keep where uptime is highest):** pihole (DNS — must stay up
-  even when NixOS reboots for a VM), cloudflared tunnel, cloudflareddns.
-- **Immich server + PostgreSQL:** the photo library and DB live on the array.
-  *Only the ML component is offloaded* (see below).
+- **The 2700X has no integrated GPU.** It is not a G-series APU. There is no fallback
+  video engine: if the RTX 3060 is busy or handed to a VM, there is *no* hardware
+  transcoding and *no* CUDA on this box at all.
+- **NVENC on GA106 does H.264 and HEVC (8/10-bit), but cannot encode AV1.** AV1
+  *decode* works. Fine for Plex; relevant if Tdarr targets AV1 (that will be CPU-bound).
+- **Consumer NVENC has a concurrent-session cap** (3, raised to 5 on recent drivers;
+  removable with the community driver patch). Plex and Tdarr share that budget.
+- **12 GB VRAM is a shared budget**, not an LLM budget. Immich ML holds roughly
+  1.5–2.5 GB while active, each Plex NVENC stream a few hundred MB. Plan on ~8–9 GB
+  actually available to an LLM. This is the single biggest reason to prefer llama.cpp
+  over Ollama here — see [AI-BACKEND.md](AI-BACKEND.md).
+- **PCIe lanes are tight.** Zen+ gives 16 lanes to the GPU slot, 4 to an M.2, 4 to the
+  chipset. A disk HBA goes in the second slot, which on most X470/B450 boards is
+  x4 off the chipset. That is ~1.6–2 GB/s — plenty for 8 spinning disks, but it is
+  shared with the chipset's SATA/USB.
+- **Onboard SATA is usually 6 ports.** An unraid array with more disks than that needs
+  an **LSI HBA flashed to IT mode** (9207-8i / 9211-8i / 9300-8i). Budget for one.
+- The 2700X is comfortable running ~20 mostly-idle services. It is *not* comfortable
+  running Tdarr CPU transcodes, paperless OCR, and a torrent verify at the same time.
+  Nice those workloads (`CPUWeight=`, `CPUQuota=` in systemd) rather than hoping.
 
-> **Why pihole/DNS stays on unraid:** the NixOS box reboots whenever the GPU is handed
-> to a VM. DNS going down with it would take the whole network offline. Keep critical
-> always-on infra on the machine that rarely reboots.
+## 2. What consolidation actually costs
 
-### Moves to / lives on NixOS (GPU/compute)
+Merging two machines into one is a real trade, not a free win. Stating it plainly:
 
-- **Local AI server** — Ollama (CUDA) + Open WebUI, listening on the LAN so any service
-  or device on the network can hit an OpenAI-compatible endpoint (`http://nixos:11434`).
-- **Immich machine-learning (CUDA)** — the GPU-heavy half of Immich (face detection,
-  CLIP smart-search). Runs here as a container; the Immich **server on unraid** is pointed
-  at it via `IMMICH_MACHINE_LEARNING_URL`. This is the headline "offload GPU work from
-  unraid" win.
-- **Virtualization (libvirt/QEMU/KVM)** with **single-GPU VFIO passthrough** — e.g. a
-  SteamOS VM for gaming on the TV. While a VM owns the GPU, the AI/ML services release it.
+| Lost | Mitigation adopted here |
+|---|---|
+| Second machine as an implicit backup copy | **Do not decommission the unraid box.** Repurpose it as the backup target (restic/borg over the LAN). See [MIGRATION.md](MIGRATION.md) phase 7. |
+| DNS survives a reboot of the other box | Run a **secondary resolver off-box** (router's own resolver, or a Raspberry Pi) so a `nixos-rebuild` never takes the LAN's DNS with it. |
+| Storage services unaffected by GPU work | GPU arbitration (below) — and, preferably, drop the passthrough VM. |
+| Blast radius of a bad config | NixOS generations: `nixos-rebuild --rollback`, or pick the previous generation in systemd-boot. This is genuinely better than unraid here. |
 
-### Optional later moves (GPU-transcoding candidates)
+## 3. The single-GPU conflict — read this before planning anything else
 
-- **Plex** could move to NixOS for NVENC GPU transcoding, with media mounted from unraid
-  over NFS. Trade-off: a network hop to the media and Plex goes down when the GPU is in a
-  VM. **Recommendation:** leave Plex on unraid initially; revisit if CPU transcoding hurts.
+On the old two-machine design, handing the GPU to a SteamOS VM cost you Ollama and
+Immich ML. On the consolidated box, the *same* card is wanted by **four** consumers:
 
----
+1. LLM inference (llama.cpp / Ollama)
+2. Immich machine learning (CUDA)
+3. Plex / Tdarr NVENC transcoding
+4. A passthrough gaming VM, which demands the **whole card, exclusively**
 
-## The single-GPU sharing problem
+(1)–(3) coexist fine; they just share VRAM. (4) does not coexist with anything — VFIO
+passthrough requires the `nvidia` driver to release the device completely. So starting
+the gaming VM now takes down **Plex hardware transcoding and Immich ML on your only
+server**, not just a hobby AI endpoint.
 
-There is **one** GPU and it can only be used by one consumer at a time. Two consumers
-compete for it:
+**Recommendation: drop the passthrough VM from the consolidated design.** Game on a
+different machine, or stream to it. The passthrough modules stay in the tree (they
+work) but should be opt-in and off by default.
 
-1. **AI/ML services** on the host (Ollama, Immich ML) using the NVIDIA driver + CUDA.
-2. **A VM** that needs the *whole* card via PCI passthrough (vfio-pci).
+If the gaming VM is non-negotiable, the honest options are:
 
-You cannot have the `nvidia` kernel driver and `vfio-pci` bound to the same device at
-once. So we switch ownership dynamically:
+- **Accept the outage window.** Extend `host.gpu.hostServices` to stop Plex, Tdarr and
+  the LLM backend too, and accept that the media stack degrades to CPU transcoding
+  (the 2700X can manage roughly one 1080p stream, not 4K) while you play.
+- **Add a second GPU.** A cheap card (or a Quadro P400-class) for host/NVENC duty,
+  with the 3060 dedicated permanently to passthrough. This removes the dynamic
+  bind/unbind dance entirely and is the clean answer. Costs a PCIe slot — which is the
+  same slot the HBA wants. Check the board before committing.
+
+> **Correction to the previous doc:** it claimed "the NixOS box reboots whenever the GPU
+> is handed to a VM". It does not. The qemu hook stops services and unloads the nvidia
+> modules; no reboot is involved. The old justification for keeping pihole elsewhere was
+> therefore wrong — the real reason is rebuild/reboot cadence, which is addressed with a
+> secondary resolver instead.
+
+## 4. Storage
+
+The array is the part unraid was actually doing, and the part this repo currently has
+**zero** configuration for. It is designed in [STORAGE.md](STORAGE.md). Summary:
+
+- **Fast tier** — ZFS mirror on 2× SSD/NVMe: service state, PostgreSQL, Redis, VM
+  images, GGUF models, transcode scratch. Snapshots + replication.
+- **Bulk tier** — per-disk XFS HDDs unioned by **mergerfs**, parity-protected by
+  **SnapRAID**. This is the closest true analogue to unraid: mixed disk sizes, disks
+  spin down independently, add a disk whenever, and a failure beyond parity loses only
+  that disk's files rather than the pool.
+
+The choice of SnapRAID also unlocks a migration shortcut: unraid data disks are plain
+single-disk XFS filesystems with no striping, so **they can be mounted directly on
+NixOS and adopted into the new pool without copying the data**. Only parity is rebuilt.
+
+## 5. Service placement
+
+Everything runs here now. The rule becomes: **use a native NixOS module when one
+exists; fall back to an OCI container only when it doesn't.** Native modules give
+declarative config, real systemd hardening, and no image-tag drift.
+
+Verified against the pinned nixpkgs (`nixos-26.05`):
+
+| Current container | Target on NixOS |
+|---|---|
+| paperless-ngx + apache/tika + gotenberg | `services.paperless` with `configureTika = true` — **one option replaces all three containers** |
+| immich (server, on unraid) + immich-ml | `services.immich` — server, ML, Postgres and Redis in one module. The separate ML-offload container in this repo becomes redundant. |
+| plex | `services.plex` |
+| sonarr / radarr / bazarr / jackett | `services.sonarr` / `radarr` / `bazarr` / `jackett` |
+| qbittorrent | `services.qbittorrent` (declarative `serverConfig`) |
+| seerr (overseerr) | `services.overseerr` |
+| lazylibrarian | `services.readarr` (native) if you're willing to switch; otherwise container |
+| flaresolverr | `services.flaresolverr` |
+| microbin | `services.microbin` |
+| redis | `services.redis.servers` |
+| cloudflared / cloudflareddns | `services.cloudflared` / container for DDNS |
+| pihole | **no NixOS module.** Either run it as a container, or switch to `services.blocky` / `services.adguardhome` (both native, both declarative). |
+| tdarr | container (no module) |
+| maintainerr | container (no module) |
+| jblik/laundry-notifier, jblik/barracudas4-website | containers — your own images, keep them |
+| ollama + open-webui | `services.llama-swap` + `services.llama-cpp`, or keep `services.ollama` — see [AI-BACKEND.md](AI-BACKEND.md) |
+
+Also worth adding while you're here, all native: `services.smartd` + `services.scrutiny`
+(disk health — you lose unraid's dashboard, replace it), `services.restic` /
+`borgbackup`, `services.sanoid` + `syncoid` (ZFS snapshots/replication),
+`services.homepage-dashboard` (service index), `services.tailscale`, and
+`services.authelia` if anything gets exposed.
+
+## 6. Config layout
 
 ```
-        ┌─────────────── default (host) state ───────────────┐
-        │  nvidia driver bound → Ollama + Immich ML use CUDA  │
-        └──────────────────────────┬──────────────────────────┘
-                                    │  start GPU VM
-                                    ▼
-   libvirt qemu hook (prepare):  stop ollama + immich-ml
-                                 unload nvidia kernel modules
-                                 libvirt binds vfio-pci (managed hostdev)
-                                    │
-                                    ▼
-        ┌──────────────── VM owns the GPU ───────────────────┐
-        │   full GPU power to SteamOS / gaming VM             │
-        └──────────────────────────┬──────────────────────────┘
-                                    │  shut down VM
-                                    ▼
-   libvirt qemu hook (release):  libvirt rebinds nvidia
-                                 reload nvidia modules
-                                 start ollama + immich-ml again
-```
-
-Because the server is **headless** (no desktop on the GPU), this is far simpler than
-desktop single-GPU passthrough — there is no display manager / Xorg holding the card.
-
-Requirements wired up in this config:
-- **IOMMU** enabled via kernel params (`amd_iommu=on iommu=pt`, switchable to Intel).
-- **vfio** modules available; GPU bound to `nvidia` at boot for AI.
-- **libvirt qemu hooks** automate the stop→unbind→VM and VM→rebind→start dance
-  for the domains listed in `host.gpu.passthroughVms` — just `virsh start
-  steamos` / shut the VM down and the GPU is handed over and reclaimed for you.
-- A `gpu-status` helper command shows the current driver binding + service state.
-
-> **Cleaner future option:** add a second cheap GPU (or use an AMD iGPU) for the host +
-> AI, and dedicate the big NVIDIA card permanently to passthrough. That removes the
-> dynamic switching entirely. The config is structured so this is an easy change.
-
----
-
-## Networking & access
-
-- AI endpoints exposed on the LAN (firewall opens Ollama `11434`, Open WebUI `8080`,
-  Immich ML `3003`). Lock these to the LAN subnet / trusted interface.
-- DNS continues to be served by pihole on unraid.
-- NixOS pulls media/data from unraid over NFS only where a service needs it.
-
-## Config layout (this repo)
-
-```
-flake.nix                      # inputs + nixosConfigurations
-hosts/nixos-server/            # per-host: hardware-configuration.nix + host.nix
+flake.nix                      inputs + nixosConfigurations
+hosts/nixos-server/            hardware-configuration.nix + site knobs
 modules/
-  options.nix                  # custom `host.*` options (cpu vendor, gpu ids, ports)
-  system/                      # boot/iommu, networking, nix, users, ssh, locale
-  hardware/                    # nvidia driver + cuda, vfio/passthrough prep
-  services/                    # ai (ollama+webui), immich-ml offload
-  virtualisation/              # libvirtd, gpu passthrough hooks + scripts
+  options.nix                  custom `host.*` options — everything site-specific
+  system/                      boot/iommu, networking, nix, users, ssh, locale
+  hardware/                    nvidia driver + cuda, vfio prep
+  storage/                     ZFS fast pool, mergerfs bulk pool, snapraid parity
+  services/                    ai backend, media, documents, photos, network
+  virtualisation/              libvirtd + opt-in GPU passthrough hooks
 ```
 
-Hardware-specific values (GPU PCI IDs, CPU vendor) live in `modules/options.nix` /
-the host file and are clearly marked — set them once on the real machine.
+## 7. Known defects in the current tree
+
+Found while reviewing; each is tracked as a task in [MIGRATION.md](MIGRATION.md).
+
+1. **`host.gpu.vendorIds` and `host.gpu.busIds` are dead options.** They are declared,
+   documented, and the README instructs you to fill them in — but no module reads
+   them. Either wire them into a vfio/rebind script or delete them.
+2. **`hardware.nvidia.modesetting.enable = true` on a headless box works against the
+   passthrough hook.** It loads `nvidia_drm` with modeset, which routinely pins the
+   module and makes the hook's `modprobe -r` fail. The hook swallows that with
+   `|| true`, so libvirt then fails to bind vfio-pci and the VM starts *without* the
+   GPU — silently. Set `modesetting.enable = false` for headless, and make the hook
+   fail loudly instead of `|| true`.
+3. **No storage configuration at all.** `hardware-configuration.nix` is still the
+   placeholder. Nothing defines filesystems, the array, or mounts.
+4. **No secrets management.** `initialPassword = "changeme"`, and the consolidated
+   server will hold a Cloudflare tunnel token, *arr API keys, and Immich DB
+   credentials. Needs `sops-nix` or `agenix` before anything real lands.
+5. **No backups, no monitoring, no reverse proxy** — all three were implicitly
+   somebody else's job under the two-machine design.
+6. **`services.xserver.videoDrivers = [ "nvidia" ]`** on a headless server is the
+   supported way to load the driver, but deserves a comment saying so; it reads like
+   a mistake.
+7. **`firewall.extraInputRules`** builds an nftables set from a port list; if that list
+   is ever empty it emits `{ }` and the ruleset fails to load. Guard it.
+
+## 8. Open questions — these block real numbers
+
+The plan is written to be correct without them, but these must be answered before
+buying anything or formatting a disk:
+
+1. **Disk inventory** — how many drives, what sizes, current unraid parity layout, and
+   how full is the array today?
+2. **Motherboard model and free PCIe slots** — decides HBA vs onboard SATA, and whether
+   a second GPU is even possible.
+3. **RAM installed** — ZFS ARC plus ~20 services plus llama.cpp host-side buffers.
+   32 GB is the floor; 64 GB is the comfortable answer.
+4. **PSU wattage and drive bays/cooling** — 105 W CPU + 170 W GPU + N spinning disks.
+5. **Is the gaming VM staying?** This is the fork in the road for section 3.
+6. **Is the unraid box being kept as a backup target?** Strongly recommended.
