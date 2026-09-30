@@ -64,6 +64,17 @@
         ];
         description = "PCI bus addresses of the GPU functions for passthrough.";
       };
+
+      # systemd units that hold the GPU on the host. They are stopped before a
+      # passthrough VM starts and restarted after it shuts down.
+      hostServices = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [
+          "ollama.service"
+          "podman-immich-machine-learning.service"
+        ];
+        description = "Host units to stop/start around GPU passthrough.";
+      };
     };
 
     ai = {
