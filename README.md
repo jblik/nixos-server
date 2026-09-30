@@ -10,7 +10,7 @@ flake.nix                    nixosConfigurations.nixos-server
 hosts/nixos-server/          hardware config + site knobs (disks, subnet, what's enabled)
 modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
-modules/hardware/            nvidia driver
+modules/hardware/            nvidia driver, fan2go fan control, RGB off
 modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spin-down
 modules/services/            media stack, *arr, forgejo, nginx reverse proxy, AI (off)
 ```
