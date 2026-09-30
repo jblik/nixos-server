@@ -24,8 +24,7 @@ Edit on the Mac and `jj commit` (the flake only sees committed files), then buil
 switch on the server:
 
 ```sh
-nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server \
-  --target-host nixos-server --build-host nixos-server --sudo --ask-sudo-password
+nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server --target-host nixos-server --build-host nixos-server --sudo --ask-sudo-password
 ```
 
 A bad generation can be rolled back with `sudo nixos-rebuild switch --rollback`, or by
