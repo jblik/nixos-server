@@ -15,12 +15,9 @@
     let
       system = "x86_64-linux";
 
-      # The server is x86_64-linux, but the config is edited from a Mac — expose
-      # the formatter for both so `nix fmt` works wherever you are.
       formatterSystems = [
         "x86_64-linux"
         "aarch64-darwin"
-        "x86_64-darwin"
       ];
 
       pkgs-unstable = import nixpkgs-unstable {
