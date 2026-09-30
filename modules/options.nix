@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 # Central, easily-changeable knobs for this server.
 # Everything hardware- or site-specific should be expressed here and consumed
 # by the other modules via `config.host.*`, so the rest of the tree stays generic.
@@ -70,7 +70,7 @@
       hostServices = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [
-          "ollama.service"
+          (if config.host.ai.backend == "ollama" then "ollama.service" else "llama-swap.service")
           "podman-immich-machine-learning.service"
         ];
         description = "Host units to stop/start around GPU passthrough.";
@@ -115,6 +115,86 @@
           Directory holding GGUF weights for the llama-swap backend. Put this on
           the fast (SSD) tier — models are memory-mapped and read constantly.
         '';
+      };
+
+      models = lib.mkOption {
+        default = { };
+        description = ''
+          Models served by the llama-swap backend. Each entry becomes a
+          `llama-server` instance that llama-swap starts on demand and stops
+          again after `ttl` seconds idle, so the GPU is only held while a model
+          is actually being used — which matters on a card shared with Immich ML
+          and NVENC.
+
+          Ignored when `backend = "ollama"` (Ollama uses its own registry).
+        '';
+        example = {
+          "qwen3-8b" = {
+            file = "Qwen3-8B-Q4_K_M.gguf";
+            contextSize = 16384;
+          };
+        };
+        type = lib.types.attrsOf (
+          lib.types.submodule (
+            { name, ... }:
+            {
+              options = {
+                file = lib.mkOption {
+                  type = lib.types.str;
+                  description = ''
+                    GGUF filename, relative to `host.ai.modelsDir`, or an
+                    absolute path.
+                  '';
+                };
+
+                gpuLayers = lib.mkOption {
+                  type = lib.types.int;
+                  default = 999;
+                  description = ''
+                    Layers offloaded to the GPU. 999 means "all of them"; lower
+                    it to keep VRAM free for Immich ML and Plex transcoding, or
+                    to run a model that does not quite fit.
+                  '';
+                };
+
+                contextSize = lib.mkOption {
+                  type = lib.types.int;
+                  default = 8192;
+                  description = ''
+                    Context window. This is real VRAM, so it is set explicitly
+                    rather than inherited — see docs/AI-BACKEND.md §4.
+                  '';
+                };
+
+                ttl = lib.mkOption {
+                  type = lib.types.int;
+                  default = 300;
+                  description = "Idle seconds before the model is unloaded and the VRAM released.";
+                };
+
+                aliases = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  default = [ ];
+                  example = [ "gpt-4o" ];
+                  description = ''
+                    Extra model names that resolve to this one, useful for
+                    clients with a hardcoded model name.
+                  '';
+                };
+
+                extraFlags = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  default = [ ];
+                  example = [
+                    "--parallel"
+                    "2"
+                  ];
+                  description = "Additional llama-server flags for this model.";
+                };
+              };
+            }
+          )
+        );
       };
 
       apiPort = lib.mkOption {
