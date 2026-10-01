@@ -34,6 +34,12 @@ in
       };
     };
 
+    # The module never declares nodes/ itself, so tmpfiles creates it as root and then
+    # refuses to manage anything under it (unsafe path transition from the tdarr-owned parent).
+    systemd.tmpfiles.rules = [
+      "d ${config.services.tdarr.dataDir}/nodes 0750 ${config.services.tdarr.user} users -"
+    ];
+
     # The Tdarr module only lets it write to its own state; it has to replace
     # files in the library and use the cache under scratchDir.
     systemd.services =
