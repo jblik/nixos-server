@@ -18,6 +18,7 @@
     forgejo.enable = true;
     immich.enable = true;
     paperless.enable = true;
+    microbin.enable = true;
 
     storage = {
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
@@ -38,6 +39,7 @@
         maintainerr = "/var/lib/maintainerr";
         postgresql = "/var/lib/postgresql";
         paperless = "/var/lib/paperless";
+        microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
       };
 
       dataDisks = {

@@ -13,6 +13,9 @@ let
     }
     // lib.optionalAttrs config.host.immich.enable {
       photos = s.immich.port;
+    }
+    // lib.optionalAttrs config.host.microbin.enable {
+      notes = s.microbin.settings.MICROBIN_PORT;
     };
 
   privateServices =

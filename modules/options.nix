@@ -73,6 +73,15 @@
 
     paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
 
+    microbin = {
+      enable = lib.mkEnableOption "the MicroBin paste bin (modules/services/microbin.nix)";
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 8081;
+        description = "MicroBin web UI port.";
+      };
+    };
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 
