@@ -4,7 +4,7 @@ let
   publicDomain = "steenblik.ch";
   internalDomain = "internal.${publicDomain}";
   privateServices = lib.optionalAttrs config.host.media.enable {
-    plex = 32400;
+    plex = config.host.media.plex.port;
     sonarr = s.sonarr.settings.server.port;
     radarr = s.radarr.settings.server.port;
     bazarr = s.bazarr.listenPort;

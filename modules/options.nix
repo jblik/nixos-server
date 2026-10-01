@@ -34,8 +34,16 @@
     };
 
     media = {
-      enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media.nix, arr.nix)";
+      enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media)";
 
+      plex = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 32400;
+          readOnly = true;
+          description = "Plex web UI port. The NixOS module hardcodes it, so this only records it.";
+        };
+      };
       cleanuparr = {
         port = lib.mkOption {
           type = lib.types.port;

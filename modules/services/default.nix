@@ -1,10 +1,8 @@
 {
   imports = [
     ./ai.nix
-    ./arr.nix
-    ./arr-containers.nix
     ./forgejo.nix
-    ./media.nix
+    ./media
     ./proxy.nix
   ];
 }
