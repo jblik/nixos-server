@@ -5,9 +5,7 @@
   ...
 }:
 # Idle spin-down for the bulk disks.
-#
 # hd-idle watches per-device IO rather than relying on the drive's own APM timer.
-#
 # Do not point this at SSDs.
 let
   cfg = config.host.storage;
@@ -18,7 +16,7 @@ let
     ) bulkMounts
   );
   enabled = cfg.spinDownSeconds != null && disks != [ ];
-  diskArgs = lib.concatMapStrings (d: " -a ${d} -i ${toString cfg.spinDownSeconds}") disks;
+  diskArgs = lib.concatMapStrings (disk: " -a ${disk} -i ${toString cfg.spinDownSeconds}") disks;
 in
 {
   config = lib.mkIf enabled {
