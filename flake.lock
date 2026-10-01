@@ -2,11 +2,11 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "lastModified": 1790635395,
-        "narHash": "sha256-bNyvoIyOCu7lzoCpWKWGIsHpTtERUWzqYWFPlN++WTw=",
+        "lastModified": 1790750587,
+        "narHash": "sha256-VfjaoJ1Uyb7JZTrBgE5Jf2nhjtQPmD9KOd19HJwmZwM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7fc6f2c20af09cdcaf48b92ec3121860139ec668",
+        "rev": "78e9c786dc08cd4f3420c2395cd977206a9b1da2",
         "type": "github"
       },
       "original": {
@@ -46,16 +46,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1790853081,
-        "narHash": "sha256-xd5N64qMec/6AqaV0bbQrq43ZEXwyHVjRweDDXy+ILY=",
-        "rev": "ee298dfefacdada22bbff6063d7ee17452226298",
-        "revCount": 6,
+        "lastModified": 1790855251,
+        "narHash": "sha256-iImo2Ni5H7OFGP55CZsaRrtX2YENvXCtmNueKkGAiJI=",
+        "ref": "refs/heads/master",
+        "rev": "29459c4427e57fa8a96efd470eb77ea5fdeb91d5",
+        "revCount": 7,
         "type": "git",
-        "url": "file:///Users/jblik/projects/server-dashboard"
+        "url": "ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git"
       },
       "original": {
         "type": "git",
-        "url": "file:///Users/jblik/projects/server-dashboard"
+        "url": "ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git"
       }
     }
   },
