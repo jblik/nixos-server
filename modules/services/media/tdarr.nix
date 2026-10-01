@@ -24,7 +24,14 @@ in
         webUIPort = 8265;
         serverPort = 8266;
       };
-      nodes.main.workers.transcodeGPU = 1;
+      nodes = {
+        main = {
+          workers.transcodeCPU = 0;
+          workers.healthcheckCPU = 0;
+          workers.transcodeGPU = 1;
+          workers.healthcheckGPU = 1;
+        };
+      };
     };
 
     # The Tdarr module only lets it write to its own state; it has to replace
