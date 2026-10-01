@@ -73,6 +73,13 @@ unix socket (peer auth, no passwords). Before their first deploy:
   `MICROBIN_ADMIN_PASSWORD='...'` (`chmod 600`). Pi-hole resolves `notes.steenblik.ch`
   to this box. In step 4, `~/import/microbin` goes to `/var/lib/private/microbin`,
   owner `root:root` (DynamicUser).
+- **Dashboard** at `https://server.steenblik.ch`, from the `server-dashboard` flake (a
+  local `git+file` input until it has a forge remote: `nix flake update server-dashboard`
+  after committing there). The public page lists the public services; from the LAN or
+  tailnet it also loads `https://server.internal.steenblik.ch` with the internal services
+  and node_exporter's metrics. Pi-hole resolves `server.steenblik.ch` to this box. The
+  hwmon chip labels in `modules/services/dashboard.nix` are derived from the sysfs paths;
+  check them with `curl -s localhost:9100/metrics | grep -E '^node_hwmon_(temp_celsius|fan_rpm)'`.
 
 In order:
 

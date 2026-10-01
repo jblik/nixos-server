@@ -65,4 +65,6 @@ Plex/Tdarr transcode cache.
 | Tdarr | 8265 | native, GPU node |
 | Cleanuparr / Pulsarr / Maintainerr | 11011 / 3003 / 6246 | podman containers |
 | Forgejo (git.steenblik.ch) | 3000 (localhost), SSH 2222 | native |
+| Dashboard (server.steenblik.ch) | 5180 / 5181 (localhost) | native, from the `server-dashboard` flake |
+| node_exporter | 9100 (localhost) | native |
 | Tailscale (exit node) | — | native |
