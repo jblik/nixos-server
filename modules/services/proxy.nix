@@ -10,6 +10,9 @@ let
     }
     // lib.optionalAttrs config.host.forgejo.enable {
       git = s.forgejo.settings.server.HTTP_PORT;
+    }
+    // lib.optionalAttrs config.host.immich.enable {
+      photos = s.immich.port;
     };
 
   privateServices =
@@ -25,13 +28,9 @@ let
       pulsarr = config.host.media.pulsarr.port;
       maintainerr = config.host.media.maintainerr.port;
     }
-    // lib.optionalAttrs config.host.immich.enable {
-      immich = s.immich.port;
-    }
     // lib.optionalAttrs config.host.paperless.enable {
       paperless = s.paperless.port;
     };
-
   proxyTo = port: {
     proxyPass = "http://127.0.0.1:${toString port}";
     proxyWebsockets = true;
