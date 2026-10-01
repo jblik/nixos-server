@@ -55,13 +55,24 @@ Create the admin with
 SSH clones use `ssh://forgejo@git.steenblik.ch:2222/...`. Forward TCP 2222 on the router.
 The router has no NAT loopback, so Pi-hole resolves `git.steenblik.ch` to this box.
 
+Immich and Paperless share one PostgreSQL. Each gets its own role and database over the
+unix socket (peer auth, no passwords). Before their first deploy:
+`sudo zfs create -o mountpoint=legacy -o recordsize=16k fast/postgresql` and
+`sudo zfs create -o mountpoint=legacy fast/paperless`.
+
+- **Immich** at `https://immich.internal.steenblik.ch`, library in `/data/photos`. The
+  first visitor becomes the admin. It is 3.x from unstable: 26.05 only has the
+  end-of-life 2.x.
+- **Paperless** at `https://paperless.internal.steenblik.ch`, documents in
+  `/data/documents`, Tika and Gotenberg on. Admin: `sudo paperless-manage createsuperuser`.
+
 In order:
 
 | Service | On unraid | Here | Brought over in step 4 |
 |---|---|---|---|
 | Secrets | — | sops-nix, including the Cloudflare tokens in `/var/lib/secrets` | — |
 | Samba | `data` and `appdata` SMB shares | `services.samba`, sharing `/data` | nothing (the files come with the disks) |
-| Paperless | `bear-docs` + `Redis`, `apache-tika-server`, `gotenberg` | `services.paperless`, `configureTika`, `mediaDir = /data/documents` | `paperless-ngx/data` (SQLite) |
+| Paperless | `bear-docs` + `Redis`, `apache-tika-server`, `gotenberg` | `services.paperless`, `configureTika`, `mediaDir = /data/documents`, PostgreSQL | `document_exporter` on unraid, `paperless-manage document_importer` here; both on the same Paperless version (2.20.15) |
 | Immich | not running (`photos` is empty) | `services.immich` | nothing, new install |
 | Microbin | `microbin` | `services.microbin` | `microbin` |
 | Speedtest Tracker | `speedtest-tracker` | `services.speedtest-tracker` | `speedtest-tracker` |
