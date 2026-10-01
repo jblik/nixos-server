@@ -65,11 +65,6 @@ In order:
 | Immich | not running (`photos` is empty) | `services.immich` | nothing, new install |
 | Microbin | `microbin` | `services.microbin` | `microbin` |
 | Speedtest Tracker | `speedtest-tracker` | `services.speedtest-tracker` | `speedtest-tracker` |
-| LazyLibrarian | `lazylibrarian` | podman; `/data/media/books`, `/data/media/importbooks`, `/data/torrents/books` | `lazylibrarian` |
-| Minecraft | `minecraft-server` + `minecraft-server-backup` | `itzg/minecraft-server` in podman, plus a backup timer; forward 25565 | the world (`minecraft`); old backups stay on unraid |
-| laundry-notifier, barracudas4-website | own images, no volumes | podman | nothing; copy env/ports from `docker inspect` |
-| cloudflared | tunnel | check which hostnames the tunnel serves (Cloudflare Zero Trust). Drop it if nginx on 443 covers them, else `services.cloudflared` | — |
-| Pi-hole | `binhex-official-pihole` | `services.pihole-ftl` | Teleporter export. Set a second DNS server on the router first |
 | Disk health, backups | unraid notifications | `smartd`/scrutiny, off-box backups (unraid becomes the target) | — |
 | AI | — | `host.ai.enable = true` after adding `cuda-maintainers.cachix.org` and moving Open WebUI off 8080 | — |
 
