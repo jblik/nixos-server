@@ -69,6 +69,10 @@
 
     forgejo.enable = lib.mkEnableOption "the Forgejo git forge (modules/services/forgejo.nix)";
 
+    immich.enable = lib.mkEnableOption "the Immich photo library (modules/services/immich.nix)";
+
+    paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 

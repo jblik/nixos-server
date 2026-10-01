@@ -16,6 +16,8 @@
 
     media.enable = true;
     forgejo.enable = true;
+    immich.enable = true;
+    paperless.enable = true;
 
     storage = {
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
@@ -34,6 +36,8 @@
         cleanuparr = "/var/lib/cleanuparr";
         pulsarr = "/var/lib/pulsarr";
         maintainerr = "/var/lib/maintainerr";
+        postgresql = "/var/lib/postgresql";
+        paperless = "/var/lib/paperless";
       };
 
       dataDisks = {

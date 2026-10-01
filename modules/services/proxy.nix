@@ -3,18 +3,7 @@ let
   s = config.services;
   publicDomain = "steenblik.ch";
   internalDomain = "internal.${publicDomain}";
-  privateServices = lib.optionalAttrs config.host.media.enable {
-    plex = config.host.media.plex.port;
-    sonarr = s.sonarr.settings.server.port;
-    radarr = s.radarr.settings.server.port;
-    bazarr = s.bazarr.listenPort;
-    jackett = s.jackett.port;
-    qbittorrent = s.qbittorrent.webuiPort;
-    tdarr = s.tdarr.server.webUIPort;
-    cleanuparr = config.host.media.cleanuparr.port;
-    pulsarr = config.host.media.pulsarr.port;
-    maintainerr = config.host.media.maintainerr.port;
-  };
+
   publicServices =
     lib.optionalAttrs config.host.media.enable {
       seerr = s.seerr.port;
@@ -22,6 +11,27 @@ let
     // lib.optionalAttrs config.host.forgejo.enable {
       git = s.forgejo.settings.server.HTTP_PORT;
     };
+
+  privateServices =
+    lib.optionalAttrs config.host.media.enable {
+      plex = config.host.media.plex.port;
+      sonarr = s.sonarr.settings.server.port;
+      radarr = s.radarr.settings.server.port;
+      bazarr = s.bazarr.listenPort;
+      jackett = s.jackett.port;
+      qbittorrent = s.qbittorrent.webuiPort;
+      tdarr = s.tdarr.server.webUIPort;
+      cleanuparr = config.host.media.cleanuparr.port;
+      pulsarr = config.host.media.pulsarr.port;
+      maintainerr = config.host.media.maintainerr.port;
+    }
+    // lib.optionalAttrs config.host.immich.enable {
+      immich = s.immich.port;
+    }
+    // lib.optionalAttrs config.host.paperless.enable {
+      paperless = s.paperless.port;
+    };
+
   proxyTo = port: {
     proxyPass = "http://127.0.0.1:${toString port}";
     proxyWebsockets = true;
