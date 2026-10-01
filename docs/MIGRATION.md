@@ -67,6 +67,12 @@ unix socket (peer auth, no passwords). Before their first deploy:
   on port 3004.
 - **Paperless** at `https://paperless.internal.steenblik.ch`, documents in
   `/data/documents`, Tika and Gotenberg on. Admin: `sudo paperless-manage createsuperuser`.
+- **Microbin** at `https://notes.steenblik.ch`, with the unraid container's settings.
+  Before its first deploy: `sudo zfs create -o mountpoint=legacy fast/microbin`, and put
+  the unraid admin password in `/var/lib/secrets/microbin.env` as
+  `MICROBIN_ADMIN_PASSWORD='...'` (`chmod 600`). Pi-hole resolves `notes.steenblik.ch`
+  to this box. In step 4, `~/import/microbin` goes to `/var/lib/private/microbin`,
+  owner `root:root` (DynamicUser).
 
 In order:
 
