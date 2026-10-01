@@ -49,40 +49,7 @@ Build and test each one here with empty state. Its unraid data comes over in ste
 A new service gets its dataset before its first deploy:
 `sudo zfs create -o mountpoint=legacy fast/<name>`, then add it to `fastDatasets`.
 
-Done: ZFS mirror `fast`; **Forgejo** at `https://git.steenblik.ch`, registration off.
-Create the admin with
-`sudo -u forgejo forgejo --work-path /var/lib/forgejo admin user create --admin --username <name> --email <email> --random-password`.
-SSH clones use `ssh://forgejo@git.steenblik.ch:2222/...`. Forward TCP 2222 on the router.
 The router has no NAT loopback, so Pi-hole resolves `git.steenblik.ch` to this box.
-
-Immich and Paperless share one PostgreSQL. Each gets its own role and database over the
-unix socket (peer auth, no passwords). Before their first deploy:
-`sudo zfs create -o mountpoint=legacy -o recordsize=16k fast/postgresql` and
-`sudo zfs create -o mountpoint=legacy fast/paperless`.
-
-- **Immich** at `https://photos.steenblik.ch`, library in `/data/photos`. Create the
-  admin right after the first deploy: the first visitor becomes the admin, and the site is
-  public. Pi-hole resolves `photos.steenblik.ch` to this box. It is 3.x from unstable:
-  26.05 only has the end-of-life 2.x. Machine learning runs in the upstream CUDA image
-  on port 3004.
-- **Paperless** at `https://paperless.internal.steenblik.ch`, documents in
-  `/data/documents`, Tika and Gotenberg on. Admin: `sudo paperless-manage createsuperuser`.
-  Before its first deploy, put the secrets in `/var/lib/secrets/paperless.env` (`chmod 600`):
-  `PAPERLESS_EMAIL_HOST_USER='...'`, `PAPERLESS_EMAIL_HOST_PASSWORD='...'` and
-  `POST_CONSUME_API_TOKEN='...'` (the token the unraid `post_consume.py` used).
-- **Microbin** at `https://notes.steenblik.ch`, with the unraid container's settings.
-  Before its first deploy: `sudo zfs create -o mountpoint=legacy fast/microbin`, and put
-  the unraid admin password in `/var/lib/secrets/microbin.env` as
-  `MICROBIN_ADMIN_PASSWORD='...'` (`chmod 600`). Pi-hole resolves `notes.steenblik.ch`
-  to this box. In step 4, `~/import/microbin` goes to `/var/lib/private/microbin`,
-  owner `root:root` (DynamicUser).
-- **Dashboard** at `https://server.steenblik.ch`, from the `server-dashboard` flake (a
-  local `git+file` input until it has a forge remote: `nix flake update server-dashboard`
-  after committing there). The public page lists the public services; from the LAN or
-  tailnet it also loads `https://server.internal.steenblik.ch` with the internal services
-  and node_exporter's metrics. Pi-hole resolves `server.steenblik.ch` to this box. The
-  hwmon chip labels in `modules/services/dashboard.nix` are derived from the sysfs paths;
-  check them with `curl -s localhost:9100/metrics | grep -E '^node_hwmon_(temp_celsius|fan_rpm)'`.
 
 In order:
 
@@ -90,9 +57,6 @@ In order:
 |---|---|---|---|
 | Secrets | — | sops-nix, including the Cloudflare tokens in `/var/lib/secrets` | — |
 | Samba | `data` and `appdata` SMB shares | `services.samba`, sharing `/data` | nothing (the files come with the disks) |
-| Paperless | `bear-docs` + `Redis`, `apache-tika-server`, `gotenberg` | `services.paperless`, `configureTika`, `mediaDir = /data/documents`, PostgreSQL | `document_exporter` on unraid, `paperless-manage document_importer` here; both on the same Paperless version (3.2.1, so module and package come from unstable) |
-| Immich | not running (`photos` is empty) | `services.immich` | nothing, new install |
-| Microbin | `microbin` | `services.microbin` | `microbin` |
 | Speedtest Tracker | `speedtest-tracker` | `services.speedtest-tracker` | `speedtest-tracker` |
 | Disk health, backups | unraid notifications | `smartd`/scrutiny, off-box backups (unraid becomes the target) | — |
 | AI | — | `host.ai.enable = true` after adding `cuda-maintainers.cachix.org` and moving Open WebUI off 8080 | — |
