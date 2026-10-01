@@ -23,7 +23,6 @@ in
     warnings = lib.optional (hasDisks && !enabled) ''
       host.storage.dataDisks is set but host.storage.parityFiles is empty: the
       bulk array has NO parity and a single disk failure loses that disk's data.
-      This is only acceptable while building the array out (docs/MIGRATION.md).
     '';
 
     services.snapraid = lib.mkIf enabled {
