@@ -1,6 +1,4 @@
 { config, lib, ... }:
-# The *arr stack, native. Web UIs are LAN-only; FlareSolverr is only used by
-# Jackett on this host, so it stays closed.
 let
   lan = config.host.lanCidr;
   s = config.services;

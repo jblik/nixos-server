@@ -22,8 +22,8 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
-    # gpac 26.07 turns strcpy/strncpy into #error in its headers, which breaks
-    # ccextractor (a Tdarr dependency). Drop once NixOS/nixpkgs#557024 is fixed.
+
+    # Drop once https://github.com/NixOS/nixpkgs/issues/557024 is fixed.
     nixpkgs.overlays = [
       (final: prev: {
         ccextractor = prev.ccextractor.overrideAttrs (old: {
@@ -59,6 +59,7 @@ in
         ];
         serviceConfig.UMask = lib.mkForce "0002";
       }))
+
       # The Tdarr module only lets it write to its own state; it has to replace
       # files in the library and use the cache under scratchDir.
       {

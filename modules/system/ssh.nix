@@ -1,5 +1,4 @@
 { ... }:
-# Headless server: SSH is the primary way in.
 {
   services.openssh = {
     enable = true;

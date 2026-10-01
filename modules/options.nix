@@ -1,7 +1,4 @@
 { lib, ... }:
-# Central, easily-changeable knobs for this server.
-# Everything hardware- or site-specific should be expressed here and consumed
-# by the other modules via `config.host.*`, so the rest of the tree stays generic.
 {
   options.host = {
     hostname = lib.mkOption {
@@ -29,7 +26,7 @@
 
     lanCidr = lib.mkOption {
       type = lib.types.str;
-      default = "192.168.0.0/16";
+      default = "192.168.1.0/24";
       description = ''
         LAN subnet allowed to reach the web UIs and APIs. Tighten this to
         your actual subnet (e.g. "192.168.1.0/24").
@@ -193,7 +190,6 @@
     };
 
     storage = {
-      # --- Fast tier: ZFS mirror for service state, databases and models ---
       fastPool = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
@@ -233,7 +229,6 @@
         '';
       };
 
-      # --- Bulk tier: mergerfs union over per-disk XFS, parity by SnapRAID ---
       bulkMount = lib.mkOption {
         type = lib.types.str;
         default = "/data";
@@ -347,7 +342,6 @@
         '';
       };
 
-      # --- Spin-down: unraid did this for you, systemd will not ---
       spinDownSeconds = lib.mkOption {
         type = lib.types.nullOr lib.types.int;
         default = null;

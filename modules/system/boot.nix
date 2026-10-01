@@ -1,5 +1,4 @@
 { config, lib, ... }:
-# Bootloader and CPU microcode, driven by `host.cpuVendor`.
 let
   vendor = config.host.cpuVendor;
 in

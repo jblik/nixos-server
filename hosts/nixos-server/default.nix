@@ -36,16 +36,14 @@
         maintainerr = "/var/lib/maintainerr";
       };
 
-      # Bulk tier. disk1 is the 10 TB, holding data with no parity; it becomes
-      # the parity disk at the end of the migration (docs/MIGRATION.md).
       dataDisks = {
         d1 = "/mnt/disk1";
       };
       parityFiles = [
-        # "/mnt/parity1/snapraid.parity"   # must be >= the largest data disk
+        # "/mnt/parity1/snapraid.parity"
       ];
 
-      # spinDownSeconds = 900;   # unraid-style idle spin-down (HDDs only)
+      spinDownSeconds = 900; # unraid-style idle spin-down (HDDs only)
     };
   };
 
