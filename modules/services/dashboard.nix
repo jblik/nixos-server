@@ -58,27 +58,31 @@ let
       (service "Notes" "MicroBin pastes" "notes" (icon "microbin" "png") "Tools" "Public")
     ];
 
-  exporter = "node";
+  node = "node";
+  coolercontrol = "coolercontrol";
+  tokenCredential = "coolercontrol-token";
 
   label = name: value: {
     Name = name;
     Value = value;
   };
 
-  # Same sensors fan2go drives the fans from (modules/hardware/fans.nix); node_exporter names
-  # a hwmon chip after its sysfs device path.
-  cpuChip = "pci0000:00_0000:00:18_3";
-  fanChip = "platform_nct6775_656";
-
-  fan = channel: {
-    Label = "Fan ${toString channel}";
-    Exporter = exporter;
-    Metric = "node_hwmon_fan_rpm";
+  # CoolerControl reports the same sensors its fan curves use (modules/hardware/fans.nix).
+  reading = metric: key: label': device: value: {
+    Label = label';
+    Exporter = coolercontrol;
+    Metric = "coolercontrol_${metric}";
     Labels = [
-      (label "chip" fanChip)
-      (label "sensor" "fan${toString channel}")
+      (label "device" device)
+      (label key value)
     ];
   };
+  temperature = reading "temperature_celsius" "sensor";
+  fan = reading "fan_rpm" "channel";
+
+  cpu = "AMD Ryzen 7 2700X Eight-Core Processor";
+  gpu = "NVIDIA GeForce RTX 3060";
+  board = "nct6798";
 in
 {
   imports = [ inputs.server-dashboard.nixosModules.default ];
@@ -87,6 +91,15 @@ in
     services.prometheus.exporters.node = {
       enable = true;
       listenAddress = "127.0.0.1";
+      # Temperatures come from CoolerControl, which leaves a spun-down disk asleep; this
+      # collector would wake it on every scrape.
+      disabledCollectors = [ "hwmon" ];
+    };
+
+    systemd.services.server-dashboard = {
+      wants = [ "coolercontrol-defaults.service" ];
+      after = [ "coolercontrol-defaults.service" ];
+      serviceConfig.LoadCredential = "${tokenCredential}:/var/lib/coolercontrol-defaults/dashboard-token";
     };
 
     services.server-dashboard = {
@@ -96,40 +109,53 @@ in
         Metrics = {
           Exporters = [
             {
-              Name = exporter;
+              Name = node;
               Url = "http://127.0.0.1:${toString config.services.prometheus.exporters.node.port}/metrics";
             }
-          ];
-          Temperatures = [
             {
-              # Tdie; temp1 is Tctl, which carries a +10 °C offset on the 2700X.
-              Label = "CPU";
-              Exporter = exporter;
-              Metric = "node_hwmon_temp_celsius";
-              Labels = [
-                (label "chip" cpuChip)
-                (label "sensor" "temp2")
-              ];
+              Name = coolercontrol;
+              Url = "http://127.0.0.1:${toString host.fans.port}/metrics";
+              TokenFile = "/run/credentials/server-dashboard.service/${tokenCredential}";
             }
+          ];
+          FanControl = coolercontrol;
+          Temperatures = [
+            # temp2 is Tdie; temp1 is Tctl, which carries a +10 °C offset on the 2700X.
+            (temperature "CPU" cpu "temp2")
+            (temperature "GPU" gpu "GPU Temp")
+            (temperature "Chipset" board "temp9")
+            (temperature "disk1" "ST10000NE0008-2P" "temp1")
+            (temperature "SSD (SanDisk)" "SanDisk SSD PLUS" "temp1")
+            (temperature "SSD (PEAQ)" "PEAQ    SSD_256G" "temp1")
+            (temperature "NVMe" "nvme" "temp1")
           ];
           Disks = [
             {
               Label = "Bulk (/data)";
-              Exporter = exporter;
+              Exporter = node;
               MountPoint = host.storage.bulkMount;
             }
             {
               Label = "Fast pool";
-              Exporter = exporter;
+              Exporter = node;
               MountPoint = host.storage.fastDatasets.plex;
             }
             {
               Label = "NVMe (system, scratch)";
-              Exporter = exporter;
+              Exporter = node;
               MountPoint = "/";
             }
           ];
-          Fans = map fan (lib.range 1 7);
+          Fans = [
+            (fan "Front 1" board "fan1")
+            (fan "Front 2" board "fan3")
+            (fan "Front 3" board "fan4")
+            (fan "Rear" board "fan6")
+            (fan "CPU" board "fan2")
+            (fan "Chipset" board "fan5")
+            (fan "GPU 1" gpu "fan1")
+            (fan "GPU 2" gpu "fan2")
+          ];
         };
       };
     };
