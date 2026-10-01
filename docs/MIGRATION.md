@@ -6,9 +6,6 @@
 - [ ] 3. Remaining services, with empty state
 - [ ] 4. Cutover: unraid appdata and disks drop in
 - [ ] 5. Retire unraid (keep it as the backup target)
-- [ ] 6. Empty the 10 TB onto the array; it becomes parity
-
-Until step 6 the array has no parity: a dead disk loses its files.
 
 Unraid (`jungle-jim`, 192.168.1.2) keeps running everything until step 4. Before that, only
 fresh test data exists here, so the unraid apps and disks drop in together at the end.

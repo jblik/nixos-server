@@ -119,7 +119,6 @@ in
               MountPoint = host.storage.bulkMount;
             }
             {
-              # Every dataset reports the pool's free space; plex is just one that always exists.
               Label = "Fast pool";
               Exporter = exporter;
               MountPoint = host.storage.fastDatasets.plex;
