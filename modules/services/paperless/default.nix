@@ -17,7 +17,14 @@ in
   config = lib.mkIf config.host.paperless.enable {
     services.paperless = {
       enable = true;
-      package = pkgs-unstable.paperless-ngx;
+      package = pkgs-unstable.paperless-ngx.override {
+        extraPythonPackageOverrides = _final: prev: {
+          # Uncached on unstable: its mp3 encoder tests fail against nixpkgs' ffmpeg.
+          torchcodec = prev.torchcodec.overridePythonAttrs (old: {
+            disabledTests = old.disabledTests ++ [ "test_audio_against_cli" ];
+          });
+        };
+      };
       inherit domain;
       mediaDir = "${config.host.storage.bulkMount}/documents";
       database.createLocally = true;
