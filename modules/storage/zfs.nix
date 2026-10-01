@@ -36,6 +36,7 @@ in
       lib.nameValuePair mountPoint {
         device = "${fastPool}/${name}";
         fsType = "zfs";
+        options = [ "nofail" ];
       }
     ) fastDatasets;
 

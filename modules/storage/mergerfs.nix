@@ -23,19 +23,26 @@ in
     system.fsPackages = [ pkgs.mergerfs ];
     environment.systemPackages = [ pkgs.mergerfs ];
 
-    fileSystems.${cfg.bulkMount} = {
-      # mergerfs takes its branches as a colon-separated device string.
-      device = lib.concatStringsSep ":" branches;
-      fsType = "fuse.mergerfs";
-      options = cfg.mergerfsOptions ++ [
-        # Do not block boot on the union; the branches are mounted first.
-        "nofail"
-        "x-systemd.device-timeout=5s"
-      ];
-      # Every branch must be mounted before the union is assembled, otherwise
-      # mergerfs happily unions empty mountpoints and services write into the
-      # root filesystem instead of the array.
-      depends = branches;
-    };
+    # A dead or missing disk must not send the whole box to emergency mode.
+    fileSystems =
+      lib.genAttrs branches (_: {
+        options = [ "nofail" ];
+      })
+      // {
+        ${cfg.bulkMount} = {
+          # mergerfs takes its branches as a colon-separated device string.
+          device = lib.concatStringsSep ":" branches;
+          fsType = "fuse.mergerfs";
+          options = cfg.mergerfsOptions ++ [
+            # Do not block boot on the union; the branches are mounted first.
+            "nofail"
+            "x-systemd.device-timeout=5s"
+          ];
+          # Every branch must be mounted before the union is assembled, otherwise
+          # mergerfs happily unions empty mountpoints and services write into the
+          # root filesystem instead of the array.
+          depends = branches;
+        };
+      };
   };
 }
