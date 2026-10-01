@@ -6,7 +6,7 @@
     ./immich.nix
     ./media
     ./microbin.nix
-    ./paperless.nix
+    ./paperless
     ./proxy.nix
   ];
 }

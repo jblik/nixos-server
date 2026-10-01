@@ -67,6 +67,9 @@ unix socket (peer auth, no passwords). Before their first deploy:
   on port 3004.
 - **Paperless** at `https://paperless.internal.steenblik.ch`, documents in
   `/data/documents`, Tika and Gotenberg on. Admin: `sudo paperless-manage createsuperuser`.
+  Before its first deploy, put the secrets in `/var/lib/secrets/paperless.env` (`chmod 600`):
+  `PAPERLESS_EMAIL_HOST_USER='...'`, `PAPERLESS_EMAIL_HOST_PASSWORD='...'` and
+  `POST_CONSUME_API_TOKEN='...'` (the token the unraid `post_consume.py` used).
 - **Microbin** at `https://notes.steenblik.ch`, with the unraid container's settings.
   Before its first deploy: `sudo zfs create -o mountpoint=legacy fast/microbin`, and put
   the unraid admin password in `/var/lib/secrets/microbin.env` as
