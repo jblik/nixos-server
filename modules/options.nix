@@ -84,6 +84,12 @@
 
     dashboard.enable = lib.mkEnableOption "the dashboard on server.steenblik.ch (modules/services/dashboard.nix)";
 
+    fans.port = lib.mkOption {
+      type = lib.types.port;
+      default = 11987;
+      description = "CoolerControl API and web UI port (modules/hardware/fans.nix).";
+    };
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 

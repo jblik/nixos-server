@@ -39,6 +39,9 @@ let
     }
     // lib.optionalAttrs config.host.dashboard.enable {
       server = s.server-dashboard.internalPort;
+    }
+    // {
+      fans = config.host.fans.port;
     };
   proxyTo = port: {
     proxyPass = "http://127.0.0.1:${toString port}";
