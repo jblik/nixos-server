@@ -16,6 +16,9 @@ let
     }
     // lib.optionalAttrs config.host.microbin.enable {
       notes = s.microbin.settings.MICROBIN_PORT;
+    }
+    // lib.optionalAttrs config.host.dashboard.enable {
+      server = s.server-dashboard.publicPort;
     };
 
   privateServices =
@@ -33,6 +36,9 @@ let
     }
     // lib.optionalAttrs config.host.paperless.enable {
       paperless = s.paperless.port;
+    }
+    // lib.optionalAttrs config.host.dashboard.enable {
+      server = s.server-dashboard.internalPort;
     };
   proxyTo = port: {
     proxyPass = "http://127.0.0.1:${toString port}";

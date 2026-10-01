@@ -82,6 +82,8 @@
       };
     };
 
+    dashboard.enable = lib.mkEnableOption "the dashboard on server.steenblik.ch (modules/services/dashboard.nix)";
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 

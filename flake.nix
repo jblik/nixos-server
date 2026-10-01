@@ -1,9 +1,13 @@
 {
-  description = "NixOS home server replacing unraid (storage array, media stack, local AI)";
+  description = "NixOS home server (storage array, media stack, local AI)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    server-dashboard = {
+      url = "git+ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -11,6 +15,7 @@
       self,
       nixpkgs,
       nixpkgs-unstable,
+      ...
     }:
     let
       system = "x86_64-linux";

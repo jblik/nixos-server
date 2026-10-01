@@ -35,7 +35,27 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nixpkgs-unstable": "nixpkgs-unstable",
+        "server-dashboard": "server-dashboard"
+      }
+    },
+    "server-dashboard": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790853081,
+        "narHash": "sha256-xd5N64qMec/6AqaV0bbQrq43ZEXwyHVjRweDDXy+ILY=",
+        "rev": "ee298dfefacdada22bbff6063d7ee17452226298",
+        "revCount": 6,
+        "type": "git",
+        "url": "file:///Users/jblik/projects/server-dashboard"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///Users/jblik/projects/server-dashboard"
       }
     }
   },

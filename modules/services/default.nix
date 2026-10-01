@@ -1,6 +1,7 @@
 {
   imports = [
     ./ai.nix
+    ./dashboard.nix
     ./forgejo.nix
     ./immich.nix
     ./media

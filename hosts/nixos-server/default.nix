@@ -19,6 +19,7 @@
     immich.enable = true;
     paperless.enable = true;
     microbin.enable = true;
+    dashboard.enable = true;
 
     storage = {
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
