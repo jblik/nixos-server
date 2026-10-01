@@ -16,6 +16,8 @@ in
       enable = true;
       # 26.05 only has the end-of-life 2.x, marked insecure; 3.x needs the same vectorchord.
       package = pkgs-unstable.immich;
+      # The default "localhost" binds only ::1, while nginx proxies to 127.0.0.1.
+      host = "127.0.0.1";
       inherit mediaLocation;
       # nixpkgs has no cached CUDA onnxruntime for 3.x, so the upstream CUDA image runs it instead.
       machine-learning.enable = false;

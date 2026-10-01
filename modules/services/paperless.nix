@@ -12,6 +12,9 @@ in
       configureTika = true;
     };
 
+    # Its default 3000 is Forgejo's HTTP port.
+    services.gotenberg.port = 3001;
+
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 512M;
     '';
