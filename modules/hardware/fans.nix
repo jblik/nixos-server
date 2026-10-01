@@ -59,6 +59,9 @@ let
     ];
   };
 
+  # Tdie jumps by ~10 °C every few seconds even at idle.
+  smoothed = profile: profile // { function_uid = "smooth"; };
+
   mix = uid: name: members: {
     inherit uid name;
     p_type = "Mix";
@@ -67,16 +70,24 @@ let
     mix_function_type = "Max";
   };
 
+  cpuTemp = sensor "AMD Ryzen 7 2700X Eight-Core Processor" "CPU Temp Tdie";
+
   caseSources = [
-    (graph "case-cpu" "Case: CPU" (sensor "k10temp" "Tdie") 60 80)
+    (smoothed (graph "case-cpu" "Case: CPU" cpuTemp 65 85))
     (graph "case-gpu" "Case: GPU" (sensor "NVIDIA GeForce RTX 3060" "GPU Temp") 60 80)
-    (graph "case-hdd" "Case: disk1" (sensor "ST10000NE0008-2P" "Drive Temp") 45 55)
-    (graph "case-sandisk" "Case: SanDisk" (sensor "SanDisk SSD PLUS" "Drive Temp") 60 70)
-    (graph "case-peaq" "Case: PEAQ" (sensor "PEAQ    SSD_256G" "Drive Temp") 60 70)
+    (graph "case-hdd" "Case: disk1" (sensor "ST10000NE0008-2P" "Temp1") 45 55)
+    (graph "case-sandisk" "Case: SanDisk" (sensor "SanDisk SSD PLUS" "Temp1") 60 70)
+    (graph "case-peaq" "Case: PEAQ" (sensor "PEAQ    SSD_256G" "Temp1") 60 70)
     (graph "case-nvme" "Case: NVMe" (sensor "ADATA SX8200NP" "Composite") 65 75)
   ];
 
   defaults = {
+    settings = {
+      # disk1 spins down; reading its temperature must not wake it.
+      drivetemp_suspend = true;
+      protocol_header = "X-Forwarded-Proto";
+    };
+
     functions = [
       {
         uid = "calm";
@@ -93,12 +104,24 @@ let
         threshold_hopping = true;
         bypass_min_at_extremes = true;
       }
+      {
+        uid = "smooth";
+        name = "Smooth";
+        f_type = "ExponentialMovingAvg";
+        duty_minimum = 2;
+        duty_maximum = 100;
+        step_size_min_decreasing = 0;
+        step_size_max_decreasing = 0;
+        sample_window = 20;
+        threshold_hopping = true;
+        bypass_min_at_extremes = true;
+      }
     ];
 
     profiles = caseSources ++ [
       (mix "case" "Case" (map (p: p.uid) caseSources))
-      (graph "cpu" "CPU" (sensor "k10temp" "Tdie") 54 80)
-      (graph "chipset" "Chipset" (sensor board "SMBUSMASTER 1") 80 95)
+      (smoothed (graph "cpu" "CPU" cpuTemp 60 85))
+      (graph "chipset" "Chipset" (sensor board "Smbusmaster 1") 80 95)
       {
         uid = "full";
         name = "Full";

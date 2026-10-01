@@ -17,7 +17,7 @@ login() {
 }
 
 for _ in $(seq 60); do
-  curl -fsS -o /dev/null "$API/health" && break
+  curl -fsS -o /dev/null "$API/handshake" && break
   sleep 1
 done
 
@@ -38,6 +38,8 @@ if [[ "$(cat "$applied_file" 2>/dev/null)" == "$DEFAULTS" ]]; then
   echo "Defaults unchanged since they were last applied"
   exit 0
 fi
+
+jq -c .settings "$DEFAULTS" | call PATCH /settings --data @- >/dev/null
 
 devices=$(call GET /devices)
 
