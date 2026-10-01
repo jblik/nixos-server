@@ -19,6 +19,9 @@ let
     }
     // lib.optionalAttrs config.host.dashboard.enable {
       server = s.server-dashboard.publicPort;
+    }
+    // lib.optionalAttrs config.host.paperless.enable {
+      documents = s.paperless.port;
     };
 
   privateServices =
@@ -33,9 +36,6 @@ let
       cleanuparr = config.host.media.cleanuparr.port;
       pulsarr = config.host.media.pulsarr.port;
       maintainerr = config.host.media.maintainerr.port;
-    }
-    // lib.optionalAttrs config.host.paperless.enable {
-      paperless = s.paperless.port;
     }
     // lib.optionalAttrs config.host.dashboard.enable {
       server = s.server-dashboard.internalPort;

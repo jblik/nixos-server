@@ -7,7 +7,7 @@
   ...
 }:
 let
-  domain = "paperless.internal.steenblik.ch";
+  domain = "documents.steenblik.ch";
 in
 {
   # unraid runs 3.x and the importer needs the same version; 26.05's module only handles 2.x.
