@@ -60,9 +60,11 @@ unix socket (peer auth, no passwords). Before their first deploy:
 `sudo zfs create -o mountpoint=legacy -o recordsize=16k fast/postgresql` and
 `sudo zfs create -o mountpoint=legacy fast/paperless`.
 
-- **Immich** at `https://immich.internal.steenblik.ch`, library in `/data/photos`. The
-  first visitor becomes the admin. It is 3.x from unstable: 26.05 only has the
-  end-of-life 2.x.
+- **Immich** at `https://photos.steenblik.ch`, library in `/data/photos`. Create the
+  admin right after the first deploy: the first visitor becomes the admin, and the site is
+  public. Pi-hole resolves `photos.steenblik.ch` to this box. It is 3.x from unstable:
+  26.05 only has the end-of-life 2.x. Machine learning runs in the upstream CUDA image
+  on port 3004.
 - **Paperless** at `https://paperless.internal.steenblik.ch`, documents in
   `/data/documents`, Tika and Gotenberg on. Admin: `sudo paperless-manage createsuperuser`.
 
