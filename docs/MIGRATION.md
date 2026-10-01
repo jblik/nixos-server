@@ -87,7 +87,7 @@ In order:
 |---|---|---|---|
 | Secrets | — | sops-nix, including the Cloudflare tokens in `/var/lib/secrets` | — |
 | Samba | `data` and `appdata` SMB shares | `services.samba`, sharing `/data` | nothing (the files come with the disks) |
-| Paperless | `bear-docs` + `Redis`, `apache-tika-server`, `gotenberg` | `services.paperless`, `configureTika`, `mediaDir = /data/documents`, PostgreSQL | `document_exporter` on unraid, `paperless-manage document_importer` here; both on the same Paperless version (2.20.15) |
+| Paperless | `bear-docs` + `Redis`, `apache-tika-server`, `gotenberg` | `services.paperless`, `configureTika`, `mediaDir = /data/documents`, PostgreSQL | `document_exporter` on unraid, `paperless-manage document_importer` here; both on the same Paperless version (3.2.1, so module and package come from unstable) |
 | Immich | not running (`photos` is empty) | `services.immich` | nothing, new install |
 | Microbin | `microbin` | `services.microbin` | `microbin` |
 | Speedtest Tracker | `speedtest-tracker` | `services.speedtest-tracker` | `speedtest-tracker` |
