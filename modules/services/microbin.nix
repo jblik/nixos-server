@@ -4,9 +4,11 @@ let
 in
 {
   config = lib.mkIf config.host.microbin.enable {
+    sops.secrets."microbin.env" = { };
+
     services.microbin = {
       enable = true;
-      passwordFile = "/var/lib/secrets/microbin.env";
+      passwordFile = config.sops.secrets."microbin.env".path;
       settings = {
         MICROBIN_BIND = "127.0.0.1";
         MICROBIN_PORT = config.host.microbin.port;

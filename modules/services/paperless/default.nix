@@ -15,6 +15,8 @@ in
   imports = [ "${inputs.nixpkgs-unstable}/nixos/modules/services/misc/paperless.nix" ];
 
   config = lib.mkIf config.host.paperless.enable {
+    sops.secrets."paperless.env" = { };
+
     services.paperless = {
       enable = true;
       package = pkgs-unstable.paperless-ngx.override {
@@ -29,8 +31,7 @@ in
       mediaDir = "${config.host.storage.bulkMount}/documents";
       database.createLocally = true;
       configureTika = true;
-      # PAPERLESS_EMAIL_HOST_USER, PAPERLESS_EMAIL_HOST_PASSWORD, POST_CONSUME_API_TOKEN
-      environmentFile = "/var/lib/secrets/paperless.env";
+      environmentFile = config.sops.secrets."paperless.env".path;
       settings = {
         PAPERLESS_APP_TITLE = "Bear Docs";
         PAPERLESS_OCR_LANGUAGE = "eng+deu+ita";

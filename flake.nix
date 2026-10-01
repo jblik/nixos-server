@@ -8,6 +8,10 @@
       url = "git+ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

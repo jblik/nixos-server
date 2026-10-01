@@ -55,7 +55,7 @@ In order:
 
 | Service | On unraid | Here | Brought over in step 4 |
 |---|---|---|---|
-| Secrets | — | sops-nix, including the Cloudflare tokens in `/var/lib/secrets` | — |
+| Secrets | — | sops-nix (README) | — |
 | Samba | `data` and `appdata` SMB shares | `services.samba`, sharing `/data` | nothing (the files come with the disks) |
 | Speedtest Tracker | `speedtest-tracker` | `services.speedtest-tracker` | `speedtest-tracker` |
 | Disk health, backups | unraid notifications | `smartd`/scrutiny, off-box backups (unraid becomes the target) | — |

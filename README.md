@@ -26,8 +26,15 @@ at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `publi
 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed. The
-Cloudflare token is placed by hand until sops-nix: `/var/lib/secrets/cloudflare.env`
-(`CF_DNS_API_TOKEN=...`) and `/var/lib/secrets/cloudflare-dyndns.token` (token only).
+Cloudflare token is in the sops secrets as `cloudflare.env` (`CF_DNS_API_TOKEN=...`) and
+`cloudflare-dyndns.token` (token only).
+
+## Secrets
+
+sops-nix: `secrets/secrets.yaml` is committed encrypted, each key becomes
+`/run/secrets/<key>` on the server, decrypted with its SSH host key. Recipients (your age
+key and the server's) are in `.sops.yaml`. Edit with
+`nix shell nixpkgs#sops -c sops secrets/secrets.yaml`, then `jj commit` and deploy.
 
 ## Deploy
 
