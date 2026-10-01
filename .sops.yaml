@@ -2,7 +2,7 @@
 # `sops updatekeys secrets/secrets.yaml` and commit the result.
 keys:
   - &admin age107rlr77aj5z7dp5h7eke8p74gmzck52ge8eyec0rujy4k4v8ggeqvaarnl
-  # ssh-to-age of nixos-server's /etc/ssh/ssh_host_ed25519_key.pub
+  # `cat /etc/ssh/ssh_host_ed25519_key.pub | nix run nixpkgs#ssh-to-age` on nixos-server
   - &nixos-server age185js5nqtquy40nyhrxg3f5s0753wl6n3cq4y0t7ae0gtz7307cmq9ha07e
 creation_rules:
   - path_regex: secrets/[^/]+\.yaml$

@@ -26,8 +26,8 @@ at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `publi
 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed. The
-Cloudflare token is in the sops secrets as `cloudflare.env` (`CF_DNS_API_TOKEN=...`) and
-`cloudflare-dyndns.token` (token only).
+Cloudflare token is the sops secret `cloudflare-dns-token` (token only); ACME gets it as
+`CF_DNS_API_TOKEN` through a sops template.
 
 ## Secrets
 

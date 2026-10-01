@@ -47,17 +47,16 @@ let
 in
 {
   config = {
-    sops.secrets = {
-      "cloudflare.env" = { };
-      "cloudflare-dyndns.token" = { };
-    };
+    sops.secrets.cloudflare-dns-token = { };
+    sops.templates."cloudflare.env".content =
+      "CF_DNS_API_TOKEN=${config.sops.placeholder.cloudflare-dns-token}";
 
     security.acme = {
       acceptTerms = true;
       defaults = {
         email = "jacob@steenblik.ch";
         dnsProvider = "cloudflare";
-        environmentFile = config.sops.secrets."cloudflare.env".path;
+        environmentFile = config.sops.templates."cloudflare.env".path;
       };
       certs.${internalDomain} = {
         domain = "*.${internalDomain}";
@@ -108,7 +107,7 @@ in
 
     services.cloudflare-dyndns = {
       enable = true;
-      apiTokenFile = config.sops.secrets."cloudflare-dyndns.token".path;
+      apiTokenFile = config.sops.secrets.cloudflare-dns-token.path;
       domains = map (serviceName: "${serviceName}.${publicDomain}") (lib.attrNames publicServices);
     };
   };
