@@ -11,7 +11,14 @@
 # Do not point this at SSDs.
 let
   cfg = config.host.storage;
-  enabled = cfg.spinDownSeconds != null && cfg.dataDisks != { };
+  bulkMounts = lib.unique (lib.attrValues cfg.dataDisks ++ map dirOf cfg.parityFiles);
+  disks = lib.unique (
+    lib.concatMap (
+      mount: lib.optional (config.fileSystems ? ${mount}) config.fileSystems.${mount}.device
+    ) bulkMounts
+  );
+  enabled = cfg.spinDownSeconds != null && disks != [ ];
+  diskArgs = lib.concatMapStrings (d: " -a ${d} -i ${toString cfg.spinDownSeconds}") disks;
 in
 {
   config = lib.mkIf enabled {
@@ -21,7 +28,7 @@ in
       after = [ "local-fs.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${lib.getExe pkgs.hd-idle} -d -i ${toString cfg.spinDownSeconds}";
+        ExecStart = "${lib.getExe pkgs.hd-idle} -d -i 0${diskArgs}";
         Restart = "on-failure";
       };
     };
