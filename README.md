@@ -10,9 +10,9 @@ packages.nix                 every package not taken from nixos-26.05 as is
 hosts/nixos-server/          hardware config + site knobs (disks, subnet, what's enabled)
 modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
-modules/hardware/            nvidia driver, fan2go fan control, RGB off
+modules/hardware/            nvidia driver, CoolerControl fan curves, RGB off
 modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spin-down
-modules/services/            media stack, *arr, forgejo, nginx reverse proxy, AI (off)
+modules/services/            media stack, immich, paperless, forgejo, microbin, dashboard, nginx, AI (off)
 ```
 
 Firewall: SSH, Plex, HTTPS (443) and Forgejo SSH (2222) are open; every other UI is LAN-only (`host.lanCidr`)
@@ -22,7 +22,8 @@ or over Tailscale (`tailscale0` is trusted).
 
 nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
 at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
-(`modules/services/proxy.nix`: Forgejo as `git`) are at `https://<app>.steenblik.ch`, through
+(`modules/services/proxy.nix`: Forgejo as `git`, Immich as `photos`, Paperless as
+`documents`, MicroBin as `notes`, the dashboard as `server`) are at `https://<app>.steenblik.ch`, through
 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed.
@@ -59,20 +60,25 @@ Plex/Tdarr transcode cache.
 
 ## Services
 
-| Service                                    | Port                       | Runs as                                   |
-|--------------------------------------------|----------------------------|-------------------------------------------|
-| Plex                                       | 32400                      | native                                    |
-| Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                    |
-| Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                    |
-| qBittorrent                                | 8080                       | native                                    |
-| Tdarr                                      | 8265                       | native, GPU node                          |
-| Cleanuparr                                 | 11011                      | podman container                          |
-| Pulsarr                                    | 3003                       | podman container                          |
-| Maintainerr                                | 6246                       | podman container                          |
-| Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                    |
-| Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake |
-| node_exporter                              | 9100 (localhost)           | native                                    |
-| Tailscale (exit node)                      | —                          | native                                    |
+| Service                                       | Port                       | Runs as                                         |
+|-----------------------------------------------|----------------------------|-------------------------------------------------|
+| Plex                                          | 32400                      | native                                          |
+| Sonarr / Radarr / Bazarr                      | 8989 / 7878 / 6767         | native                                          |
+| Jackett (+ FlareSolverr on localhost:8191)    | 9117                       | native                                          |
+| qBittorrent                                   | 8080                       | native                                          |
+| Tdarr                                         | 8265 (UI), 8266 (server)   | native, GPU node                                |
+| Cleanuparr                                    | 11011                      | podman container                                |
+| Pulsarr                                       | 3003                       | podman container                                |
+| Maintainerr                                   | 6246                       | podman container                                |
+| Immich (photos.steenblik.ch)                  | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container   |
+| Paperless-ngx (documents.steenblik.ch)        | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL |
+| Forgejo (git.steenblik.ch)                    | 3000 (localhost), SSH 2222 | native                                          |
+| MicroBin (notes.steenblik.ch)                 | 8081 (localhost)           | native                                          |
+| CoolerControl                                 | 11987 (localhost)          | native                                          |
+| Dashboard (server.steenblik.ch)               | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
+| node_exporter                                 | 9100 (localhost)           | native                                          |
+| Tailscale (exit node)                         | —                          | native                                          |
+| Local AI + Open WebUI (off, `host.ai.enable`) | 11434 / 8080               | native                                          |
 
 ## Package versions
 
