@@ -1,8 +1,6 @@
 # nixos-server
 
-Ryzen 2700X, RTX 3060, 32 GB
-
-Progress and next steps: [docs/MIGRATION.md](docs/MIGRATION.md).
+Ryzen 2700X, RTX 3060, 48 GB
 
 ## Layout
 
@@ -34,11 +32,11 @@ Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays clo
 sops-nix: `secrets/secrets.yaml` is committed encrypted, each key becomes
 `/run/secrets/<key>` on the server, decrypted with its SSH host key. Recipients (your age
 key and the server's) are in `.sops.yaml`. Edit with
-`nix shell nixpkgs#sops -c sops secrets/secrets.yaml`, then `jj commit` and deploy.
+`nix shell nixpkgs#sops -c sops secrets/secrets.yaml`, then commit and deploy.
 
 ## Deploy
 
-Edit on the Mac and `jj commit` (the flake only sees committed files), then build and
+Edit on the Mac and commit (the flake only sees committed files), then build and
 switch on the server:
 
 ```sh
@@ -51,8 +49,7 @@ picking an older entry in the boot menu.
 ## Storage
 
 - **Bulk:** one XFS filesystem per HDD at `/mnt/diskN`, merged by mergerfs into
-  `/data`, SnapRAID parity once `parityFiles` is set. Currently only `disk1` (10 TB),
-  no parity, holding unraid's movies and TV.
+  `/data`, SnapRAID parity once `parityFiles` is set.
 - **Fast:** ZFS mirror `fast` on the two SATA SSDs. Service state under `/var/lib`, one
   dataset per service (`host.storage.fastDatasets`), snapshotted hourly by sanoid.
 
@@ -62,30 +59,22 @@ Plex/Tdarr transcode cache.
 
 ## Services
 
-Plex, the *arr apps and Tdarr run on the state imported from unraid; Pulsarr started
-fresh.
-
-| Service | Port | Runs as |
-|---|---|---|
-| Plex | 32400 | native |
-| Sonarr / Radarr / Bazarr | 8989 / 7878 / 6767 | native |
-| Jackett (+ FlareSolverr on localhost:8191) | 9117 | native |
-| qBittorrent | 8080 | native |
-| Tdarr | 8265 | native, GPU node |
-| Cleanuparr | 11011 | podman container |
-| Pulsarr | 3003 | podman container |
-| Maintainerr | 6246 | podman container |
-| Forgejo (git.steenblik.ch) | 3000 (localhost), SSH 2222 | native |
-| Dashboard (server.steenblik.ch) | 5180 / 5181 (localhost) | native, from the `server-dashboard` flake |
-| node_exporter | 9100 (localhost) | native |
-| Tailscale (exit node) | — | native |
+| Service                                    | Port                       | Runs as                                   |
+|--------------------------------------------|----------------------------|-------------------------------------------|
+| Plex                                       | 32400                      | native                                    |
+| Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                    |
+| Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                    |
+| qBittorrent                                | 8080                       | native                                    |
+| Tdarr                                      | 8265                       | native, GPU node                          |
+| Cleanuparr                                 | 11011                      | podman container                          |
+| Pulsarr                                    | 3003                       | podman container                          |
+| Maintainerr                                | 6246                       | podman container                          |
+| Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                    |
+| Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake |
+| node_exporter                              | 9100 (localhost)           | native                                    |
+| Tailscale (exit node)                      | —                          | native                                    |
 
 ## Package versions
-
-Services whose database was imported from unraid must never run an older version than
-unraid did, or they can't open it. Where nixos-26.05 is behind, `packages.nix` takes the
-package from nixpkgs-unstable (Plex, Radarr, Bazarr, Immich, Paperless) or pins the
-version itself (Tdarr). It is the only place that does; the modules just use `pkgs`.
 
 ```sh
 nix eval --json .#versions | jq   # each package: version here, version in nixos-26.05
