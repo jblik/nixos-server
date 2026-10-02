@@ -9,52 +9,64 @@
 # metrics node_exporter reports (temperatures, free space, fan speeds).
 let
   host = config.host;
+  storage = host.storage;
+
+  publicDomain = "steenblik.ch";
+  internalDomain = "internal.${publicDomain}";
+
+  public = "Public";
+  internal = "Internal";
+
+  media = "Media";
+  library = "Library";
+  tools = "Tools";
+  system = "System";
 
   icon = name: ext: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/${ext}/${name}.${ext}";
+  svg = name: icon name "svg";
+  png = name: icon name "png";
 
-  service = name: description: subdomain: iconName: group: visibility: {
+  # `subdomain` must match the host in modules/services/proxy.nix.
+  service = group: visibility: subdomain: name: description: iconUrl: {
     Name = name;
     Description = description;
     Url =
-      if visibility == "Public" then
-        "https://${subdomain}.steenblik.ch"
+      if visibility == public then
+        "https://${subdomain}.${publicDomain}"
       else
-        "https://${subdomain}.internal.steenblik.ch";
-    Icon = iconName;
+        "https://${subdomain}.${internalDomain}";
+    Icon = iconUrl;
     Group = group;
     Visibility = visibility;
   };
 
   services =
     lib.optionals host.media.enable [
-      (service "Plex" "Stream the library" "plex" (icon "plex" "svg") "Media" "Internal")
-      (service "Sonarr" "TV series" "sonarr" (icon "sonarr" "svg") "Media" "Internal")
-      (service "Radarr" "Movies" "radarr" (icon "radarr" "svg") "Media" "Internal")
-      (service "Bazarr" "Subtitles" "bazarr" (icon "bazarr" "svg") "Media" "Internal")
-      (service "Jackett" "Indexer proxy" "jackett" (icon "jackett" "svg") "Media" "Internal")
-      (service "qBittorrent" "Downloads" "qbittorrent" (icon "qbittorrent" "svg") "Media" "Internal")
-      (service "Tdarr" "Transcoding on the RTX 3060" "tdarr" (icon "tdarr" "svg") "Media" "Internal")
-      (service "Cleanuparr" "Clears stalled downloads" "cleanuparr" (icon "cleanuparr" "png") "Media"
-        "Internal"
-      )
-      (service "Pulsarr" "Plex watchlist sync" "pulsarr" (icon "pulsarr" "svg") "Media" "Internal")
-      (service "Maintainerr" "Library cleanup rules" "maintainerr" (icon "maintainerr" "svg") "Media"
-        "Internal"
-      )
+      (service media internal "plex" "Plex" "Stream the library" (svg "plex"))
+      (service media internal "sonarr" "Sonarr" "TV series" (svg "sonarr"))
+      (service media internal "radarr" "Radarr" "Movies" (svg "radarr"))
+      (service media internal "bazarr" "Bazarr" "Subtitles" (svg "bazarr"))
+      (service media internal "jackett" "Jackett" "Indexer proxy" (svg "jackett"))
+      (service media internal "qbittorrent" "qBittorrent" "Downloads" (svg "qbittorrent"))
+      (service media internal "tdarr" "Tdarr" "Transcoding on the RTX 3060" (svg "tdarr"))
+      (service media internal "cleanuparr" "Cleanuparr" "Clears stalled downloads" (png "cleanuparr"))
+      (service media internal "pulsarr" "Pulsarr" "Plex watchlist sync" (svg "pulsarr"))
+      (service media internal "maintainerr" "Maintainerr" "Library cleanup rules" (svg "maintainerr"))
     ]
     ++ lib.optionals host.immich.enable [
-      (service "Photos" "Immich photo library" "photos" (icon "immich" "svg") "Library" "Public")
+      (service library public "photos" "Photos" "Immich photo library" (svg "immich"))
     ]
     ++ lib.optionals host.paperless.enable [
-      (service "Paperless" "Scanned documents" "paperless" (icon "paperless-ngx" "svg") "Library"
-        "Internal"
-      )
+      (service library public "documents" "Paperless" "Scanned documents" (svg "paperless-ngx"))
     ]
     ++ lib.optionals host.forgejo.enable [
-      (service "Git" "Forgejo" "git" (icon "forgejo" "svg") "Tools" "Public")
+      (service tools public "git" "Git" "Forgejo" (svg "forgejo"))
     ]
     ++ lib.optionals host.microbin.enable [
-      (service "Notes" "MicroBin pastes" "notes" (icon "microbin" "png") "Tools" "Public")
+      (service tools public "notes" "Notes" "MicroBin pastes" (png "microbin"))
+    ]
+    ++ [
+      (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
     ];
 
   node = "node";
@@ -79,9 +91,26 @@ let
   temperature = reading "temperature_celsius" "sensor";
   fan = reading "fan_rpm" "channel";
 
+  disk = label': mountPoint: {
+    Label = label';
+    Exporter = node;
+    MountPoint = mountPoint;
+  };
+
   cpu = "AMD Ryzen 7 2700X Eight-Core Processor";
   gpu = "NVIDIA GeForce RTX 3060";
   board = "nct6798";
+  nvme = "nvme";
+  sandisk = "SanDisk SSD PLUS";
+  peaq = "PEAQ    SSD_256G";
+
+  # drivetemp names a disk by the first 16 characters of its model.
+  hdds = {
+    disk1 = "ST10000NE0008-2P";
+    disk2 = "ST4000VN008-2DR1";
+  };
+
+  dataDisks = lib.sort (a: b: a < b) (lib.attrValues storage.dataDisks);
 in
 {
   imports = [ inputs.server-dashboard.nixosModules.default ];
@@ -123,27 +152,22 @@ in
             (temperature "CPU" cpu "temp2")
             (temperature "GPU" gpu "GPU Temp")
             (temperature "Chipset" board "temp9")
-            (temperature "disk1" "ST10000NE0008-2P" "temp1")
-            (temperature "SSD (SanDisk)" "SanDisk SSD PLUS" "temp1")
-            (temperature "SSD (PEAQ)" "PEAQ    SSD_256G" "temp1")
-            (temperature "NVMe" "nvme" "temp1")
+            (temperature "Motherboard" board "temp1")
+          ]
+          ++ lib.mapAttrsToList (name: model: temperature name model "temp1") hdds
+          ++ [
+            (temperature "SSD (SanDisk)" sandisk "temp1")
+            (temperature "SSD (PEAQ)" peaq "temp1")
+            (temperature "NVMe" nvme "temp1")
           ];
           Disks = [
-            {
-              Label = "Bulk (/data)";
-              Exporter = node;
-              MountPoint = host.storage.bulkMount;
-            }
-            {
-              Label = "Fast pool";
-              Exporter = node;
-              MountPoint = host.storage.fastDatasets.plex;
-            }
-            {
-              Label = "NVMe (system, scratch)";
-              Exporter = node;
-              MountPoint = "/";
-            }
+            (disk "Bulk (${storage.bulkMount})" storage.bulkMount)
+          ]
+          ++ map (mountPoint: disk (baseNameOf mountPoint) mountPoint) dataDisks
+          ++ [
+            (disk "Fast pool" storage.fastDatasets.plex)
+            (disk "NVMe (system, scratch)" "/")
+            (disk "Boot" "/boot")
           ];
           Fans = [
             (fan "Front 1" board "fan1")
