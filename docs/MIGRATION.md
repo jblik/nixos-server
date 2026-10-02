@@ -3,14 +3,15 @@
 - [x] NixOS installed on the NVMe, SSH key-only
 - [x] 10 TB as `disk1` (no parity), media stack deployed on it with test state
 - [x] Unraid's `media/{movies,tv}` copied to `/data/media` (`scripts/copy-from-unraid.sh`)
-- [ ] 1. Plex
-- [ ] 2. Sonarr, Radarr, qBittorrent, Jackett, Bazarr
-- [ ] 3. Pulsarr
-- [ ] 4. Maintainerr, Cleanuparr
-- [ ] 5. Test end to end
-- [ ] 6. Remaining services
-- [ ] 7. Retire unraid (keep it as the backup target)
-- [ ] 8. Empty the 10 TB onto the array; it becomes parity
+- [x] 1. Plex
+- [x] 2. Sonarr, Radarr, qBittorrent, Jackett, Bazarr
+- [ ] 3. Pulsarr, set up fresh (unraid's state is not carried over)
+- [ ] 4. Tdarr
+- [ ] 5. Maintainerr, Cleanuparr
+- [ ] 6. Test end to end
+- [ ] 7. Remaining services
+- [ ] 8. Retire unraid (keep it as the backup target)
+- [ ] 9. Empty the 10 TB onto the array; it becomes parity
 
 Unraid (`jungle-jim`, 192.168.1.2) is the source and the rollback: nothing there is
 changed or deleted. Each app moves the same way: stop it on unraid, pull its appdata
@@ -44,91 +45,50 @@ Rollback for one app: `sudo systemctl stop <unit> && sudo zfs rollback fast/<dat
 and start it on unraid again.
 
 Plex, Radarr and Bazarr run from nixpkgs-unstable so they are not older than unraid's
-(a downgrade can't open the newer database). Sonarr is 4.0.19 here and 4.0.20 on unraid,
-which nixpkgs doesn't have yet: if its journal shows a migration error, roll it back
-and say so.
+(a downgrade can't open the newer database).
 
-## 1. Plex
+## 3. Pulsarr (fresh)
 
-Unraid's Plex keeps running until now; two Plex servers with the same identity must
-never run at once.
+Unraid's Pulsarr state is not carried over; it is set up again from an empty
+`/var/lib/pulsarr`.
 
-| Unit | Dataset | `pull` |
-|---|---|---|
-| `plex` | `plex` | `pull plex "/var/lib/plex/Plex Media Server" plex:users` |
+1. Stop it on unraid and turn off its autostart.
+2. Here: `sudo systemctl stop podman-pulsarr`, `sudo zfs snapshot fast/pulsarr@pre-fresh`,
+   then `sudo find /var/lib/pulsarr -mindepth 1 -delete` and
+   `sudo systemctl start podman-pulsarr`.
+3. `https://pulsarr.internal.steenblik.ch`: create the admin account, sign in to Plex.
+4. Sonarr and Radarr instances: host `localhost`, with root folder and quality profile.
+   Saving them creates Pulsarr's webhooks; check Settings → Connect in Sonarr/Radarr
+   points at `http://localhost:3003`.
+5. Add something to a Plex watchlist: it shows up in Sonarr or Radarr.
 
-1. Deploy (Plex is now 1.43.4, from unstable).
-2. Stop Plex on unraid, turn off autostart. Stop, snapshot, pull, start here (4 GB).
-3. Open `https://plex.internal.steenblik.ch` (or `http://192.168.1.100:32400/web`).
-   Signed in, the server shows up under its old name.
-4. Settings → Library: turn **off** "Empty trash automatically after every scan" before
-   anything scans. Unraid's container saw `/data` = `data/media`, so every library
-   points at `/data/movies` or `/data/tv`, which don't exist here.
-5. Per library: Edit → Add folders → `/data/media/movies` (or `/data/media/tv`), save,
-   scan. When the items show as available again, remove the old `/data/...` folder.
-   This keeps watch state, posters and collections.
-6. Libraries for folders that were not copied (books, music) can be deleted.
-7. Settings → Transcoder: temporary directory `/scratch/transcode`, hardware
-   acceleration on. Play something with a forced low quality: `nvidia-smi` shows the
-   transcode.
-8. Router: forward 32400 to 192.168.1.100 instead of .2. Settings → Remote Access is
-   green.
-9. Turn "Empty trash automatically" back on if it was on.
+## 4. Tdarr
 
-## 2. Sonarr, Radarr, qBittorrent, Jackett, Bazarr
-
-Do these together: they point at each other. Jackett is still running on unraid; stop
-it too.
-
-First copy the downloads that are still seeding (16 GB, not in the media copy), so
-qBittorrent finds its torrents complete:
-
-```sh
-sudo --preserve-env=SSH_AUTH_SOCK "$rsync" -aHX --numeric-ids --info=progress2 \
-  root@192.168.1.2:/mnt/user/data/torrents/{tv,movies} /mnt/disk1/torrents/
-```
-
-Then stop, snapshot, pull and start each of them:
+Unraid's Tdarr state (libraries, flows, plugins, statistics) comes over.
 
 | Unit | Dataset | `pull` |
 |---|---|---|
-| `sonarr` | `sonarr` | `pull sonarr /var/lib/sonarr/.config/NzbDrone sonarr:users` |
-| `radarr` | `radarr` | `pull radarr /var/lib/radarr/.config/Radarr radarr:users` |
-| `jackett` | `jackett` | `pull jackett /var/lib/jackett/.config/Jackett jackett:jackett` |
-| `qbittorrent` | `qbittorrent` | `pull qbittorrent/config /var/lib/qBittorrent/qBittorrent/config qbittorrent:users`, the same for `data` |
-| `bazarr` | `bazarr` | `pull bazarr /var/lib/bazarr bazarr:users` |
+| `tdarr-server`, `tdarr-node-main` | `tdarr` | `pull tdarr/server /var/lib/tdarr/server/server tdarr:users` |
 
-Unraid ran them on a docker network, so they reach each other by container name
-(`http://jackett:9117` and so on). Here everything is `localhost`.
+Unraid runs Tdarr 2.91.01; this box has to run at least that before the pull, or the
+older server may not read its database. Check with
+`systemctl show -p ExecStart tdarr-server`.
 
-- **Jackett:** FlareSolverr at `http://localhost:8191`. "Test all".
-- **qBittorrent:** unraid's container saw `/data` = `data/torrents`. Pause all. Options →
-  Downloads: default save path `/data/torrents`, "Keep incomplete torrents in"
-  `/scratch/incomplete`. Per category, save path `/data/torrents/<cat>`. Select each
-  category's torrents → "Set location" `/data/torrents/<cat>`; the recheck finds them
-  complete. Resume. Options → WebUI: add `qbittorrent.internal.steenblik.ch` to the
-  server domains (or turn off host header validation), or logins through the proxy fail.
-- **Sonarr / Radarr:** unraid saw the whole share as `/data`, so root folders
-  (`/data/media/tv`, `/data/media/movies`) already match. Settings → Download Clients:
-  qBittorrent host `localhost`, port 8080. Delete every Remote Path Mapping. Indexers:
-  each Jackett URL to `http://localhost:9117/...`. Connect: Plex host `localhost`.
-  System → Status shows the Radarr version, System → Health is clean, Test passes
-  everywhere.
-- **Bazarr:** unraid saw `/data` = `data/media`. Settings → Sonarr/Radarr: host
-  `localhost`, and delete the path mappings. Run a subtitle search on one episode.
+- Only `server/` (the `Tdarr/` folder with `DB2`, `Backups`, `Plugins`) comes over.
+  Unraid's `configs/` hold its own IP and node; the NixOS module sets those here. Before
+  pulling, `sudo ls /var/lib/tdarr/server` should show the fresh install's `server/Tdarr`
+  next to `configs` and `logs`; if `Tdarr` sits elsewhere, pull to that parent instead.
+- Stop both units (server and node) before the pull and start the server first.
+- Unraid's container saw `/mnt/media/movies`, `/mnt/media/tv` and the cache as `/temp`.
+  Per library: source `/data/media/movies` (or `/data/media/tv`), transcode cache
+  `/scratch/transcode`. Turn off the library's folder watcher and scan until the paths
+  are fixed, so nothing is queued against the old ones. Check flows for hardcoded
+  `/mnt/media` or `/temp` paths.
+- Nodes: unraid's `ServerNode` shows as offline; the node here is `main`, with one GPU
+  transcode and one GPU health-check worker. Run one file: `nvidia-smi` shows it, and
+  the result replaces the original in `/data/media`.
 
-## 3. Pulsarr
-
-| Unit | Dataset | `pull` |
-|---|---|---|
-| `podman-pulsarr` | `pulsarr` | `pull pulsarr /var/lib/pulsarr 99:100` |
-
-- Plex, Sonarr and Radarr instances: host `localhost`. Saving them re-creates Pulsarr's
-  webhooks in Sonarr/Radarr; check Settings → Connect there points at
-  `http://localhost:3003`.
-- Add something to a Plex watchlist: it shows up in Sonarr or Radarr.
-
-## 4. Maintainerr, Cleanuparr
+## 5. Maintainerr, Cleanuparr
 
 | Unit | Dataset | `pull` |
 |---|---|---|
@@ -142,10 +102,10 @@ Unraid ran them on a docker network, so they reach each other by container name
   `/downloads/...` path becomes `/data/torrents/...`. qBittorrent, Sonarr, Radarr hosts
   to `localhost`. Run it in dry-run once if the option is there.
 
-Seerr (from `overseerr`) and Tdarr (fresh; export its flows on unraid first) aren't in
-this order. Move them the same way when you want them, or drop them.
+Seerr (from `overseerr`) isn't in this order. Move it the same way when you want it, or
+drop it.
 
-## 5. Test end to end
+## 6. Test end to end
 
 Watchlist something in Plex (or request it in Seerr), then check each step:
 
@@ -159,7 +119,7 @@ Watchlist something in Plex (or request it in Seerr), then check each step:
 Also: `systemctl --failed` is empty, and `sudo find /var/lib/<app> ! -user <user>`
 prints nothing.
 
-## 6. Remaining services
+## 7. Remaining services
 
 A new service gets its dataset before its first deploy:
 `sudo zfs create -o mountpoint=legacy fast/<name>`, then add it to `fastDatasets`. Its
@@ -178,14 +138,14 @@ Not carried over (appdata only, no container): `tautulli`, `immich`, `forgejo`,
 `convertx`, `unpackerr`, `prefetcharr`, `Alexa-Subwatch`, `tdarr-backup`.
 `cloudflareddns` is replaced by `cloudflare-dyndns`.
 
-## 7. Retire unraid
+## 8. Retire unraid
 
 1. Router: every port still forwarded to 192.168.1.2 (443, 2222, 25565) goes to .100.
    SMB clients remap to `nixos-server`. Pi-hole's local records go to this box.
 2. Leave the stopped containers on unraid for a few weeks as the rollback, then turn it
    into the backup target.
 
-## 8. Empty the 10 TB onto the array; it becomes parity
+## 9. Empty the 10 TB onto the array; it becomes parity
 
 Needs a data disk at least as big as what's on `disk1`.
 

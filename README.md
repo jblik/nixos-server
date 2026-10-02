@@ -63,7 +63,8 @@ Plex/Tdarr transcode cache.
 ## Services
 
 Plex, Radarr and Bazarr come from nixpkgs-unstable, so they are never older than the
-unraid versions their databases were imported from.
+unraid versions their databases were imported from. Tdarr's state is imported from unraid
+too; Pulsarr starts fresh.
 
 | Service | Port | Runs as |
 |---|---|---|
