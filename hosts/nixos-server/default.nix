@@ -45,19 +45,28 @@
 
       dataDisks = {
         d1 = "/mnt/disk1";
+        d2 = "/mnt/disk2";
       };
+
       parityFiles = [
         # "/mnt/parity1/snapraid.parity"
       ];
 
-      spinDownSeconds = 900; # unraid-style idle spin-down (HDDs only)
+      spinDownSeconds = 900; # idle spin-down (HDDs only)
     };
   };
 
-  fileSystems."/mnt/disk1" = {
-    device = "/dev/disk/by-id/ata-ST10000NE0008-2PL103_ZS5072G6-part1";
-    fsType = "xfs";
-    options = [ "noatime" ];
+  fileSystems = {
+    "/mnt/disk1" = {
+      device = "/dev/disk/by-id/ata-ST10000NE0008-2PL103_ZS5072G6-part1";
+      fsType = "xfs";
+      options = [ "noatime" ];
+    };
+    "/mnt/disk2" = {
+      device = "/dev/disk/by-id/ata-ST4000VN008-2DR166_ZM40T6NK-part1";
+      fsType = "xfs";
+      options = [ "noatime" ];
+    };
   };
 
   # Do not change after install unless you know what you're doing.
