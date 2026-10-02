@@ -52,7 +52,7 @@ picking an older entry in the boot menu.
 
 - **Bulk:** one XFS filesystem per HDD at `/mnt/diskN`, merged by mergerfs into
   `/data`, SnapRAID parity once `parityFiles` is set. Currently only `disk1` (10 TB),
-  no parity.
+  no parity, holding unraid's movies and TV.
 - **Fast:** ZFS mirror `fast` on the two SATA SSDs. Service state under `/var/lib`, one
   dataset per service (`host.storage.fastDatasets`), snapshotted hourly by sanoid.
 
@@ -61,6 +61,9 @@ picking an older entry in the boot menu.
 Plex/Tdarr transcode cache.
 
 ## Services
+
+Plex, Radarr and Bazarr come from nixpkgs-unstable, so they are never older than the
+unraid versions their databases were imported from.
 
 | Service | Port | Runs as |
 |---|---|---|
