@@ -5,10 +5,7 @@ let
   internalDomain = "internal.${publicDomain}";
 
   publicServices =
-    lib.optionalAttrs config.host.media.enable {
-      seerr = s.seerr.port;
-    }
-    // lib.optionalAttrs config.host.forgejo.enable {
+    lib.optionalAttrs config.host.forgejo.enable {
       git = s.forgejo.settings.server.HTTP_PORT;
     }
     // lib.optionalAttrs config.host.immich.enable {

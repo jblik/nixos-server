@@ -33,9 +33,5 @@
       enable = true;
       port = 8191;
     };
-    services.seerr = {
-      enable = true;
-      port = 5055;
-    };
   };
 }

@@ -33,7 +33,6 @@
         bazarr = "/var/lib/bazarr";
         jackett = "/var/lib/jackett";
         qbittorrent = "/var/lib/qBittorrent";
-        seerr = "/var/lib/private/seerr"; # DynamicUser: /var/lib/seerr is a symlink
         tdarr = "/var/lib/tdarr";
         cleanuparr = "/var/lib/cleanuparr";
         pulsarr = "/var/lib/pulsarr";

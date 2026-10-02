@@ -27,7 +27,6 @@ let
     s.bazarr.listenPort
     s.jackett.port
     s.qbittorrent.webuiPort
-    s.seerr.port
     s.tdarr.server.webUIPort
     m.cleanuparr.port
     m.pulsarr.port

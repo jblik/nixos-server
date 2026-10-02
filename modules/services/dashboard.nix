@@ -27,7 +27,6 @@ let
 
   services =
     lib.optionals host.media.enable [
-      (service "Seerr" "Request movies and shows" "seerr" (icon "seerr" "svg") "Media" "Public")
       (service "Plex" "Stream the library" "plex" (icon "plex" "svg") "Media" "Internal")
       (service "Sonarr" "TV series" "sonarr" (icon "sonarr" "svg") "Media" "Internal")
       (service "Radarr" "Movies" "radarr" (icon "radarr" "svg") "Media" "Internal")
