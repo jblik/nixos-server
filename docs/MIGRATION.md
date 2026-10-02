@@ -47,31 +47,6 @@ and start it on unraid again.
 No app may run older than it did on unraid (a downgrade can't open the newer
 database); `packages.nix` keeps them level, see the README's Package versions.
 
-## 4. Tdarr
-
-Unraid's Tdarr state (libraries, flows, plugins, statistics) comes over.
-
-| Unit | Dataset | `pull` |
-|---|---|---|
-| `tdarr-server`, `tdarr-node-main` | `tdarr` | `pull tdarr/server /var/lib/tdarr/server/server tdarr:users` |
-
-Unraid runs Tdarr 2.91.01, and so does `packages.nix`. Deploy that before the pull;
-`systemctl show -p ExecStart tdarr-server` shows `tdarr-server-2.91.01`.
-
-- Only `server/` (the `Tdarr/` folder with `DB2`, `Backups`, `Plugins`) comes over.
-  Unraid's `configs/` hold its own IP and node; the NixOS module sets those here. Before
-  pulling, `sudo ls /var/lib/tdarr/server` should show the fresh install's `server/Tdarr`
-  next to `configs` and `logs`; if `Tdarr` sits elsewhere, pull to that parent instead.
-- Stop both units (server and node) before the pull and start the server first.
-- Unraid's container saw `/mnt/media/movies`, `/mnt/media/tv` and the cache as `/temp`.
-  Per library: source `/data/media/movies` (or `/data/media/tv`), transcode cache
-  `/scratch/transcode`. Turn off the library's folder watcher and scan until the paths
-  are fixed, so nothing is queued against the old ones. Check flows for hardcoded
-  `/mnt/media` or `/temp` paths.
-- Nodes: unraid's `ServerNode` shows as offline; the node here is `main`, with one GPU
-  transcode and one GPU health-check worker. Run one file: `nvidia-smi` shows it, and
-  the result replaces the original in `/data/media`.
-
 ## 5. Maintainerr, Cleanuparr
 
 | Unit | Dataset | `pull` |
