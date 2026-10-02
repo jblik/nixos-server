@@ -34,6 +34,8 @@
         config.allowUnfree = true;
       };
 
+      overlay = import ./packages.nix { inherit pkgs-unstable; };
+
       mkHost =
         hostPath:
         nixpkgs.lib.nixosSystem {
@@ -42,6 +44,7 @@
           modules = [
             {
               nixpkgs.hostPlatform = system;
+              nixpkgs.overlays = [ overlay ];
               system.configurationRevision = self.rev or self.dirtyRev or null;
             }
             ./modules
@@ -53,5 +56,18 @@
       formatter = nixpkgs.lib.genAttrs formatterSystems (s: nixpkgs.legacyPackages.${s}.nixfmt-tree);
 
       nixosConfigurations."nixos-server" = mkHost ./hosts/nixos-server;
+
+      versions =
+        let
+          inherit (self.nixosConfigurations."nixos-server") pkgs;
+          stable = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+        in
+        nixpkgs.lib.mapAttrs (name: _: {
+          here = pkgs.${name}.version;
+          nixpkgs = stable.${name}.version;
+        }) (nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) (overlay pkgs pkgs));
     };
 }

@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs-unstable,
   ...
 }:
 {
@@ -13,15 +12,11 @@
     };
     services.radarr = {
       enable = true;
-      # Not older than unraid's, whose database gets imported; a downgrade can't open it.
-      package = pkgs-unstable.radarr;
       group = "users";
       settings.server.port = 7878;
     };
     services.bazarr = {
       enable = true;
-      # Not older than unraid's, whose database gets imported; a downgrade can't open it.
-      package = pkgs-unstable.bazarr;
       group = "users";
       listenPort = 6767;
     };

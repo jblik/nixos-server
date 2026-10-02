@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs-unstable,
   ...
 }:
 let
@@ -14,8 +13,6 @@ in
   config = lib.mkIf config.host.immich.enable {
     services.immich = {
       enable = true;
-      # 26.05 only has the end-of-life 2.x, marked insecure; 3.x needs the same vectorchord.
-      package = pkgs-unstable.immich;
       # The default "localhost" binds only ::1, while nginx proxies to 127.0.0.1.
       host = "127.0.0.1";
       inherit mediaLocation;

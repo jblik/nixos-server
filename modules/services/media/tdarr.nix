@@ -5,17 +5,6 @@ in
 {
   config = lib.mkIf config.host.media.enable {
 
-    # Drop once https://github.com/NixOS/nixpkgs/issues/557024 is fixed.
-    nixpkgs.overlays = [
-      (final: prev: {
-        ccextractor = prev.ccextractor.overrideAttrs (old: {
-          env = old.env // {
-            NIX_CFLAGS_COMPILE = "-DGPAC_ALLOW_UNSAFE_STRFUNC";
-          };
-        });
-      })
-    ];
-
     services.tdarr = {
       enable = true;
       group = "users";
