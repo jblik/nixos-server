@@ -19,6 +19,7 @@ let
       volumes = [
         "/var/lib/cleanuparr:/config"
         "${bulkMount}/torrents:${bulkMount}/torrents"
+        "${./cleanuparr-blocklist.txt}:/blocklist.txt:ro"
       ];
     };
 
