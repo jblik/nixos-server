@@ -44,23 +44,8 @@ For each app:
 Rollback for one app: `sudo systemctl stop <unit> && sudo zfs rollback fast/<dataset>@pre-import`,
 and start it on unraid again.
 
-Plex, Radarr and Bazarr run from nixpkgs-unstable so they are not older than unraid's
-(a downgrade can't open the newer database).
-
-## 3. Pulsarr (fresh)
-
-Unraid's Pulsarr state is not carried over; it is set up again from an empty
-`/var/lib/pulsarr`.
-
-1. Stop it on unraid and turn off its autostart.
-2. Here: `sudo systemctl stop podman-pulsarr`, `sudo zfs snapshot fast/pulsarr@pre-fresh`,
-   then `sudo find /var/lib/pulsarr -mindepth 1 -delete` and
-   `sudo systemctl start podman-pulsarr`.
-3. `https://pulsarr.internal.steenblik.ch`: create the admin account, sign in to Plex.
-4. Sonarr and Radarr instances: host `localhost`, with root folder and quality profile.
-   Saving them creates Pulsarr's webhooks; check Settings → Connect in Sonarr/Radarr
-   points at `http://localhost:3003`.
-5. Add something to a Plex watchlist: it shows up in Sonarr or Radarr.
+No app may run older than it did on unraid (a downgrade can't open the newer
+database); `packages.nix` keeps them level, see the README's Package versions.
 
 ## 4. Tdarr
 
@@ -70,9 +55,8 @@ Unraid's Tdarr state (libraries, flows, plugins, statistics) comes over.
 |---|---|---|
 | `tdarr-server`, `tdarr-node-main` | `tdarr` | `pull tdarr/server /var/lib/tdarr/server/server tdarr:users` |
 
-Unraid runs Tdarr 2.91.01; this box has to run at least that before the pull, or the
-older server may not read its database. Check with
-`systemctl show -p ExecStart tdarr-server`.
+Unraid runs Tdarr 2.91.01, and so does `packages.nix`. Deploy that before the pull;
+`systemctl show -p ExecStart tdarr-server` shows `tdarr-server-2.91.01`.
 
 - Only `server/` (the `Tdarr/` folder with `DB2`, `Backups`, `Plugins`) comes over.
   Unraid's `configs/` hold its own IP and node; the NixOS module sets those here. Before

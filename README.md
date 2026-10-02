@@ -6,7 +6,8 @@ Progress and next steps: [docs/MIGRATION.md](docs/MIGRATION.md).
 ## Layout
 
 ```
-flake.nix                    nixosConfigurations.nixos-server
+flake.nix                    nixosConfigurations.nixos-server, `versions`
+packages.nix                 every package not taken from nixos-26.05 as is
 hosts/nixos-server/          hardware config + site knobs (disks, subnet, what's enabled)
 modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
@@ -62,9 +63,8 @@ Plex/Tdarr transcode cache.
 
 ## Services
 
-Plex, Radarr and Bazarr come from nixpkgs-unstable, so they are never older than the
-unraid versions their databases were imported from. Tdarr's state is imported from unraid
-too; Pulsarr starts fresh.
+Plex, the *arr apps and Tdarr run on the state imported from unraid; Pulsarr started
+fresh.
 
 | Service | Port | Runs as |
 |---|---|---|
@@ -79,3 +79,31 @@ too; Pulsarr starts fresh.
 | Dashboard (server.steenblik.ch) | 5180 / 5181 (localhost) | native, from the `server-dashboard` flake |
 | node_exporter | 9100 (localhost) | native |
 | Tailscale (exit node) | — | native |
+
+## Package versions
+
+Services whose database was imported from unraid must never run an older version than
+unraid did, or they can't open it. Where nixos-26.05 is behind, `packages.nix` takes the
+package from nixpkgs-unstable (Plex, Radarr, Bazarr, Immich, Paperless) or pins the
+version itself (Tdarr). It is the only place that does; the modules just use `pkgs`.
+
+```sh
+nix eval --json .#versions | jq   # each package: version here, version in nixos-26.05
+```
+
+### Back to plain nixpkgs
+
+The goal is no overrides. Once nixpkgs has caught up with a package, it goes back to the
+nixpkgs version:
+
+1. Update the inputs: `nix flake update`, or move `nixpkgs` in `flake.nix` to the next
+   release (`nixos-26.11`) once it's out. Commit.
+2. `nix eval --json .#versions | jq`: a package can drop out of `packages.nix` when its
+   `nixpkgs` version is the same or newer than `here`. Never go to an older one.
+3. Delete its entry from `packages.nix`, with what only it needed: the Tdarr helper,
+   Paperless' `torchcodec` fix, and for Paperless also the `disabledModules`/`imports`
+   lines in `modules/services/paperless/default.nix` once the release's module handles 3.x.
+4. Build and deploy (see Deploy). Check the service starts and its journal shows no
+   database migration errors. Commit.
+5. When `packages.nix` is empty: delete it, the `overlay` and `versions` in `flake.nix`,
+   the `nixpkgs-unstable` input and `pkgs-unstable`, then `nix flake lock` and deploy.
