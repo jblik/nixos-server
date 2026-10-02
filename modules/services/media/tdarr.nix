@@ -27,9 +27,9 @@ in
     # refuses to manage anything under it (unsafe path transition from the tdarr-owned parent).
     systemd.tmpfiles.rules = [
       "d ${config.services.tdarr.dataDir}/nodes 0750 ${config.services.tdarr.user} users -"
-      "d ${config.services.tdarr.dataDir}/server/Tdarr/Plugins/Local 0750 ${config.services.tdarr.user} users -"
+      "d ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local 0750 ${config.services.tdarr.user} users -"
       # Copied rather than symlinked so the server never serves a dangling store path after GC.
-      "C+ ${config.services.tdarr.dataDir}/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${./tdarr-plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js}"
+      "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${./tdarr-plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js}"
     ];
 
     # The Tdarr module only lets it write to its own state; it has to replace
