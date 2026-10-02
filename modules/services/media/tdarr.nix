@@ -31,8 +31,8 @@ in
 
     # The Tdarr module only lets it write to its own state; it has to replace
     # files in the library and use the cache under scratchDir.
-    systemd.services =
-      lib.genAttrs
+    systemd.services = lib.mkMerge [
+      (lib.genAttrs
         [
           "tdarr-server"
           "tdarr-node-main"
@@ -42,6 +42,11 @@ in
             bulkMount
             scratchDir
           ];
-        });
+        })
+      )
+      # The node installs plugin deps (e.g. axios) with pnpm, which keeps its store in
+      # $HOME; the user's home (dataDir) is read-only under ProtectSystem=strict.
+      { tdarr-node-main.environment.HOME = "${config.services.tdarr.dataDir}/nodes/main"; }
+    ];
   };
 }
