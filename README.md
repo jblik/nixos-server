@@ -1,6 +1,7 @@
 # nixos-server
 
-One NixOS box (Ryzen 2700X, RTX 3060, 32 GB) replacing the unraid server.
+Ryzen 2700X, RTX 3060, 32 GB
+
 Progress and next steps: [docs/MIGRATION.md](docs/MIGRATION.md).
 
 ## Layout
@@ -23,12 +24,10 @@ or over Tailscale (`tailscale0` is trusted).
 
 nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
 at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
-(`modules/services/proxy.nix`: Seerr, Forgejo as `git`) are at `https://<app>.steenblik.ch`, through
+(`modules/services/proxy.nix`: Forgejo as `git`) are at `https://<app>.steenblik.ch`, through
 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
-Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed. The
-Cloudflare token is the sops secret `cloudflare-dns-token` (token only); ACME gets it as
-`CF_DNS_API_TOKEN` through a sops template.
+Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed.
 
 ## Secrets
 
@@ -72,9 +71,10 @@ fresh.
 | Sonarr / Radarr / Bazarr | 8989 / 7878 / 6767 | native |
 | Jackett (+ FlareSolverr on localhost:8191) | 9117 | native |
 | qBittorrent | 8080 | native |
-| Seerr | 5055 | native |
 | Tdarr | 8265 | native, GPU node |
-| Cleanuparr / Pulsarr / Maintainerr | 11011 / 3003 / 6246 | podman containers |
+| Cleanuparr | 11011 | podman container |
+| Pulsarr | 3003 | podman container |
+| Maintainerr | 6246 | podman container |
 | Forgejo (git.steenblik.ch) | 3000 (localhost), SSH 2222 | native |
 | Dashboard (server.steenblik.ch) | 5180 / 5181 (localhost) | native, from the `server-dashboard` flake |
 | node_exporter | 9100 (localhost) | native |

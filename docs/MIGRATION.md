@@ -5,7 +5,7 @@
 - [x] Unraid's `media/{movies,tv}` copied to `/data/media` (`scripts/copy-from-unraid.sh`)
 - [x] 1. Plex
 - [x] 2. Sonarr, Radarr, qBittorrent, Jackett, Bazarr
-- [ ] 3. Pulsarr, set up fresh (unraid's state is not carried over)
+- [x] 3. Pulsarr, set up fresh (unraid's state is not carried over)
 - [ ] 4. Tdarr
 - [ ] 5. Maintainerr, Cleanuparr
 - [ ] 6. Test end to end
@@ -118,34 +118,9 @@ The router has no NAT loopback, so Pi-hole resolves `git.steenblik.ch` to this b
 | Disk health, backups | unraid notifications | `smartd`/scrutiny, off-box backups (unraid becomes the target) |
 | AI | — | `host.ai.enable = true` after adding `cuda-maintainers.cachix.org` and moving Open WebUI off 8080 |
 
-Not carried over (appdata only, no container): `tautulli`, `immich`, `forgejo`,
-`convertx`, `unpackerr`, `prefetcharr`, `Alexa-Subwatch`, `tdarr-backup`.
-`cloudflareddns` is replaced by `cloudflare-dyndns`.
-
 ## 8. Retire unraid
 
 1. Router: every port still forwarded to 192.168.1.2 (443, 2222, 25565) goes to .100.
    SMB clients remap to `nixos-server`. Pi-hole's local records go to this box.
 2. Leave the stopped containers on unraid for a few weeks as the rollback, then turn it
    into the backup target.
-
-## 9. Empty the 10 TB onto the array; it becomes parity
-
-Needs a data disk at least as big as what's on `disk1`.
-
-1. Stop the media services and check one data disk has room for all of `disk1`
-   (`df -h /mnt/disk*`).
-2. Copy in one go so hardlink pairs stay together:
-   `sudo rsync -aHX /mnt/disk1/ /mnt/diskN/`, then compare file counts and sizes.
-3. Remove `d1` from `host.storage.dataDisks` and the `/mnt/disk1` mount, and deploy.
-4. Wipe and format it as `parity1`:
-   ```sh
-   sudo nix shell nixpkgs#parted nixpkgs#xfsprogs -c bash -c '
-     D=/dev/disk/by-id/ata-ST10000NE0008-2PL103_ZS5072G6
-     wipefs -a $D-part* ; wipefs -a $D
-     parted -s $D mklabel gpt mkpart parity1 xfs 1MiB 100%
-     sleep 2; mkfs.xfs -f -L parity1 $D-part1'
-   ```
-5. Mount it at `/mnt/parity1`, set `parityFiles = [ "/mnt/parity1/snapraid.parity" ]`
-   (it must be at least as big as the largest data disk), deploy, then `snapraid sync`
-   and `snapraid scrub`.
