@@ -40,6 +40,9 @@
         postgresql = "/var/lib/postgresql";
         paperless = "/var/lib/paperless";
         microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
+        immich-thumbs = "/data/photos/thumbs";
+        immich-encoded-video = "/data/photos/encoded-video";
+        immich-backups = "/data/photos/backups";
       };
 
       dataDisks = {

@@ -16,6 +16,13 @@ in
       # The default "localhost" binds only ::1, while nginx proxies to 127.0.0.1.
       host = "127.0.0.1";
       inherit mediaLocation;
+      # NVENC for video transcoding.
+      accelerationDevices = [
+        "/dev/nvidia0"
+        "/dev/nvidiactl"
+        "/dev/nvidia-uvm"
+        "/dev/nvidia-uvm-tools"
+      ];
       # nixpkgs has no cached CUDA onnxruntime for 3.x, so the upstream CUDA image runs it instead.
       machine-learning.enable = false;
       environment.IMMICH_MACHINE_LEARNING_URL = lib.mkForce "http://127.0.0.1:${toString mlPort}";
@@ -44,7 +51,15 @@ in
       "d /var/cache/immich-machine-learning 0750 root root -"
     ];
 
-    systemd.services.immich-server.unitConfig.RequiresMountsFor = [ bulkMount ];
+    # thumbs/, encoded-video/ and backups/ are fast-tier datasets mounted over the library, so
+    # browsing and playback leave the disks asleep. Without the mounts Immich would write into
+    # the folders underneath them.
+    systemd.services.immich-server.unitConfig.RequiresMountsFor = [
+      bulkMount
+      "${mediaLocation}/thumbs"
+      "${mediaLocation}/encoded-video"
+      "${mediaLocation}/backups"
+    ];
 
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 50000M;
