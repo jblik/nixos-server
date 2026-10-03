@@ -114,7 +114,7 @@ let
         }
       )
       (panel "stat" "Failed units" 4 0 8 4
-        [ (target ''node_systemd_unit_state{state="failed"} == 1'' "{{name}}") ]
+        [ ((target ''node_systemd_unit_state{state="failed"} == 1'' "{{name}}") // { instant = true; }) ]
         {
           options.textMode = "name";
           fieldConfig.defaults = {
