@@ -173,7 +173,7 @@ in
           ]
           ++ map (mountPoint: disk (baseNameOf mountPoint) mountPoint) dataDisks
           ++ [
-            (disk "Fast pool" storage.fastDatasets.snapshot.plex)
+            (disk "Fast pool" "/${storage.fastPool}")
             (disk "NVMe (system, scratch)" "/")
             (disk "Boot" "/boot")
           ];
