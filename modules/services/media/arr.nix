@@ -33,5 +33,11 @@
       enable = true;
       port = 8191;
     };
+
+    # Not StateDirectories, so nothing else stops these from running without their datasets.
+    systemd.services.qbittorrent.unitConfig.RequiresMountsFor = [
+      config.services.qbittorrent.profileDir
+    ];
+    systemd.services.jackett.unitConfig.RequiresMountsFor = [ config.services.jackett.dataDir ];
   };
 }

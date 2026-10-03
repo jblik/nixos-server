@@ -56,7 +56,16 @@ in
       }
     ) containers;
 
-    # Podman fails with exit 125 if the bind-mount source is missing.
-    systemd.services.podman-cleanuparr.unitConfig.RequiresMountsFor = [ bulkMount ];
+    # Podman fails with exit 125 if the bind-mount source is missing, and an unmounted state
+    # dataset would leave the container running on the empty directory underneath.
+    systemd.services = lib.mapAttrs' (
+      name: _:
+      lib.nameValuePair "podman-${name}" {
+        unitConfig.RequiresMountsFor = [
+          "/var/lib/${name}"
+        ]
+        ++ lib.optional (name == "cleanuparr") bulkMount;
+      }
+    ) containers;
   };
 }

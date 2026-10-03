@@ -28,6 +28,9 @@ in
       };
     };
 
+    # DynamicUser makes /var/lib/microbin a symlink, which RequiresMountsFor does not follow.
+    systemd.services.microbin.unitConfig.RequiresMountsFor = [ "/var/lib/private/microbin" ];
+
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 256M;
     '';
