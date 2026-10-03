@@ -6,14 +6,9 @@
   ...
 }:
 let
-  inherit (config.host.storage) bulkMount;
-  inherit (config.services.paperless) dataDir mediaDir user;
+  inherit (config.services.paperless) mediaDir;
   domain = "documents.steenblik.ch";
-  originals = "${bulkMount}/documents/originals";
-  mounts = [
-    "${mediaDir}/documents/thumbnails"
-    "${mediaDir}/documents/originals"
-  ];
+  thumbnails = "${mediaDir}/documents/thumbnails";
 in
 {
   # unraid runs 3.x and the importer needs the same version; 26.05's module only handles 2.x.
@@ -52,31 +47,14 @@ in
     systemd.services.paperless-task-queue.environment.POST_CONSUME_API_URL =
       "http://${config.services.paperless.address}:${toString config.services.paperless.port}";
 
-    systemd.tmpfiles.rules = [
-      "d ${originals} 0700 ${user} ${config.users.users.${user}.group} -"
-    ];
-
-    # The media dir stays on the fast tier so thumbnails and previews (the archived PDFs) leave
-    # the disks asleep; only the originals are bound in from the array, as for Immich.
-    fileSystems."${mediaDir}/documents/originals" = {
-      device = originals;
-      fsType = "none";
-      options = [
-        "bind"
-        "nofail"
-      ];
-      depends = [
-        bulkMount
-        dataDir
-      ];
-    };
-
-    # Without the mounts Paperless would write into the folders underneath them. The task queue
-    # is not bound to the scheduler like web and consumer, so each unit gets them.
-    systemd.services.paperless-scheduler.unitConfig.RequiresMountsFor = mounts;
-    systemd.services.paperless-task-queue.unitConfig.RequiresMountsFor = mounts;
-    systemd.services.paperless-consumer.unitConfig.RequiresMountsFor = mounts;
-    systemd.services.paperless-web.unitConfig.RequiresMountsFor = mounts;
+    # The media dir, originals included, stays on the fast tier: opening or editing a document
+    # stats its original, so nothing of Paperless' may sit on the array or it wakes the disks.
+    # Without the thumbnails mount Paperless would write into the folder underneath it. The task
+    # queue is not bound to the scheduler like web and consumer, so each unit gets it.
+    systemd.services.paperless-scheduler.unitConfig.RequiresMountsFor = [ thumbnails ];
+    systemd.services.paperless-task-queue.unitConfig.RequiresMountsFor = [ thumbnails ];
+    systemd.services.paperless-consumer.unitConfig.RequiresMountsFor = [ thumbnails ];
+    systemd.services.paperless-web.unitConfig.RequiresMountsFor = [ thumbnails ];
 
     # Its default 3000 is Forgejo's HTTP port.
     services.gotenberg.port = 3001;
