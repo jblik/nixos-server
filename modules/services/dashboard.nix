@@ -206,6 +206,9 @@ in
           PrometheusUrl = "http://127.0.0.1:${toString config.services.prometheus.port}";
           FanControlUrl = "http://127.0.0.1:${toString host.fans.port}";
           FanControlTokenFile = credential "server-dashboard";
+          # Modes from modules/hardware/fans.nix.
+          KeepCoolMode = "Keep cool";
+          KeepCoolOffMode = "Quiet";
           # Written by modules/services/speedtest.nix.
           Speedtest = true;
           SpeedtestUnit = "speedtest.service";

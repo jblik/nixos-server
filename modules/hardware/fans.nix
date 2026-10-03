@@ -82,6 +82,61 @@ let
     (caseGraph "case-nvme" sensors.nvme 65 75)
   ];
 
+  # The dashboard calls a sensor warm at the same readings (server-dashboard's Readings.fs).
+  warm = {
+    Cpu = 75;
+    Gpu = 75;
+    Board = 60;
+    Chipset = 80;
+    Hdd = 45;
+    Ssd = 55;
+    Nvme = 60;
+  };
+
+  # Off until the part is warm, then full speed.
+  coolGraph = key: part: {
+    uid = "cool-${key}";
+    name = "Keep cool: ${part.name}";
+    p_type = "Graph";
+    temp_source = source part;
+    function_uid = "calm";
+    member_profile_uids = [ ];
+    speed_profile = [
+      [
+        0
+        0
+      ]
+      [
+        (warm.${part.kind} - 1)
+        0
+      ]
+      [
+        warm.${part.kind}
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ];
+  };
+
+  coolSources = lib.mapAttrsToList (
+    key: part: (if part.kind == "Cpu" then smoothed else lib.id) (coolGraph key part)
+  ) sensors;
+
+  # A Mix only combines Graph profiles, so the Case mix is listed by its members.
+  quietGraphs = {
+    case = map (p: p.uid) caseSources;
+    cpu = [ "cpu" ];
+    chipset = [ "chipset" ];
+  };
+
+  keepCool = lib.mapAttrsToList (
+    profile: members:
+    mix "keep-cool-${profile}" "Keep cool: ${profile}" (members ++ map (p: p.uid) coolSources)
+  ) quietGraphs;
+
   defaults = {
     settings = {
       # disk1 spins down; reading its temperature must not wake it.
@@ -119,21 +174,25 @@ let
       }
     ];
 
-    profiles = caseSources ++ [
-      (mix "case" "Case" (map (p: p.uid) caseSources))
-      (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) 60 85))
-      (graph "chipset" sensors.chipset.name (
-        source sensors.chipset // { sensor = "Smbusmaster 1"; }
-      ) 80 95)
-      {
-        uid = "full";
-        name = "Full";
-        p_type = "Fixed";
-        speed_fixed = 100;
-        function_uid = "0";
-        member_profile_uids = [ ];
-      }
-    ];
+    profiles =
+      caseSources
+      ++ coolSources
+      ++ [
+        (mix "case" "Case" (map (p: p.uid) caseSources))
+        (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) 60 85))
+        (graph "chipset" sensors.chipset.name (
+          source sensors.chipset // { sensor = "Smbusmaster 1"; }
+        ) 80 95)
+        {
+          uid = "full";
+          name = "Full";
+          p_type = "Fixed";
+          speed_fixed = 100;
+          function_uid = "0";
+          member_profile_uids = [ ];
+        }
+      ]
+      ++ keepCool;
 
     # The first mode is the one activated after applying.
     modes =
@@ -155,6 +214,11 @@ let
         {
           name = "Full";
           channels = lib.mapAttrs (_: _: "full") quiet;
+        }
+        # For when no one is home: quiet until any part is warm, then full.
+        {
+          name = "Keep cool";
+          channels = lib.mapAttrs (_: profile: "keep-cool-${profile}") quiet;
         }
       ];
 
