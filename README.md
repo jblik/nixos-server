@@ -78,8 +78,8 @@ Plex/Tdarr transcode cache.
 | CoolerControl                                 | 11987 (localhost)          | native                                          |
 | Dashboard (server.steenblik.ch)               | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
 | node_exporter                                 | 9100 (localhost)           | native                                          |
-| Prometheus / Alertmanager (mails alerts)       | 9090 / 9093 (localhost)    | native                                          |
-| Grafana (grafana.internal.steenblik.ch)      | 3002 (localhost)           | native                                          |
+| Prometheus / Alertmanager (mails alerts)      | 9090 / 9093 (localhost)    | native                                          |
+| Grafana (grafana.internal.steenblik.ch)       | 3002 (localhost)           | native                                          |
 | Tailscale (exit node)                         | —                          | native                                          |
 | Local AI + Open WebUI (off, `host.ai.enable`) | 11434 / 8080               | native                                          |
 
