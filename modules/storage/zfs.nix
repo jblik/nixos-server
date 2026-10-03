@@ -45,6 +45,10 @@ in
     # fails on one of them, pin boot.kernelPackages to a version both support.
     boot.zfs.forceImportRoot = false;
 
+    # The import unit lists every dataset mount in Before=, so adding a dataset would restart it
+    # on switch and unmount the whole pool under the running services. It only matters at boot.
+    systemd.services."zfs-import-${fastPool}".restartIfChanged = false;
+
     services.zfs = {
       autoScrub = {
         enable = true;
