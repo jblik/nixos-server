@@ -61,6 +61,14 @@ in
         email = "jacob@steenblik.ch";
         dnsProvider = "cloudflare";
         environmentFile = config.sops.templates."cloudflare.env".path;
+
+        # todo: check this
+        # The network drops DNS to Cloudflare's authoritative nameservers, so check
+        # propagation through Cloudflare's public resolver instead.
+        extraLegoFlags = [
+          "--dns.propagation-disable-ans"
+          "--dns.resolvers=1.1.1.1:53"
+        ];
       };
       certs.${internalDomain} = {
         domain = "*.${internalDomain}";
