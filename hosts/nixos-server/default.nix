@@ -41,12 +41,13 @@
           postgresql = "/var/lib/postgresql";
           paperless = "/var/lib/paperless";
           microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
-          immich-backups = "/data/photos/backups";
+          immich = "/var/lib/immich";
+          immich-backups = "/var/lib/immich/backups";
         };
         # Regeneratable from the originals.
         noSnapshot = {
-          immich-thumbs = "/data/photos/thumbs";
-          immich-encoded-video = "/data/photos/encoded-video";
+          immich-thumbs = "/var/lib/immich/thumbs";
+          immich-encoded-video = "/var/lib/immich/encoded-video";
         };
       };
 

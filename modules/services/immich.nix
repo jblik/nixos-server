@@ -5,8 +5,13 @@
 }:
 let
   inherit (config.host.storage) bulkMount;
+  inherit (config.services.immich) mediaLocation;
   domain = "photos.steenblik.ch";
-  mediaLocation = "${bulkMount}/photos";
+  originals = "${bulkMount}/photos";
+  originalFolders = [
+    "library"
+    "upload"
+  ];
   mlPort = 3004;
 in
 {
@@ -15,7 +20,6 @@ in
       enable = true;
       # The default "localhost" binds only ::1, while nginx proxies to 127.0.0.1.
       host = "127.0.0.1";
-      inherit mediaLocation;
       # NVENC for video transcoding.
       accelerationDevices = [
         "/dev/nvidia0"
@@ -47,19 +51,37 @@ in
     };
 
     systemd.tmpfiles.rules = [
-      "d ${mediaLocation} 0700 immich immich -"
+      "d ${originals} 0700 immich immich -"
       "d /var/cache/immich-machine-learning 0750 root root -"
-    ];
+    ]
+    ++ map (d: "d ${originals}/${d} 0700 immich immich -") originalFolders;
 
-    # thumbs/, encoded-video/ and backups/ are fast-tier datasets mounted over the library, so
-    # browsing and playback leave the disks asleep. Without the mounts Immich would write into
-    # the folders underneath them.
+    # The media location is on the fast tier so browsing and playback leave the disks asleep;
+    # only the originals are bound in from the array. Bound in rather than the other way
+    # round: mounts on top of the mergerfs tree get detached when FUSE invalidates the entry.
+    fileSystems = lib.genAttrs' originalFolders (
+      d:
+      lib.nameValuePair "${mediaLocation}/${d}" {
+        device = "${originals}/${d}";
+        fsType = "none";
+        options = [
+          "bind"
+          "nofail"
+        ];
+        depends = [
+          bulkMount
+          mediaLocation
+        ];
+      }
+    );
+
+    # Without the mounts Immich would write into the folders underneath them.
     systemd.services.immich-server.unitConfig.RequiresMountsFor = [
-      bulkMount
       "${mediaLocation}/thumbs"
       "${mediaLocation}/encoded-video"
       "${mediaLocation}/backups"
-    ];
+    ]
+    ++ map (d: "${mediaLocation}/${d}") originalFolders;
 
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 50000M;
