@@ -8,5 +8,6 @@
     ./microbin.nix
     ./paperless
     ./proxy.nix
+    ./speedtest.nix
   ];
 }

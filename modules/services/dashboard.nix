@@ -6,7 +6,7 @@
 }:
 # server.steenblik.ch shows the public services to everyone; from the LAN or tailnet the
 # page also loads server.internal.steenblik.ch, which adds the internal services and the
-# metrics node_exporter reports (temperatures, free space, fan speeds).
+# metrics node_exporter reports (temperatures, free space, fan speeds, internet speed).
 let
   host = config.host;
   storage = host.storage;
@@ -89,6 +89,8 @@ let
     ];
   };
   temperature = reading "temperature_celsius" "sensor";
+  # A spun-down disk reads 0 °C (drivetemp_suspend in modules/hardware/fans.nix).
+  diskTemperature = name: model: temperature name model "temp1" // { SpinsDown = true; };
   fan = reading "fan_rpm" "channel";
 
   disk = label': mountPoint: {
@@ -147,6 +149,8 @@ in
             }
           ];
           FanControl = coolercontrol;
+          # Written by modules/services/speedtest.nix.
+          Speedtest = node;
           Temperatures = [
             # temp2 is Tdie; temp1 is Tctl, which carries a +10 °C offset on the 2700X.
             (temperature "CPU" cpu "temp2")
@@ -154,7 +158,7 @@ in
             (temperature "Chipset" board "temp9")
             (temperature "Motherboard" board "temp1")
           ]
-          ++ lib.mapAttrsToList (name: model: temperature name model "temp1") hdds
+          ++ lib.mapAttrsToList diskTemperature hdds
           ++ [
             (temperature "SSD (SanDisk)" sandisk "temp1")
             (temperature "SSD (PEAQ)" peaq "temp1")
