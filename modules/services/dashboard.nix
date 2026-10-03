@@ -108,9 +108,9 @@ let
     "Cpu"
     "Gpu"
     "Board"
-    "Hdd"
-    "Ssd"
     "Nvme"
+    "Ssd"
+    "Hdd"
   ];
 
   dataDisks = lib.sort (a: b: a < b) (lib.attrValues storage.dataDisks);
@@ -179,8 +179,8 @@ in
           ];
           Fans = [
             (fan "Front 1" board "fan1")
+            (fan "Front Middle" board "fan4")
             (fan "Front 2" board "fan3")
-            (fan "Front 3" board "fan4")
             (fan "Rear" board "fan6")
             (fan "CPU" board "fan2")
             (fan "Chipset" board "fan5")
