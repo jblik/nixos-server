@@ -64,6 +64,7 @@ in
         noSnapshot = {
           immich-thumbs = "/var/lib/immich/thumbs";
           immich-encoded-video = "/var/lib/immich/encoded-video";
+          paperless-thumbnails = "/var/lib/paperless/media/documents/thumbnails";
         };
       };
 
