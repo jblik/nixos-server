@@ -38,6 +38,17 @@ in
     microbin.enable = true;
     dashboard.enable = true;
 
+    ai = {
+      enable = true;
+      # Any tag from https://ollama.com/library; deploy pulls new ones and deletes dropped ones.
+      models = {
+        chat = "qwen3:8b";
+        embedding = "embeddinggemma";
+        # Ollama's pick for Claude Code; a 30B MoE, so it spills into RAM but stays usable.
+        code = "qwen3-coder:30b";
+      };
+    };
+
     storage = {
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
       fastPool = "fast";
@@ -59,6 +70,7 @@ in
           paperless = "/var/lib/paperless";
           microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
           immich = "/var/lib/immich";
+          open-webui = "/var/lib/private/open-webui"; # DynamicUser, like microbin
         };
         # Regeneratable from the originals.
         noSnapshot = {
