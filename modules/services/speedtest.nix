@@ -4,8 +4,8 @@
   pkgs,
   ...
 }:
-# An Ookla speedtest every six hours for the dashboard's network card. The result reaches
-# the dashboard through node_exporter's textfile collector. A gigabit run moves ~1 GB.
+# An Ookla speedtest every six hours for the dashboard's network card.
+# The result reaches the dashboard through node_exporter's textfile collector.
 let
   runtimeDir = "/run/speedtest";
 
@@ -33,14 +33,19 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = lib.getExe speedtest;
-        DynamicUser = true;
+        User = "speedtest";
+        Group = "speedtest";
         RuntimeDirectory = "speedtest";
-        # The last result must outlive the run for node_exporter to read it.
         RuntimeDirectoryPreserve = true;
       };
     };
 
-    # The result lives in /run, so measure again soon after a reboot.
+    users.users.speedtest = {
+      isSystemUser = true;
+      group = "speedtest";
+    };
+    users.groups.speedtest = { };
+
     systemd.timers.speedtest.timerConfig = {
       OnBootSec = "5min";
       RandomizedDelaySec = "10min";
