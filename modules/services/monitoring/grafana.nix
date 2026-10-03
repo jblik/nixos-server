@@ -59,6 +59,23 @@ let
     part:
     target ''coolercontrol_temperature_celsius{device="${part.device}",sensor="${part.sensor}"}${lib.optionalString (part.kind == "Hdd") " > 0"}'' part.name;
 
+  # The same fans and names as the dashboard (modules/services/dashboard.nix).
+  fan =
+    name: device: channel:
+    target ''coolercontrol_fan_rpm{device="${device}",channel="${channel}"}'' name;
+  board = host.sensors.motherboard.device;
+  gpu = host.sensors.gpu.device;
+  fans = [
+    (fan "Front 1" board "fan1")
+    (fan "Front 2" board "fan4")
+    (fan "Front 3" board "fan3")
+    (fan "Rear" board "fan6")
+    (fan "CPU" board "fan2")
+    (fan "Chipset" board "fan5")
+    (fan "GPU 1" gpu "fan1")
+    (fan "GPU 2" gpu "fan2")
+  ];
+
   mounts = [
     storage.bulkMount
     "/"
@@ -117,9 +134,7 @@ let
       (panel "timeseries" "Temperatures" 0 4 12 9 (map temperature (lib.attrValues host.sensors)) (
         unit "celsius"
       ))
-      (panel "timeseries" "Fans" 12 4 12 9 [ (target "coolercontrol_fan_rpm" "{{device}} {{channel}}") ] (
-        unit "rotrpm"
-      ))
+      (panel "timeseries" "Fans" 12 4 12 9 fans (unit "rotrpm"))
       (panel "bargauge" "Disk usage" 0 13 12 9
         (
           [
