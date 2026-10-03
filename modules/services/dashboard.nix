@@ -132,6 +132,18 @@ in
       serviceConfig.LoadCredential = "${tokenCredential}:/var/lib/coolercontrol-defaults/dashboard-token";
     };
 
+    # The dashboard's run button; DynamicUser names the user after the unit.
+    security.polkit.extraConfig = ''
+      polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.systemd1.manage-units" &&
+            action.lookup("unit") == "speedtest.service" &&
+            action.lookup("verb") == "start" &&
+            subject.user == "server-dashboard") {
+          return polkit.Result.YES;
+        }
+      });
+    '';
+
     services.server-dashboard = {
       enable = true;
       settings.Dashboard = {
@@ -151,6 +163,7 @@ in
           FanControl = coolercontrol;
           # Written by modules/services/speedtest.nix.
           Speedtest = node;
+          SpeedtestUnit = "speedtest.service";
           Temperatures = [
             # temp2 is Tdie; temp1 is Tctl, which carries a +10 °C offset on the 2700X.
             (temperature "CPU" cpu "temp2")
