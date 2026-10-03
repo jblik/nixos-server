@@ -66,6 +66,9 @@ let
     ++ lib.optionals host.microbin.enable [
       (service tools public "notes" "Notes" "MicroBin pastes" (png "microbin"))
     ]
+    ++ lib.optionals host.ai.enable [
+      (service tools public "ai" "AI" "Open WebUI chat on local models" (svg "open-webui"))
+    ]
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
       (service system internal "grafana" "Grafana" "Metrics history and alerts" (svg "grafana"))
