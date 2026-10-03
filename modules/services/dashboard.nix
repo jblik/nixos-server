@@ -88,9 +88,10 @@ let
       (label key value)
     ];
   };
-  temperature = reading "temperature_celsius" "sensor";
-  # A spun-down disk reads 0 °C (drivetemp_suspend in modules/hardware/fans.nix).
-  diskTemperature = name: model: temperature name model "temp1" // { SpinsDown = true; };
+  # A spun-down Hdd reads 0 °C (drivetemp_suspend in modules/hardware/fans.nix).
+  temperature =
+    part:
+    reading "temperature_celsius" "sensor" part.name part.device part.sensor // { Kind = part.kind; };
   fan = reading "fan_rpm" "channel";
 
   disk = label': mountPoint: {
@@ -99,18 +100,18 @@ let
     MountPoint = mountPoint;
   };
 
-  cpu = "AMD Ryzen 7 2700X Eight-Core Processor";
-  gpu = "NVIDIA GeForce RTX 3060";
-  board = "nct6798";
-  nvme = "nvme";
-  sandisk = "SanDisk SSD PLUS";
-  peaq = "PEAQ    SSD_256G";
+  sensors = lib.attrValues host.sensors;
+  board = host.sensors.motherboard.device;
+  gpu = host.sensors.gpu.device;
 
-  # drivetemp names a disk by the first 16 characters of its model.
-  hdds = {
-    disk1 = "ST10000NE0008-2P";
-    disk2 = "ST4000VN008-2DR1";
-  };
+  kinds = [
+    "Cpu"
+    "Gpu"
+    "Board"
+    "Hdd"
+    "Ssd"
+    "Nvme"
+  ];
 
   dataDisks = lib.sort (a: b: a < b) (lib.attrValues storage.dataDisks);
 in
@@ -164,19 +165,9 @@ in
           # Written by modules/services/speedtest.nix.
           Speedtest = node;
           SpeedtestUnit = "speedtest.service";
-          Temperatures = [
-            # temp2 is Tdie; temp1 is Tctl, which carries a +10 °C offset on the 2700X.
-            (temperature "CPU" cpu "temp2")
-            (temperature "GPU" gpu "GPU Temp")
-            (temperature "Chipset" board "temp9")
-            (temperature "Motherboard" board "temp1")
-          ]
-          ++ lib.mapAttrsToList diskTemperature hdds
-          ++ [
-            (temperature "SSD (SanDisk)" sandisk "temp1")
-            (temperature "SSD (PEAQ)" peaq "temp1")
-            (temperature "NVMe" nvme "temp1")
-          ];
+          Temperatures = lib.concatMap (
+            kind: map temperature (lib.filter (part: part.kind == kind) sensors)
+          ) kinds;
           Disks = [
             (disk "Bulk (${storage.bulkMount})" storage.bulkMount)
           ]
