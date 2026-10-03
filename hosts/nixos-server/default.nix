@@ -44,7 +44,6 @@ in
       models = {
         chat = "qwen3:8b";
         embedding = "embeddinggemma";
-        # Ollama's pick for Claude Code; a 30B MoE, so it spills into RAM but stays usable.
         code = "qwen3-coder:30b";
       };
     };

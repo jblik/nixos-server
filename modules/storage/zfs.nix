@@ -1,7 +1,4 @@
 { config, lib, ... }:
-# Fast tier: a ZFS mirror holding everything small, hot and constantly changing —
-# service state, PostgreSQL (immich, paperless), Redis and GGUF models.
-#
 # ZFS is used *here* and deliberately not for the bulk array: it buys checksums,
 # atomic snapshots and `zfs send` replication, which matter for live databases and
 # do not fit an array of mixed-size disks that should spin down independently.
