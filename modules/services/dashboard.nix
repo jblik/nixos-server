@@ -209,6 +209,10 @@ in
           # Modes from modules/hardware/fans.nix.
           KeepCoolMode = "Keep cool";
           KeepCoolOffMode = "Quiet";
+          # Only the first window; the dashboard's keep cool menu changes it.
+          KeepCoolWindowStart = "02:00";
+          KeepCoolWindowEnd = "05:00";
+          KeepCoolStateFile = "/var/lib/server-dashboard/keep-cool.json";
           # Written by modules/services/speedtest.nix.
           Speedtest = true;
           SpeedtestUnit = "speedtest.service";

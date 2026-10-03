@@ -47,11 +47,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791042994,
-        "narHash": "sha256-pZWtYn5iW3lAZh3Jmre8nBdhWutIs4oAr0zjwMzn45E=",
+        "lastModified": 1791044252,
+        "narHash": "sha256-aL/QGURhfWyXdDWNb8ohU+8+2grS5Hvx8vRQU14U7UY=",
         "ref": "refs/heads/master",
-        "rev": "7fd0a7357e38c2af65d9c06d736470efe12f56fa",
-        "revCount": 22,
+        "rev": "0174a8ac510cc35ace8dfd09f07da7e88a4c9810",
+        "revCount": 23,
         "type": "git",
         "url": "ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git"
       },
