@@ -26,6 +26,11 @@ in
 
     environment.systemPackages = [ config.services.forgejo.package ];
 
+    # Otherwise it can run before the dataset is mounted and write a fresh secret_key underneath.
+    systemd.services.forgejo-secrets.unitConfig.RequiresMountsFor = [
+      config.services.forgejo.customDir
+    ];
+
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 512M;
     '';
