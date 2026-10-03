@@ -71,6 +71,8 @@ in
         }
       '';
     };
+    # The map keys hold the full API key, which overflows the default 64-byte bucket.
+    services.nginx.mapHashBucketSize = 128;
     services.nginx.appendHttpConfig = ''
       include ${config.sops.templates."ai-api-key.conf".path};
     '';
