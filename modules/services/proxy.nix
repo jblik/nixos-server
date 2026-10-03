@@ -19,6 +19,9 @@ let
     }
     // lib.optionalAttrs config.host.paperless.enable {
       documents = s.paperless.port;
+    }
+    // lib.optionalAttrs config.host.ai.enable {
+      ai = config.host.ai.openWebuiPort;
     };
 
   privateServices =

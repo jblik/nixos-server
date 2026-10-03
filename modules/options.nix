@@ -148,130 +148,43 @@
     };
 
     ai = {
-      enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
-
-      backend = lib.mkOption {
-        type = lib.types.enum [
-          "ollama"
-          "llama-swap"
-        ];
-        default = "llama-swap";
-        description = ''
-          Which local LLM server backend to run. Both expose the same
-          OpenAI-compatible API on `ai.apiPort`, so clients (Open WebUI and
-          anything else on the LAN) are unaffected by the choice.
-
-          - "llama-swap": upstream llama.cpp behind llama-swap, which starts a
-            llama-server per model on demand and unloads it after its TTL.
-            Explicit control over -ngl / context / KV-cache quantisation, which
-            matters because this GPU is shared with Immich ML and NVENC.
-          - "ollama": simpler, model registry, but its VRAM heuristic is opaque
-            and it tracks a vendored llama.cpp fork.
-        '';
-      };
-
-      modelsDir = lib.mkOption {
-        type = lib.types.path;
-        default = "/var/lib/models";
-        description = ''
-          Directory holding GGUF weights for the llama-swap backend. Put this on
-          the fast (SSD) tier — models are memory-mapped and read constantly.
-        '';
-      };
+      enable = lib.mkEnableOption "Ollama and Open WebUI on ai.steenblik.ch (modules/services/ai.nix)";
 
       models = lib.mkOption {
-        default = { };
         description = ''
-          Models served by the llama-swap backend. Each entry becomes a
-          `llama-server` instance that llama-swap starts on demand and stops
-          again after `ttl` seconds idle, so the GPU is only held while a model
-          is actually being used — which matters on a card shared with Immich ML
-          and NVENC.
-
-          Ignored when `backend = "ollama"` (Ollama uses its own registry).
+          Ollama models (<https://ollama.com/library>), pulled on deploy; one that is
+          dropped from here is deleted. Any name besides `chat` and `embedding` is only
+          pulled, for clients that ask for it by name.
         '';
         example = {
-          "qwen3-8b" = {
-            file = "Qwen3-8B-Q4_K_M.gguf";
-            contextSize = 16384;
+          chat = "qwen3:8b";
+          embedding = "embeddinggemma";
+          code = "qwen3-coder:30b";
+        };
+        type = lib.types.submodule {
+          freeformType = lib.types.attrsOf lib.types.str;
+          options = {
+            chat = lib.mkOption {
+              type = lib.types.str;
+              description = "Open WebUI's default and title model, and Paperless' suggestions and chat.";
+            };
+            embedding = lib.mkOption {
+              type = lib.types.str;
+              description = "Embeddings for Open WebUI's and Paperless' document search.";
+            };
           };
         };
-        type = lib.types.attrsOf (
-          lib.types.submodule (
-            { name, ... }:
-            {
-              options = {
-                file = lib.mkOption {
-                  type = lib.types.str;
-                  description = ''
-                    GGUF filename, relative to `host.ai.modelsDir`, or an
-                    absolute path.
-                  '';
-                };
-
-                gpuLayers = lib.mkOption {
-                  type = lib.types.int;
-                  default = 999;
-                  description = ''
-                    Layers offloaded to the GPU. 999 means "all of them"; lower
-                    it to keep VRAM free for Immich ML and Plex transcoding, or
-                    to run a model that does not quite fit.
-                  '';
-                };
-
-                contextSize = lib.mkOption {
-                  type = lib.types.int;
-                  default = 8192;
-                  description = ''
-                    Context window. This is real VRAM, so it is set explicitly
-                    rather than inherited.
-                  '';
-                };
-
-                ttl = lib.mkOption {
-                  type = lib.types.int;
-                  default = 300;
-                  description = "Idle seconds before the model is unloaded and the VRAM released.";
-                };
-
-                aliases = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  example = [ "gpt-4o" ];
-                  description = ''
-                    Extra model names that resolve to this one, useful for
-                    clients with a hardcoded model name.
-                  '';
-                };
-
-                extraFlags = lib.mkOption {
-                  type = lib.types.listOf lib.types.str;
-                  default = [ ];
-                  example = [
-                    "--parallel"
-                    "2"
-                  ];
-                  description = "Additional llama-server flags for this model.";
-                };
-              };
-            }
-          )
-        );
       };
 
       apiPort = lib.mkOption {
         type = lib.types.port;
         default = 11434;
-        description = ''
-          Port of the local LLM API, whichever backend serves it. Kept at
-          Ollama's default so existing clients need no change; the
-          OpenAI-compatible base URL is http://<host>:<port>/v1.
-        '';
+        description = "Ollama API port (localhost); public as https://ai.steenblik.ch/v1.";
       };
       openWebuiPort = lib.mkOption {
         type = lib.types.port;
-        default = 8080;
-        description = "Open WebUI port.";
+        default = 8082;
+        description = "Open WebUI port (localhost). Its default 8080 is qBittorrent's.";
       };
     };
 
