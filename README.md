@@ -12,7 +12,7 @@ modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
 modules/hardware/            nvidia driver, CoolerControl fan curves, RGB off
 modules/storage/             mergerfs union, snapraid parity, zfs fast pool, spin-down
-modules/services/            media stack, immich, paperless, forgejo, microbin, dashboard, nginx, AI (off)
+modules/services/            media stack, immich, paperless, forgejo, microbin, dashboard, nginx, AI
 ```
 
 Firewall: SSH, Plex, HTTPS (443) and Forgejo SSH (2222) are open; every other UI is LAN-only (`host.lanCidr`)
@@ -23,7 +23,7 @@ or over Tailscale (`tailscale0` is trusted).
 nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
 at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
 (`modules/services/proxy.nix`: Forgejo as `git`, Immich as `photos`, Paperless as
-`documents`, MicroBin as `notes`, the dashboard as `server`) are at `https://<app>.steenblik.ch`, through
+`documents`, MicroBin as `notes`, the dashboard as `server`, Open WebUI as `ai`) are at `https://<app>.steenblik.ch`, through
 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed.
@@ -81,7 +81,57 @@ Plex/Tdarr transcode cache.
 | Prometheus / Alertmanager (mails alerts)      | 9090 / 9093 (localhost)    | native                                          |
 | Grafana (grafana.internal.steenblik.ch)       | 3002 (localhost)           | native                                          |
 | Tailscale (exit node)                         | —                          | native                                          |
-| Local AI + Open WebUI (off, `host.ai.enable`) | 11434 / 8080               | native                                          |
+| Ollama + Open WebUI (ai.steenblik.ch)         | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
+
+## AI
+
+One Ollama serves every model, to:
+
+- **Open WebUI** at `https://ai.steenblik.ch`: chat, behind its own login. Signup is off; the
+  first account becomes the admin, who adds everyone else (Admin Panel → Users).
+- **The API** at `https://ai.steenblik.ch/v1`, for CLIs and IDEs: OpenAI-compatible
+  (`/v1/chat/completions`, `/v1/responses`, `/v1/embeddings`, `/v1/models`) and
+  Anthropic-compatible (`/v1/messages`). It needs the `ai-api-key` secret, as
+  `Authorization: Bearer <key>` or `x-api-key: <key>`.
+- **Paperless**: tag/correspondent suggestions and chat with documents, on the `chat` model;
+  its search index (`embedding` model) is rebuilt nightly at 02:10.
+
+Immich keeps its own machine learning container: its CLIP search and face recognition need
+vision models that Ollama doesn't serve.
+
+### Models
+
+`host.ai.models` in `hosts/nixos-server/default.nix`, as Ollama tags
+(<https://ollama.com/library>). `chat` is Open WebUI's default and Paperless' model,
+`embedding` is for document search in both, any other name (`code`) is only pulled. Deploy
+pulls new tags and deletes dropped ones; `journalctl -fu ollama-model-loader` shows the
+download. A model is loaded on first request and unloaded after 5 minutes idle, so the GPU
+is free for Plex, Tdarr and Immich otherwise.
+
+### Setup
+
+1. Generate a key and add it as `ai-api-key` (see Secrets), then commit:
+   ```sh
+   openssl rand -hex 32
+   nix shell nixpkgs#sops -c sops secrets/secrets.yaml
+   ```
+2. Create Open WebUI's dataset on the server:
+   ```sh
+   ssh -t nixos-server sudo zfs create -o mountpoint=legacy fast/open-webui
+   ```
+3. Deploy, open `https://ai.steenblik.ch` right away and create the admin account.
+
+### Clients
+
+The key is `sops -d --extract '["ai-api-key"]' secrets/secrets.yaml`.
+
+- OpenAI-compatible (Continue, Zed, opencode, Codex, JetBrains AI, …): base URL
+  `https://ai.steenblik.ch/v1`, the key as API key, a model tag as model.
+- Claude Code:
+  ```sh
+  ANTHROPIC_BASE_URL=https://ai.steenblik.ch ANTHROPIC_AUTH_TOKEN=<key> \
+    ANTHROPIC_DEFAULT_HAIKU_MODEL=qwen3:8b claude --model qwen3-coder:30b
+  ```
 
 ## Package versions
 
