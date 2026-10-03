@@ -40,6 +40,14 @@ in
             "E501"
           ];
         } (builtins.readFile ./post_consume.py)}";
+      }
+      // lib.optionalAttrs config.host.ai.enable {
+        PAPERLESS_AI_ENABLED = true;
+        PAPERLESS_AI_LLM_BACKEND = "ollama";
+        PAPERLESS_AI_LLM_ENDPOINT = "http://127.0.0.1:${toString config.host.ai.apiPort}";
+        PAPERLESS_AI_LLM_MODEL = config.host.ai.models.chat;
+        PAPERLESS_AI_LLM_EMBEDDING_BACKEND = "ollama";
+        PAPERLESS_AI_LLM_EMBEDDING_MODEL = config.host.ai.models.embedding;
       };
     };
 
