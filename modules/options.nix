@@ -413,13 +413,13 @@
 
       syncInterval = lib.mkOption {
         type = lib.types.str;
-        default = "01:00";
+        default = "02:00";
         description = "systemd calendar spec for `snapraid sync`.";
       };
 
       scrubInterval = lib.mkOption {
         type = lib.types.str;
-        default = "Mon *-*-* 02:00:00";
+        default = "Mon *-*-* 03:00:00";
         description = "systemd calendar spec for `snapraid scrub`.";
       };
 
