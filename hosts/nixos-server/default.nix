@@ -94,7 +94,7 @@ in
         name = "Chipset";
         device = "nct6798";
         sensor = "temp9";
-        kind = "Board";
+        kind = "Chipset";
       };
       motherboard = {
         name = "Motherboard";

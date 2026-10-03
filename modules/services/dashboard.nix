@@ -116,6 +116,7 @@ let
     "Cpu"
     "Gpu"
     "Board"
+    "Chipset"
     "Nvme"
     "Ssd"
     "Hdd"

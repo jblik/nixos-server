@@ -131,6 +131,7 @@
                   "Cpu"
                   "Gpu"
                   "Board"
+                  "Chipset"
                   "Hdd"
                   "Ssd"
                   "Nvme"
