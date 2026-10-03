@@ -6,6 +6,7 @@
     ./immich.nix
     ./media
     ./microbin.nix
+    ./monitoring
     ./paperless
     ./proxy.nix
     ./speedtest.nix

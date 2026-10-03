@@ -69,6 +69,7 @@ let
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
       (service system internal "prometheus" "Prometheus" "Metrics history" (svg "prometheus"))
+      (service system internal "grafana" "Grafana" "Metrics history and alerts" (svg "grafana"))
     ];
 
   exporters = config.services.prometheus.exporters;
