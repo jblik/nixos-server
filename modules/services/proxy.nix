@@ -67,6 +67,7 @@ in
         # propagation through Cloudflare's public resolver instead.
         extraLegoFlags = [
           "--dns.propagation-disable-ans"
+          "--dns.propagation-rns"
           "--dns.resolvers=1.1.1.1:53"
         ];
       };

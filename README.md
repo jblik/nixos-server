@@ -108,19 +108,6 @@ pulls new tags and deletes dropped ones; `journalctl -fu ollama-model-loader` sh
 download. A model is loaded on first request and unloaded after 5 minutes idle, so the GPU
 is free for Plex, Tdarr and Immich otherwise.
 
-### Setup
-
-1. Generate a key and add it as `ai-api-key` (see Secrets), then commit:
-   ```sh
-   openssl rand -hex 32
-   nix shell nixpkgs#sops -c sops secrets/secrets.yaml
-   ```
-2. Create Open WebUI's dataset on the server:
-   ```sh
-   ssh -t nixos-server sudo zfs create -o mountpoint=legacy fast/open-webui
-   ```
-3. Deploy, open `https://ai.steenblik.ch` right away and create the admin account.
-
 ### Clients
 
 The key is `sops -d --extract '["ai-api-key"]' secrets/secrets.yaml`.
