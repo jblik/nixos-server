@@ -70,6 +70,7 @@ let
     ];
 
   node = "node";
+  zfs = "zfs";
   coolercontrol = "coolercontrol";
   tokenCredential = "coolercontrol-token";
 
@@ -99,6 +100,13 @@ let
     Exporter = node;
     MountPoint = mountPoint;
   };
+  # The pool's datasets each report only their own data as used, so the whole pool is read
+  # from zfs_exporter instead.
+  pool = label': name: {
+    Label = label';
+    Exporter = zfs;
+    Pool = name;
+  };
 
   sensors = lib.attrValues host.sensors;
   board = host.sensors.motherboard.device;
@@ -125,6 +133,12 @@ in
       # Temperatures come from CoolerControl, which leaves a spun-down disk asleep; this
       # collector would wake it on every scrape.
       disabledCollectors = [ "hwmon" ];
+    };
+
+    services.prometheus.exporters.zfs = lib.mkIf (storage.fastPool != null) {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      pools = [ storage.fastPool ];
     };
 
     systemd.services.server-dashboard = {
@@ -160,6 +174,12 @@ in
               Url = "http://127.0.0.1:${toString host.fans.port}/metrics";
               TokenFile = "/run/credentials/server-dashboard.service/${tokenCredential}";
             }
+          ]
+          ++ lib.optionals (storage.fastPool != null) [
+            {
+              Name = zfs;
+              Url = "http://127.0.0.1:${toString config.services.prometheus.exporters.zfs.port}/metrics";
+            }
           ];
           FanControl = coolercontrol;
           # Written by modules/services/speedtest.nix.
@@ -172,8 +192,8 @@ in
             (disk "Bulk (${storage.bulkMount})" storage.bulkMount)
           ]
           ++ map (mountPoint: disk (baseNameOf mountPoint) mountPoint) dataDisks
+          ++ lib.optionals (storage.fastPool != null) [ (pool "Fast pool" storage.fastPool) ]
           ++ [
-            (disk "Fast pool" "/${storage.fastPool}")
             (disk "NVMe (system, scratch)" "/")
             (disk "Boot" "/boot")
           ];
