@@ -42,7 +42,6 @@
           paperless = "/var/lib/paperless";
           microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
           immich = "/var/lib/immich";
-          immich-backups = "/var/lib/immich/backups";
         };
         # Regeneratable from the originals.
         noSnapshot = {

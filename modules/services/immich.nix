@@ -79,7 +79,6 @@ in
     systemd.services.immich-server.unitConfig.RequiresMountsFor = [
       "${mediaLocation}/thumbs"
       "${mediaLocation}/encoded-video"
-      "${mediaLocation}/backups"
     ]
     ++ map (d: "${mediaLocation}/${d}") originalFolders;
 
