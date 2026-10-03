@@ -26,23 +26,28 @@
       fastPool = "fast";
       hostId = "c60968bd";
       fastDatasets = {
-        forgejo = "/var/lib/forgejo";
-        plex = "/var/lib/plex";
-        sonarr = "/var/lib/sonarr";
-        radarr = "/var/lib/radarr";
-        bazarr = "/var/lib/bazarr";
-        jackett = "/var/lib/jackett";
-        qbittorrent = "/var/lib/qBittorrent";
-        tdarr = "/var/lib/tdarr";
-        cleanuparr = "/var/lib/cleanuparr";
-        pulsarr = "/var/lib/pulsarr";
-        maintainerr = "/var/lib/maintainerr";
-        postgresql = "/var/lib/postgresql";
-        paperless = "/var/lib/paperless";
-        microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
-        immich-thumbs = "/data/photos/thumbs";
-        immich-encoded-video = "/data/photos/encoded-video";
-        immich-backups = "/data/photos/backups";
+        snapshot = {
+          forgejo = "/var/lib/forgejo";
+          plex = "/var/lib/plex";
+          sonarr = "/var/lib/sonarr";
+          radarr = "/var/lib/radarr";
+          bazarr = "/var/lib/bazarr";
+          jackett = "/var/lib/jackett";
+          qbittorrent = "/var/lib/qBittorrent";
+          tdarr = "/var/lib/tdarr";
+          cleanuparr = "/var/lib/cleanuparr";
+          pulsarr = "/var/lib/pulsarr";
+          maintainerr = "/var/lib/maintainerr";
+          postgresql = "/var/lib/postgresql";
+          paperless = "/var/lib/paperless";
+          microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
+          immich-backups = "/data/photos/backups";
+        };
+        # Regeneratable from the originals.
+        noSnapshot = {
+          immich-thumbs = "/data/photos/thumbs";
+          immich-encoded-video = "/data/photos/encoded-video";
+        };
       };
 
       dataDisks = {

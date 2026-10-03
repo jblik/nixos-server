@@ -52,7 +52,8 @@ picking an older entry in the boot menu.
 - **Bulk:** one XFS filesystem per HDD at `/mnt/diskN`, merged by mergerfs into
   `/data`, SnapRAID parity once `parityFiles` is set.
 - **Fast:** ZFS mirror `fast` on the two SATA SSDs. Service state under `/var/lib`, one
-  dataset per service (`host.storage.fastDatasets`), snapshotted hourly by sanoid.
+  dataset per service (`host.storage.fastDatasets.snapshot`), snapshotted hourly by
+  sanoid; regeneratable data (Immich thumbnails, transcodes) in `fastDatasets.noSnapshot`.
 
 `/data`: `torrents/{tv,movies}`, `media/{tv,movies}` (imports are hardlinks).
 `/scratch/{incomplete,transcode}` (NVMe, off the pool): in-progress downloads and the

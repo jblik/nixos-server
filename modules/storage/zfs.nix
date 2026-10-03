@@ -11,6 +11,7 @@
 let
   inherit (config.host.storage) fastPool fastDatasets hostId;
   enabled = fastPool != null;
+  datasets = fastDatasets.snapshot // fastDatasets.noSnapshot;
 in
 {
   config = lib.mkIf enabled {
@@ -38,7 +39,7 @@ in
         fsType = "zfs";
         options = [ "nofail" ];
       }
-    ) fastDatasets;
+    ) datasets;
 
     # The NVIDIA driver and ZFS both build against the kernel; if a rebuild ever
     # fails on one of them, pin boot.kernelPackages to a version both support.
@@ -53,20 +54,31 @@ in
       trim.enable = true;
     };
 
-    # Snapshots, so a bad nixos-rebuild or a botched service upgrade is a
-    # rollback rather than an incident. Off-box replication (services.syncoid) is
-    # still to do (docs/MIGRATION.md, step 6).
     services.sanoid = {
       enable = true;
-      datasets."${fastPool}" = {
-        recursive = true;
-        autoprune = true;
-        autosnap = true;
-        hourly = 24;
-        daily = 14;
-        monthly = 3;
-        yearly = 0;
-      };
+      datasets =
+        lib.mapAttrs' (
+          name: _:
+          lib.nameValuePair "${fastPool}/${name}" {
+            autoprune = true;
+            autosnap = true;
+            hourly = 24;
+            daily = 14;
+            monthly = 3;
+            yearly = 0;
+          }
+        ) fastDatasets.snapshot
+        // lib.mapAttrs' (
+          name: _:
+          lib.nameValuePair "${fastPool}/${name}" {
+            autoprune = true;
+            autosnap = false;
+            hourly = 0;
+            daily = 0;
+            monthly = 0;
+            yearly = 0;
+          }
+        ) fastDatasets.noSnapshot;
     };
   };
 }

@@ -234,17 +234,31 @@
         '';
       };
 
-      fastDatasets = lib.mkOption {
-        type = lib.types.attrsOf lib.types.str;
-        default = { };
-        example = {
-          forgejo = "/var/lib/forgejo";
+      fastDatasets = {
+        snapshot = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          example = {
+            forgejo = "/var/lib/forgejo";
+          };
+          description = ''
+            Datasets on the fast pool, as dataset name -> mountpoint, snapshotted by
+            sanoid. Each is mounted as `<fastPool>/<name>`; create it first with
+            `zfs create -o mountpoint=legacy <fastPool>/<name>` and copy the data over.
+          '';
         };
-        description = ''
-          Datasets on the fast pool, as dataset name -> mountpoint. Each is mounted
-          as `<fastPool>/<name>`; create it first with
-          `zfs create -o mountpoint=legacy <fastPool>/<name>` and copy the data over.
-        '';
+
+        noSnapshot = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          example = {
+            immich-thumbs = "/data/photos/thumbs";
+          };
+          description = ''
+            Like `snapshot`, but sanoid never snapshots them. For data that can be
+            regenerated, where snapshots would only pin every replaced file.
+          '';
+        };
       };
 
       hostId = lib.mkOption {
