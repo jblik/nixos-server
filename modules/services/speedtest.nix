@@ -28,7 +28,7 @@ in
       description = "Measure the internet connection";
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      startAt = "00/6:00";
+      startAt = "00/1:00";
       environment.HOME = runtimeDir;
       serviceConfig = {
         Type = "oneshot";
