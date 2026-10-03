@@ -90,6 +90,62 @@
       description = "CoolerControl API and web UI port (modules/hardware/fans.nix).";
     };
 
+    sensors = lib.mkOption {
+      default = { };
+      example = {
+        cpu = {
+          name = "CPU";
+          device = "AMD Ryzen 7 2700X Eight-Core Processor";
+          sensor = "temp2";
+          kind = "Cpu";
+        };
+      };
+      description = ''
+        Temperature sensors as CoolerControl reports them. The fan curves
+        (modules/hardware/fans.nix) and the dashboard (modules/services/dashboard.nix)
+        both read them.
+      '';
+      type = lib.types.attrsOf (
+        lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                type = lib.types.str;
+                default = name;
+                description = "Label on the dashboard and in CoolerControl profile names.";
+              };
+
+              device = lib.mkOption {
+                type = lib.types.str;
+                description = "CoolerControl device name; drivetemp names a disk by the first 16 characters of its model.";
+              };
+
+              sensor = lib.mkOption {
+                type = lib.types.str;
+                description = "CoolerControl sensor key on that device, e.g. `temp1`.";
+              };
+
+              kind = lib.mkOption {
+                type = lib.types.enum [
+                  "Cpu"
+                  "Gpu"
+                  "Board"
+                  "Hdd"
+                  "Ssd"
+                  "Nvme"
+                ];
+                description = ''
+                  What the sensor measures, which sets when the dashboard calls it warm
+                  or hot. An `Hdd` reading 0 °C is spun down.
+                '';
+              };
+            };
+          }
+        )
+      );
+    };
+
     ai = {
       enable = lib.mkEnableOption "the local LLM backend and Open WebUI (modules/services/ai.nix)";
 

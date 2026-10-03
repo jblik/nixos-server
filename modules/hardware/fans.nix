@@ -20,10 +20,11 @@
 let
   api = "http://127.0.0.1:${toString config.host.fans.port}";
   stateDir = "/var/lib/coolercontrol-defaults";
-  board = "nct6798";
+  sensors = config.host.sensors;
+  board = sensors.motherboard.device;
 
-  # A sensor, found by its device's name (or disk model) and the sensor's label.
-  sensor = device: label: { inherit device label; };
+  # A sensor, found by its device's name (or disk model) and the sensor's key or label.
+  source = part: { inherit (part) device sensor; };
 
   # Lower duties may not start a stopped fan.
   startDuty = 35;
@@ -70,15 +71,15 @@ let
     mix_function_type = "Max";
   };
 
-  cpuTemp = sensor "AMD Ryzen 7 2700X Eight-Core Processor" "CPU Temp Tdie";
+  caseGraph = uid: part: graph uid "Case: ${part.name}" (source part);
 
   caseSources = [
-    (smoothed (graph "case-cpu" "Case: CPU" cpuTemp 65 85))
-    (graph "case-gpu" "Case: GPU" (sensor "NVIDIA GeForce RTX 3060" "GPU Temp") 60 80)
-    (graph "case-hdd" "Case: disk1" (sensor "ST10000NE0008-2P" "Temp1") 45 55)
-    (graph "case-sandisk" "Case: SanDisk" (sensor "SanDisk SSD PLUS" "Temp1") 60 70)
-    (graph "case-peaq" "Case: PEAQ" (sensor "PEAQ    SSD_256G" "Temp1") 60 70)
-    (graph "case-nvme" "Case: NVMe" (sensor "ADATA SX8200NP" "Composite") 65 75)
+    (smoothed (caseGraph "case-cpu" sensors.cpu 65 85))
+    (caseGraph "case-gpu" sensors.gpu 60 80)
+    (caseGraph "case-hdd" sensors.disk1 45 55)
+    (caseGraph "case-sandisk" sensors.sandisk 60 70)
+    (caseGraph "case-peaq" sensors.peaq 60 70)
+    (caseGraph "case-nvme" sensors.nvme 65 75)
   ];
 
   defaults = {
@@ -120,8 +121,10 @@ let
 
     profiles = caseSources ++ [
       (mix "case" "Case" (map (p: p.uid) caseSources))
-      (smoothed (graph "cpu" "CPU" cpuTemp 60 85))
-      (graph "chipset" "Chipset" (sensor board "Smbusmaster 1") 80 95)
+      (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) 60 85))
+      (graph "chipset" sensors.chipset.name (
+        source sensors.chipset // { sensor = "Smbusmaster 1"; }
+      ) 80 95)
       {
         uid = "full";
         name = "Full";

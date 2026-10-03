@@ -51,8 +51,8 @@ resolve_sensor() {
           // error("no device \($s.device)")) as $d
       | .temp_source = {
           device_uid: $d.uid,
-          temp_name: (first($d.info.temps | to_entries[] | select(.value.label == $s.label) | .key)
-            // error("no sensor \($s.label) on \($s.device)"))
+          temp_name: (first($d.info.temps | to_entries[] | select(.key == $s.sensor or .value.label == $s.sensor) | .key)
+            // error("no sensor \($s.sensor) on \($s.device)"))
         }
     end'
 }
