@@ -36,7 +36,6 @@ let
     }
     // lib.optionalAttrs config.host.dashboard.enable {
       server = s.server-dashboard.internalPort;
-      prometheus = s.prometheus.port;
       grafana = s.grafana.settings.server.http_port;
     }
     // {

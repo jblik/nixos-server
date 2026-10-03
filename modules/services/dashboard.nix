@@ -7,7 +7,7 @@
 # server.steenblik.ch shows the public services to everyone; from the LAN or tailnet the
 # page also loads server.internal.steenblik.ch, which adds the internal services and the
 # metrics Prometheus collects (load, temperatures, free space, fan speeds, internet speed).
-# Prometheus itself is at prometheus.internal.steenblik.ch.
+# Their history is in Grafana (modules/services/monitoring/grafana.nix).
 let
   host = config.host;
   storage = host.storage;
@@ -68,7 +68,6 @@ let
     ]
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
-      (service system internal "prometheus" "Prometheus" "Metrics history" (svg "prometheus"))
       (service system internal "grafana" "Grafana" "Metrics history and alerts" (svg "grafana"))
     ];
 
@@ -155,7 +154,6 @@ in
     services.prometheus = {
       enable = true;
       listenAddress = "127.0.0.1";
-      webExternalUrl = "https://prometheus.${internalDomain}";
       # The CoolerControl token is a credential promtool cannot read at build time.
       checkConfig = "syntax-only";
       # The dashboard streams every 2 s; a slower scrape would leave its cards stale.
