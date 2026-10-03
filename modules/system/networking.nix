@@ -11,7 +11,10 @@
       };
     };
 
-    networkmanager.appendNameservers = [ "1.1.1.1" "9.9.9.9" ];
+    networkmanager.appendNameservers = [
+      "1.1.1.1"
+      "9.9.9.9"
+    ];
 
     nftables.enable = true;
     firewall = {
