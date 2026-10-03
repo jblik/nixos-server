@@ -6,7 +6,8 @@
 }:
 # server.steenblik.ch shows the public services to everyone; from the LAN or tailnet the
 # page also loads server.internal.steenblik.ch, which adds the internal services and the
-# metrics node_exporter reports (temperatures, free space, fan speeds, internet speed).
+# metrics Prometheus collects (load, temperatures, free space, fan speeds, internet speed).
+# Prometheus itself is at prometheus.internal.steenblik.ch.
 let
   host = config.host;
   storage = host.storage;
@@ -67,12 +68,18 @@ let
     ]
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
+      (service system internal "prometheus" "Prometheus" "Metrics history" (svg "prometheus"))
     ];
 
-  node = "node";
-  zfs = "zfs";
-  coolercontrol = "coolercontrol";
+  exporters = config.services.prometheus.exporters;
   tokenCredential = "coolercontrol-token";
+  tokenFile = "/var/lib/coolercontrol-defaults/dashboard-token";
+  credential = service: "/run/credentials/${service}.service/${tokenCredential}";
+
+  scrape = name: port: {
+    job_name = name;
+    static_configs = [ { targets = [ "127.0.0.1:${toString port}" ]; } ];
+  };
 
   label = name: value: {
     Name = name;
@@ -82,7 +89,6 @@ let
   # CoolerControl reports the same sensors its fan curves use (modules/hardware/fans.nix).
   reading = metric: key: label': device: value: {
     Label = label';
-    Exporter = coolercontrol;
     Metric = "coolercontrol_${metric}";
     Labels = [
       (label "device" device)
@@ -97,14 +103,12 @@ let
 
   disk = label': mountPoint: {
     Label = label';
-    Exporter = node;
     MountPoint = mountPoint;
   };
   # The pool's datasets each report only their own data as used, so the whole pool is read
   # from zfs_exporter instead.
   pool = label': name: {
     Label = label';
-    Exporter = zfs;
     Pool = name;
   };
 
@@ -142,10 +146,42 @@ in
       pools = [ storage.fastPool ];
     };
 
+    services.prometheus.exporters.nvidia-gpu = {
+      enable = true;
+      listenAddress = "127.0.0.1";
+    };
+
+    services.prometheus = {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      webExternalUrl = "https://prometheus.${internalDomain}";
+      # The CoolerControl token is a credential promtool cannot read at build time.
+      checkConfig = "syntax-only";
+      # The dashboard streams every 2 s; a slower scrape would leave its cards stale.
+      globalConfig.scrape_interval = "5s";
+      scrapeConfigs = [
+        (scrape "node" exporters.node.port)
+        (scrape "nvidia-gpu" exporters.nvidia-gpu.port)
+        (
+          scrape "coolercontrol" host.fans.port
+          // {
+            authorization.credentials_file = credential "prometheus";
+          }
+        )
+      ]
+      ++ lib.optionals (storage.fastPool != null) [ (scrape "zfs" exporters.zfs.port) ];
+    };
+
+    systemd.services.prometheus = {
+      wants = [ "coolercontrol-defaults.service" ];
+      after = [ "coolercontrol-defaults.service" ];
+      serviceConfig.LoadCredential = "${tokenCredential}:${tokenFile}";
+    };
+
     systemd.services.server-dashboard = {
       wants = [ "coolercontrol-defaults.service" ];
       after = [ "coolercontrol-defaults.service" ];
-      serviceConfig.LoadCredential = "${tokenCredential}:/var/lib/coolercontrol-defaults/dashboard-token";
+      serviceConfig.LoadCredential = "${tokenCredential}:${tokenFile}";
     };
 
     # The dashboard's run button; DynamicUser names the user after the unit.
@@ -165,26 +201,11 @@ in
       settings.Dashboard = {
         Services = services;
         Metrics = {
-          Exporters = [
-            {
-              Name = node;
-              Url = "http://127.0.0.1:${toString config.services.prometheus.exporters.node.port}/metrics";
-            }
-            {
-              Name = coolercontrol;
-              Url = "http://127.0.0.1:${toString host.fans.port}/metrics";
-              TokenFile = "/run/credentials/server-dashboard.service/${tokenCredential}";
-            }
-          ]
-          ++ lib.optionals (storage.fastPool != null) [
-            {
-              Name = zfs;
-              Url = "http://127.0.0.1:${toString config.services.prometheus.exporters.zfs.port}/metrics";
-            }
-          ];
-          FanControl = coolercontrol;
+          PrometheusUrl = "http://127.0.0.1:${toString config.services.prometheus.port}";
+          FanControlUrl = "http://127.0.0.1:${toString host.fans.port}";
+          FanControlTokenFile = credential "server-dashboard";
           # Written by modules/services/speedtest.nix.
-          Speedtest = node;
+          Speedtest = true;
           SpeedtestUnit = "speedtest.service";
           Temperatures = lib.concatMap (
             kind: map temperature (lib.filter (part: part.kind == kind) sensors)
