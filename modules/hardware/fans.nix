@@ -14,7 +14,8 @@
 # The board's NCT6798D is reached through ASUS WMI (nct6775 knows this board), so
 # no `acpi_enforce_resources=lax` is needed. Every header controls its fan in PWM
 # mode: the driver rejects DC mode on 2-7, and fan1 barely slows in DC.
-#   fan1 CHA_FAN1, fan3 CHA_FAN2, fan4 CHA_FAN3 (front), fan6 AIO_PUMP (rear),
+#   fan1 CHA_FAN1 (top), fan4 CHA_FAN3 (middle), fan3 CHA_FAN2 (bottom),
+#   fan6 AIO_PUMP (rear exhaust),
 #   fan2 CPU_FAN, fan5 chipset, fan7 CPU_OPT (empty)
 # The GPU fans keep the card's own zero-rpm curve.
 let
@@ -26,12 +27,21 @@ let
   # A sensor, found by its device's name (or disk model) and the sensor's key or label.
   source = part: { inherit (part) device sensor; };
 
-  graph = uid: name: source: speed_profile: {
-    inherit uid name speed_profile;
+  # Temperature keys keep the editable curves separate from the API's nested arrays.
+  curve =
+    points:
+    map (temp: [
+      (lib.toInt temp)
+      points.${temp}
+    ]) (lib.sort (a: b: lib.toInt a < lib.toInt b) (lib.attrNames points));
+
+  graph = uid: name: source: points: {
+    inherit uid name;
     p_type = "Graph";
     temp_source = source;
     function_uid = "calm";
     member_profile_uids = [ ];
+    speed_profile = curve points;
   };
 
   # Tdie jumps by ~10 °C every few seconds even at idle.
@@ -45,237 +55,177 @@ let
     mix_function_type = "Max";
   };
 
-  caseGraph = uid: part: graph uid "Case: ${part.name}" (source part);
+  # 4.3 has no startup boost: stop-capable curves need restart duties, not running minima.
+  # The probe sustained top/middle/bottom/rear at 19/27/23/17%, but restarted at 37/73/53/33%.
+  caseFans = {
+    front-top = {
+      name = "Front top";
+      channel = "fan1";
+      start = 39;
+      night = 45;
+      sources = [
+        "cpu"
+        "motherboard"
+        "nvme"
+      ];
+    };
+    front-middle = {
+      name = "Front middle";
+      channel = "fan4";
+      start = 75;
+      night = 80;
+      sources = [
+        "gpu"
+        "chipset"
+        "motherboard"
+      ];
+    };
+    front-bottom = {
+      name = "Front bottom";
+      channel = "fan3";
+      start = 55;
+      night = 60;
+      sources = [
+        "disk1"
+        "disk2"
+        "sandisk"
+        "peaq"
+        "gpu"
+      ];
+    };
+    rear = {
+      name = "Rear exhaust";
+      channel = "fan6";
+      start = 35;
+      night = 45;
+      sources = lib.attrNames caseCurves;
+    };
+  };
 
-  # fan3 stops at 35% even while the other case fans are still turning.
-  caseDuty = 40;
+  # Keys are °C; values are PWM %. Quiet has no always-on baseline.
+  curves = {
+    cpu = {
+      "0" = 0;
+      "60" = 0;
+      "61" = 35;
+      "65" = 40;
+      "70" = 50;
+      "75" = 70;
+      "80" = 100;
+      "100" = 100;
+    };
+    chipset = {
+      "0" = 0;
+      "75" = 0;
+      "76" = 15;
+      "80" = 25;
+      "85" = 45;
+      "90" = 100;
+      "100" = 100;
+    };
+    caseCpu = {
+      "0" = 0;
+      "65" = 0;
+      "66" = 35;
+      "70" = 45;
+      "75" = 65;
+      "80" = 100;
+      "100" = 100;
+    };
+    caseGpu = {
+      "0" = 0;
+      "60" = 0;
+      "61" = 35;
+      "70" = 50;
+      "75" = 70;
+      "80" = 100;
+      "100" = 100;
+    };
+    caseBoard = {
+      "0" = 0;
+      "50" = 0;
+      "51" = 35;
+      "60" = 60;
+      "70" = 100;
+      "100" = 100;
+    };
+    caseChipset = {
+      "0" = 0;
+      "80" = 0;
+      "81" = 35;
+      "85" = 65;
+      "90" = 100;
+      "100" = 100;
+    };
+    caseHdd = {
+      "0" = 0;
+      "40" = 0;
+      "41" = 35;
+      "45" = 50;
+      "50" = 100;
+      "100" = 100;
+    };
+    caseSsd = {
+      "0" = 0;
+      "50" = 0;
+      "51" = 35;
+      "55" = 50;
+      "65" = 100;
+      "100" = 100;
+    };
+    caseNvme = {
+      "0" = 0;
+      "55" = 0;
+      "56" = 35;
+      "60" = 50;
+      "70" = 100;
+      "100" = 100;
+    };
+  };
 
-  caseSources = [
-    (smoothed (
-      caseGraph "case-cpu" sensors.cpu [
-        [
-          0
-          caseDuty
-        ]
-        [
-          55
-          caseDuty
-        ]
-        [
-          65
-          50
-        ]
-        [
-          75
-          70
-        ]
-        [
-          80
-          100
-        ]
-        [
-          100
-          100
-        ]
-      ]
-    ))
-    (caseGraph "case-gpu" sensors.gpu [
-      [
-        0
-        caseDuty
-      ]
-      [
-        50
-        caseDuty
-      ]
-      [
-        60
-        50
-      ]
-      [
-        70
-        65
-      ]
-      [
-        80
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-board" sensors.motherboard [
-      [
-        0
-        caseDuty
-      ]
-      [
-        40
-        caseDuty
-      ]
-      [
-        50
-        50
-      ]
-      [
-        60
-        75
-      ]
-      [
-        70
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-chipset" sensors.chipset [
-      [
-        0
-        caseDuty
-      ]
-      [
-        65
-        caseDuty
-      ]
-      [
-        75
-        50
-      ]
-      [
-        85
-        70
-      ]
-      [
-        90
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-hdd" sensors.disk1 [
-      [
-        0
-        caseDuty
-      ]
-      [
-        35
-        caseDuty
-      ]
-      [
-        40
-        50
-      ]
-      [
-        45
-        70
-      ]
-      [
-        50
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-hdd2" sensors.disk2 [
-      [
-        0
-        caseDuty
-      ]
-      [
-        35
-        caseDuty
-      ]
-      [
-        40
-        50
-      ]
-      [
-        45
-        70
-      ]
-      [
-        50
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-sandisk" sensors.sandisk [
-      [
-        0
-        caseDuty
-      ]
-      [
-        45
-        caseDuty
-      ]
-      [
-        55
-        60
-      ]
-      [
-        65
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-peaq" sensors.peaq [
-      [
-        0
-        caseDuty
-      ]
-      [
-        45
-        caseDuty
-      ]
-      [
-        55
-        60
-      ]
-      [
-        65
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-    (caseGraph "case-nvme" sensors.nvme [
-      [
-        0
-        caseDuty
-      ]
-      [
-        50
-        caseDuty
-      ]
-      [
-        60
-        60
-      ]
-      [
-        70
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ])
-  ];
+  caseCurves = {
+    cpu = curves.caseCpu;
+    gpu = curves.caseGpu;
+    motherboard = curves.caseBoard;
+    chipset = curves.caseChipset;
+    disk1 = curves.caseHdd;
+    disk2 = curves.caseHdd;
+    sandisk = curves.caseSsd;
+    peaq = curves.caseSsd;
+    nvme = curves.caseNvme;
+  };
+
+  caseGraphs = lib.mapAttrs (
+    uid: fan:
+    map (
+      key:
+      let
+        points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) caseCurves.${key};
+        profile = graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" (source
+          sensors.${key}
+        ) points;
+      in
+      (if key == "cpu" then smoothed else lib.id) profile
+    ) fan.sources
+  ) caseFans;
+
+  quietGraphs = lib.mapAttrs (_: profiles: map (p: p.uid) profiles) caseGraphs // {
+    cpu = [ "cpu" ];
+    chipset = [ "chipset" ];
+  };
+
+  nightDuty = lib.mapAttrs (_: fan: fan.night) caseFans // {
+    cpu = 40;
+    chipset = 20;
+  };
+
+  baselineGraphs = lib.mapAttrsToList (
+    uid: duty:
+    graph "baseline-${uid}" "Night baseline: ${uid}" (source sensors.cpu) {
+      "0" = duty;
+      "100" = duty;
+    }
+  ) nightDuty;
 
   # The dashboard calls a sensor warm at the same readings (server-dashboard's Readings.fs).
   warm = {
@@ -288,48 +238,23 @@ let
     Nvme = 60;
   };
 
-  # Off until the part is warm, then full speed.
-  coolGraph = key: part: {
-    uid = "cool-${key}";
-    name = "Keep cool: ${part.name}";
-    p_type = "Graph";
-    temp_source = source part;
-    function_uid = "calm";
-    member_profile_uids = [ ];
-    speed_profile = [
-      [
-        0
-        0
-      ]
-      [
-        (warm.${part.kind} - 1)
-        0
-      ]
-      [
-        warm.${part.kind}
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ];
-  };
-
   coolSources = lib.mapAttrsToList (
-    key: part: (if part.kind == "Cpu" then smoothed else lib.id) (coolGraph key part)
+    key: part:
+    (if part.kind == "Cpu" then smoothed else lib.id) (
+      graph "cool-${key}" "Keep cool: ${part.name}" (source part) {
+        "0" = 0;
+        "${toString (warm.${part.kind} - 1)}" = 0;
+        "${toString warm.${part.kind}}" = 100;
+        "100" = 100;
+      }
+    )
   ) sensors;
 
-  # A Mix only combines Graph profiles, so the Case mix is listed by its members.
-  quietGraphs = {
-    case = map (p: p.uid) caseSources;
-    cpu = [ "cpu" ];
-    chipset = [ "chipset" ];
-  };
-
   keepCool = lib.mapAttrsToList (
-    profile: members:
-    mix "keep-cool-${profile}" "Keep cool: ${profile}" (members ++ map (p: p.uid) coolSources)
+    uid: members:
+    mix "keep-cool-${uid}" "Keep cool: ${uid}" (
+      members ++ [ "baseline-${uid}" ] ++ map (p: p.uid) coolSources
+    )
   ) quietGraphs;
 
   defaults = {
@@ -370,72 +295,13 @@ let
     ];
 
     profiles =
-      caseSources
+      lib.concatLists (lib.attrValues caseGraphs)
       ++ coolSources
+      ++ baselineGraphs
+      ++ lib.mapAttrsToList (uid: fan: mix uid fan.name quietGraphs.${uid}) caseFans
       ++ [
-        (mix "case" "Case" (map (p: p.uid) caseSources))
-        (smoothed (
-          graph "cpu" sensors.cpu.name (source sensors.cpu) [
-            [
-              0
-              35
-            ]
-            [
-              45
-              35
-            ]
-            [
-              55
-              40
-            ]
-            [
-              65
-              50
-            ]
-            [
-              75
-              70
-            ]
-            [
-              80
-              100
-            ]
-            [
-              100
-              100
-            ]
-          ]
-        ))
-        (graph "chipset" sensors.chipset.name (source sensors.chipset) [
-          [
-            0
-            15
-          ]
-          [
-            70
-            15
-          ]
-          [
-            75
-            20
-          ]
-          [
-            80
-            25
-          ]
-          [
-            85
-            45
-          ]
-          [
-            90
-            100
-          ]
-          [
-            100
-            100
-          ]
-        ])
+        (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) curves.cpu))
+        (graph "chipset" sensors.chipset.name (source sensors.chipset) curves.chipset)
         {
           uid = "full";
           name = "Full";
@@ -450,11 +316,7 @@ let
     # The first mode is the one activated after applying.
     modes =
       let
-        quiet = {
-          fan1 = "case";
-          fan3 = "case";
-          fan4 = "case";
-          fan6 = "case";
+        quiet = lib.mapAttrs' (uid: fan: lib.nameValuePair fan.channel uid) caseFans // {
           fan2 = "cpu";
           fan5 = "chipset";
         };
@@ -468,7 +330,7 @@ let
           name = "Full";
           channels = lib.mapAttrs (_: _: "full") quiet;
         }
-        # For when no one is home: quiet until any part is warm, then full.
+        # Night airflow stays on; any warm component retains the full-speed override.
         {
           name = "Keep cool";
           channels = lib.mapAttrs (_: profile: "keep-cool-${profile}") quiet;
