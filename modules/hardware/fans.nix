@@ -104,20 +104,22 @@ let
 
   # Keys are °C; values are PWM %. Quiet has no always-on baseline.
   curves = {
+    # The probe restarted at 31%; 33% leaves a small margin after stopping.
     cpu = {
       "0" = 0;
       "60" = 0;
-      "61" = 35;
+      "61" = 33;
       "65" = 40;
       "70" = 50;
       "75" = 70;
       "80" = 100;
       "100" = 100;
     };
+    # 15% can sustain rotation but stalls on restart; the probe needed 23% to start.
     chipset = {
       "0" = 0;
       "75" = 0;
-      "76" = 15;
+      "76" = 25;
       "80" = 25;
       "85" = 45;
       "90" = 100;
@@ -234,7 +236,7 @@ let
 
   nightDuty = lib.mapAttrs (_: fan: fan.night) caseFans // {
     cpu = 40;
-    chipset = 20;
+    chipset = 25;
   };
 
   baselineGraphs = lib.mapAttrsToList (
