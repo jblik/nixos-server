@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   domain = "git.steenblik.ch";
   sshPort = 2222;
@@ -19,7 +24,43 @@ in
         repository.DEFAULT_BRANCH = "master";
         service.DISABLE_REGISTRATION = true;
         session.COOKIE_SECURE = true;
+        actions.ENABLED = true;
       };
+    };
+
+    virtualisation.podman.enable = true;
+
+    services.gitea-actions-runner = {
+      package = pkgs.forgejo-runner;
+      instances.docker = {
+        enable = true;
+        name = "${config.networking.hostName}-docker";
+        url = "https://${domain}/";
+        tokenFile = "/var/lib/forgejo-runner/token.env";
+        labels = [
+          "docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
+        ];
+        settings = {
+          runner.capacity = 1;
+          container = {
+            docker_host = "-";
+            # Docker-in-Docker services need privileged containers.
+            privileged = true;
+          };
+        };
+      };
+    };
+
+    systemd.services.gitea-runner-docker = {
+      wants = [
+        "forgejo.service"
+        "podman.socket"
+      ];
+      after = [
+        "forgejo.service"
+        "podman.socket"
+      ];
+      serviceConfig.Restart = lib.mkForce "always";
     };
 
     networking.firewall.allowedTCPPorts = [ sshPort ];

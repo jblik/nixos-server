@@ -112,6 +112,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-forgejo-runner": {
+      "locked": {
+        "lastModified": 1791765022,
+        "narHash": "sha256-ZGq3ptZzA+oO0N/Wi/F+GbuTijLkYExD01LvpNFAvr0=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "7993f34ee47e28a3d607a525aadc6c94b73be728",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-grafana": {
       "locked": {
         "lastModified": 1791765022,
@@ -425,6 +441,7 @@
         "nixpkgs-coolercontrol": "nixpkgs-coolercontrol",
         "nixpkgs-flaresolverr": "nixpkgs-flaresolverr",
         "nixpkgs-forgejo": "nixpkgs-forgejo",
+        "nixpkgs-forgejo-runner": "nixpkgs-forgejo-runner",
         "nixpkgs-grafana": "nixpkgs-grafana",
         "nixpkgs-immich": "nixpkgs-immich",
         "nixpkgs-jackett": "nixpkgs-jackett",

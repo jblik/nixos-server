@@ -16,6 +16,7 @@
     nixpkgs-flaresolverr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-qbittorrent.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-forgejo.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-forgejo-runner.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-microbin.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-coolercontrol.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-node-exporter.url = "github:NixOS/nixpkgs/nixos-26.05";

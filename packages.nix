@@ -27,6 +27,7 @@ in
   flaresolverr = applicationPkgs.flaresolverr.flaresolverr;
   qbittorrent-nox = applicationPkgs.qbittorrent.qbittorrent-nox;
   forgejo-lts = applicationPkgs.forgejo.forgejo-lts;
+  forgejo-runner = applicationPkgs.forgejo-runner.forgejo-runner;
   microbin = applicationPkgs.microbin.microbin;
   coolercontrol = applicationPkgs.coolercontrol.coolercontrol;
   prometheus-node-exporter = applicationPkgs.node-exporter.prometheus-node-exporter;
