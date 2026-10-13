@@ -23,8 +23,6 @@
     nixpkgs-tailscale.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-open-webui.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-tika.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-gotenberg.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-postgresql.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-nginx.url = "github:NixOS/nixpkgs/nixos-26.05";

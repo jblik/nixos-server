@@ -126,7 +126,7 @@ The key is `sops -d --extract '["ai-api-key"]' secrets/secrets.yaml`.
 nix eval --json .#versions | jq   # each package: version here, version in nixos-26.05
 ```
 
-Each native application has its own `nixpkgs-<app>` input and lock entry, including
+Each standalone native application has its own `nixpkgs-<app>` input and lock entry, including
 applications on stable. The `nixpkgs` input controls the OS and shared system tools.
 The dashboard already has its own `server-dashboard` input. Container images are
 configured separately in `modules/services/media/containers.nix`; Immich's ML image
@@ -139,7 +139,9 @@ nix flake update nixpkgs-paperless
 nix eval --json .#versions | jq
 ```
 
-Paperless' package and NixOS service module use that same input. Once its locked
+Paperless' package, NixOS service module, Tika and Gotenberg use that same input,
+while Gotenberg's Chromium and LibreOffice helpers use the system packages.
+PostgreSQL and Redis keep separate pins because they are shared with Immich. Once Paperless' locked
 revision includes the torchcodec test fix, remove the `extraPythonPackageOverrides`
 override in `packages.nix`. Immich and every other application keep their existing
 locks. Tdarr's server and node share `nixpkgs-tdarr`; their explicit version/hash

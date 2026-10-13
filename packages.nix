@@ -36,8 +36,8 @@ in
   tailscale = applicationPkgs.tailscale.tailscale;
   ollama-cuda = applicationPkgs.ollama.ollama-cuda;
   open-webui = applicationPkgs.open-webui.open-webui;
-  tika = applicationPkgs.tika.tika;
-  gotenberg = applicationPkgs.gotenberg.gotenberg;
+  tika = applicationPkgs.paperless.tika;
+  gotenberg = applicationPkgs.paperless.gotenberg;
   postgresql_17 = applicationPkgs.postgresql.postgresql_17;
   redis = applicationPkgs.redis.redis;
   nginxStable = applicationPkgs.nginx.nginxStable;
