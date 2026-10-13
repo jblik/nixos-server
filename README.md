@@ -47,6 +47,35 @@ nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server --target-host nix
 A bad generation can be rolled back with `sudo nixos-rebuild switch --rollback`, or by
 picking an older entry in the boot menu.
 
+### GitOps
+
+Automatically deploying pushes to a protected `master` branch is reasonable once
+changes have passed CI and review. Serialize deployments and deploy the exact
+tested commit, including its lock file. Keep SSH access and a known-good generation
+available for recovery.
+
+Run activation from an independent systemd service or an external deployment host.
+CI can validate/build the configuration and request a deployment, then finish; the
+deployment service should fetch/build the selected revision before switching.
+It needs its own Git credentials, including access to the private `server-dashboard`
+flake input. A timer that polls the branch also works when Forgejo Actions is down.
+
+Running `nixos-rebuild switch` directly in this server's Forgejo runner creates a
+dependency cycle:
+
+- A Forgejo restart temporarily interrupts polling, logs and job status reporting.
+  The job process may continue, but successful reporting is not guaranteed.
+- Changing the runner package, settings or unit can restart the runner and kill
+  the deployment job. Graceful shutdown can instead wait for the very job whose
+  rebuild is waiting for the runner to stop.
+- Changes to the container runtime, networking or a reboot can interrupt the job
+  or its connection even if the runner configuration is unchanged.
+
+A failed CI job does not mean activation was rolled back: the server can already
+be running the new generation. Verify the active revision and service health
+independently. A system generation rollback also does not reverse Forgejo database
+migrations; use the service's backups and upgrade guidance for those.
+
 ## Storage
 
 - **Bulk:** one XFS filesystem per HDD at `/mnt/diskN`, merged by mergerfs into
@@ -74,6 +103,7 @@ Plex/Tdarr transcode cache.
 | Immich (photos.steenblik.ch)               | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container   |
 | Paperless-ngx (documents.steenblik.ch)     | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL |
 | Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                          |
+| Forgejo runner                            | —                          | native, Podman jobs with per-job Docker-in-Docker |
 | MicroBin (notes.steenblik.ch)              | 8081 (localhost)           | native                                          |
 | CoolerControl                              | 11987 (localhost)          | native                                          |
 | Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
@@ -82,6 +112,92 @@ Plex/Tdarr transcode cache.
 | Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                          |
 | Tailscale (exit node)                      | —                          | native                                          |
 | Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
+
+## Forgejo CI
+
+`gitea-runner-docker.service` runs the Forgejo runner continuously, starts at boot
+and restarts on exit. Its `docker` label uses an Ubuntu Actions image with Git,
+Node and the Docker CLI, with one job at a time. The runner package has its own
+`nixpkgs-forgejo-runner` input.
+
+Podman launches the job containers. Image-building jobs start a Docker-in-Docker
+service as shown below: the Docker CLI connects to that job's Docker daemon, so
+Docker builds, BuildKit and pushes use Docker itself. There is no host Docker
+daemon. Forgejo stops and removes job services on completion or cancellation;
+Docker's memory is released and its local image/build cache is discarded. An
+abrupt runner crash or forced kill can leave orphan containers; inspect
+`sudo podman ps` after such a failure.
+
+The host Podman socket is not mounted into jobs. Docker-in-Docker requires the
+runner's privileged-container setting, which also applies to job containers;
+this is still a trusted-code runner, not a security boundary. Register it only
+for trusted repositories and do not run untrusted pull-request code on it.
+
+### Registration
+
+In the intended repository or organization's Settings → Actions → Runners,
+create a registration token. Before the first deployment, on the server:
+
+```sh
+sudo install -d -m 0700 /var/lib/forgejo-runner
+sudoedit /var/lib/forgejo-runner/token.env
+sudo chmod 0600 /var/lib/forgejo-runner/token.env
+```
+
+The file must contain `TOKEN=<registration-token>` (an environment file, not a
+bare token). Keep this runtime credential out of Git and the Nix store. The
+service manager reads it as root; the runner registers automatically and keeps
+its registration under `/var/lib/gitea-runner/docker`. A missing token file
+prevents the runner from starting. After deploying, check:
+
+```sh
+systemctl status gitea-runner-docker
+journalctl -u gitea-runner-docker -n 50
+```
+
+Enable Actions in the repository's settings. Set repository secrets
+`REGISTRY_USER` and `REGISTRY_TOKEN`; for Forgejo's registry the token needs
+package write access. The runner registration token is a separate credential.
+
+### Build and push an image
+
+In a repository with a Dockerfile, add `.forgejo/workflows/image.yml` based on
+this example. Replace the image namespace/name with your own. The Docker service
+is reachable only through the job network; it publishes no host ports.
+
+```yaml
+name: Build image
+on:
+  push:
+    branches: [master]
+jobs:
+  image:
+    runs-on: docker
+    services:
+      docker:
+        image: docker.io/library/docker:28-dind
+        env:
+          DOCKER_TLS_CERTDIR: ""
+    env:
+      DOCKER_HOST: tcp://docker:2375
+      IMAGE: git.steenblik.ch/jblik/my-app
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v4
+      - name: Wait for Docker
+        run: timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+      - name: Build and push
+        env:
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+        run: |
+          printf '%s' "$REGISTRY_TOKEN" | docker login git.steenblik.ch --username "$REGISTRY_USER" --password-stdin
+          docker build --tag "$IMAGE:$GITHUB_SHA" .
+          docker push "$IMAGE:$GITHUB_SHA"
+```
+
+The runner supports other jobs without a Docker service too; those jobs have no
+Docker daemon. See the [Forgejo service-container reference](https://forgejo.org/docs/latest/user/actions/reference/#jobsjob_idservices)
+and [Docker-in-Docker guidance](https://forgejo.org/docs/latest/admin/actions/docker-access/).
 
 ## AI
 
