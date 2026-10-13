@@ -55,5 +55,5 @@ in
   immich = applicationPkgs.immich.immich;
 
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
-  paperless-ngx = applicationPkgs.paperless.paperless-ngx.override;
+  paperless-ngx = applicationPkgs.paperless.paperless-ngx;
 }
