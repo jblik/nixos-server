@@ -6,7 +6,7 @@ Ryzen 2700X, RTX 3060, 48 GB
 
 ```
 flake.nix                    nixosConfigurations.nixos-server, `versions`
-packages.nix                 every package not taken from nixos-26.05 as is
+packages.nix                 native application packages from independently locked inputs
 hosts/nixos-server/          hardware config + site knobs (disks, subnet, what's enabled)
 modules/options.nix          the `host.*` knobs
 modules/system/              boot, network/firewall/wake-on-LAN, nix, users, ssh, tailscale
@@ -126,19 +126,42 @@ The key is `sops -d --extract '["ai-api-key"]' secrets/secrets.yaml`.
 nix eval --json .#versions | jq   # each package: version here, version in nixos-26.05
 ```
 
+Each native application has its own `nixpkgs-<app>` input and lock entry, including
+applications on stable. The `nixpkgs` input controls the OS and shared system tools.
+The dashboard already has its own `server-dashboard` input. Container images are
+configured separately in `modules/services/media/containers.nix`; Immich's ML image
+follows its application version.
+
+Update only the application you choose:
+
+```sh
+nix flake update nixpkgs-paperless
+nix eval --json .#versions | jq
+```
+
+Paperless' package and NixOS service module use that same input. Once its locked
+revision includes the torchcodec test fix, remove the `extraPythonPackageOverrides`
+override in `packages.nix`. Immich and every other application keep their existing
+locks. Tdarr's server and node share `nixpkgs-tdarr`; their explicit version/hash
+overrides remain until that input provides at least 2.91.01.
+
+Use `nix flake update nixpkgs` to update the OS without advancing application pins.
+Avoid an unqualified `nix flake update` unless you intend to update every input.
+Build and deploy as described above after checking the selected version.
+
 ### Back to plain nixpkgs
 
-The goal is no overrides. Once nixpkgs has caught up with a package, it goes back to the
-nixpkgs version:
+The goal is no custom version or build overrides. Independent application pins stay
+so each application can be updated separately. Once stable nixpkgs has caught up:
 
-1. Update the inputs: `nix flake update`, or move `nixpkgs` in `flake.nix` to the next
-   release (`nixos-26.11`) once it's out. Commit.
-2. `nix eval --json .#versions | jq`: a package can drop out of `packages.nix` when its
+1. Update only the OS input: `nix flake update nixpkgs`, or move `nixpkgs` in
+   `flake.nix` to the next release (`nixos-26.11`) once it's out.
+2. `nix eval --json .#versions | jq`: an application can move to stable when its
    `nixpkgs` version is the same or newer than `here`. Never go to an older one.
-3. Delete its entry from `packages.nix`, with what only it needed: the Tdarr helper,
-   Paperless' `torchcodec` fix, and for Paperless also the `disabledModules`/`imports`
-   lines in `modules/services/paperless/default.nix` once the release's module handles 3.x.
+3. Change the application's input URL to that stable branch and run
+   `nix flake update nixpkgs-<app>`. Keep its package selection in `packages.nix`, but
+   remove any custom overrides stable no longer needs: the Tdarr helper or
+   Paperless' `torchcodec` fix. For Paperless, remove the `disabledModules`/`imports`
+   lines in `modules/services/paperless/default.nix` once the OS module handles 3.x.
 4. Build and deploy (see Deploy). Check the service starts and its journal shows no
    database migration errors. Commit.
-5. When `packages.nix` is empty: delete it, the `overlay` and `versions` in `flake.nix`,
-   the `nixpkgs-unstable` input and `pkgs-unstable`, then `nix flake lock` and deploy.

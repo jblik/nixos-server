@@ -1,11 +1,11 @@
-# Every package that doesn't come from the nixos-26.05 nixpkgs. `nix eval .#versions`
-# lists each one with the version 26.05 has; README.md says when they can go.
-{ pkgs-unstable }:
+# Native applications from their own nixpkgs inputs. `nix eval .#versions`
+# compares their versions with the system's nixpkgs; README.md covers updates.
+{ applicationPkgs }:
 final: prev:
 let
   tdarr =
     component: hash:
-    pkgs-unstable."tdarr-${component}".overrideAttrs (
+    applicationPkgs.tdarr."tdarr-${component}".overrideAttrs (
       finalAttrs: _: {
         version = "2.91.01";
         src = prev.fetchzip {
@@ -19,8 +19,30 @@ let
     );
 in
 {
-  plex = pkgs-unstable.plex;
-  bazarr = pkgs-unstable.bazarr;
+  plex = applicationPkgs.plex.plex;
+  bazarr = applicationPkgs.bazarr.bazarr;
+  sonarr = applicationPkgs.sonarr.sonarr;
+  radarr = applicationPkgs.radarr.radarr;
+  jackett = applicationPkgs.jackett.jackett;
+  flaresolverr = applicationPkgs.flaresolverr.flaresolverr;
+  qbittorrent-nox = applicationPkgs.qbittorrent.qbittorrent-nox;
+  forgejo-lts = applicationPkgs.forgejo.forgejo-lts;
+  microbin = applicationPkgs.microbin.microbin;
+  coolercontrol = applicationPkgs.coolercontrol.coolercontrol;
+  prometheus-node-exporter = applicationPkgs.node-exporter.prometheus-node-exporter;
+  prometheus = applicationPkgs.prometheus.prometheus;
+  prometheus-alertmanager = applicationPkgs.alertmanager.prometheus-alertmanager;
+  grafana = applicationPkgs.grafana.grafana;
+  tailscale = applicationPkgs.tailscale.tailscale;
+  ollama-cuda = applicationPkgs.ollama.ollama-cuda;
+  open-webui = applicationPkgs.open-webui.open-webui;
+  tika = applicationPkgs.tika.tika;
+  gotenberg = applicationPkgs.gotenberg.gotenberg;
+  postgresql_17 = applicationPkgs.postgresql.postgresql_17;
+  redis = applicationPkgs.redis.redis;
+  nginxStable = applicationPkgs.nginx.nginxStable;
+  cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
+  ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   tdarr-server = tdarr "server" "sha256-QWXV8a9UJZXD/Obo8xDICAtN2ZndInD5/M/W8e/Xd5M=";
   tdarr-node = tdarr "node" "sha256-IbYyaxeYGVoWN/zadvhrblFRddtRc6ALyBABNzq0Wdc=";
   tdarrPackages = {
@@ -29,10 +51,10 @@ in
   };
 
   # 26.05 only has the end-of-life 2.x, marked insecure; 3.x needs the same vectorchord.
-  immich = pkgs-unstable.immich;
+  immich = applicationPkgs.immich.immich;
 
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
-  paperless-ngx = pkgs-unstable.paperless-ngx.override {
+  paperless-ngx = applicationPkgs.paperless.paperless-ngx.override {
     extraPythonPackageOverrides = _final: prev: {
       # Uncached on unstable: its mp3 encoder tests fail against nixpkgs' ffmpeg.
       torchcodec = prev.torchcodec.overridePythonAttrs (old: {

@@ -3,7 +3,33 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-plex.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-bazarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-tdarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-paperless.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-sonarr.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-jackett.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-flaresolverr.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-qbittorrent.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-forgejo.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-microbin.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-coolercontrol.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-node-exporter.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-prometheus.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-alertmanager.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-grafana.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-tailscale.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-open-webui.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-tika.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-gotenberg.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-postgresql.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-nginx.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-cloudflare-dyndns.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-speedtest.url = "github:NixOS/nixpkgs/nixos-26.05";
     server-dashboard = {
       url = "git+ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,7 +44,6 @@
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       ...
     }:
     let
@@ -29,18 +54,23 @@
         "aarch64-darwin"
       ];
 
-      pkgs-unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
+      applicationPkgs = nixpkgs.lib.mapAttrs' (
+        name: input:
+        nixpkgs.lib.nameValuePair (nixpkgs.lib.removePrefix "nixpkgs-" name) (
+          import input {
+            inherit system;
+            config.allowUnfree = true;
+          }
+        )
+      ) (nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "nixpkgs-" name) inputs);
 
-      overlay = import ./packages.nix { inherit pkgs-unstable; };
+      overlay = import ./packages.nix { inherit applicationPkgs; };
 
       mkHost =
         hostPath:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs pkgs-unstable; };
+          specialArgs = { inherit inputs; };
           modules = [
             {
               nixpkgs.hostPlatform = system;
