@@ -3,11 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
     nixpkgs-plex.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-bazarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-tdarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-paperless.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     nixpkgs-sonarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-jackett.url = "github:NixOS/nixpkgs/nixos-26.05";

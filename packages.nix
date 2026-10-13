@@ -43,6 +43,7 @@ in
   nginxStable = applicationPkgs.nginx.nginxStable;
   cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
+
   tdarr-server = tdarr "server" "sha256-QWXV8a9UJZXD/Obo8xDICAtN2ZndInD5/M/W8e/Xd5M=";
   tdarr-node = tdarr "node" "sha256-IbYyaxeYGVoWN/zadvhrblFRddtRc6ALyBABNzq0Wdc=";
   tdarrPackages = {
@@ -54,12 +55,5 @@ in
   immich = applicationPkgs.immich.immich;
 
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
-  paperless-ngx = applicationPkgs.paperless.paperless-ngx.override {
-    extraPythonPackageOverrides = _final: prev: {
-      # Uncached on unstable: its mp3 encoder tests fail against nixpkgs' ffmpeg.
-      torchcodec = prev.torchcodec.overridePythonAttrs (old: {
-        disabledTests = old.disabledTests ++ [ "test_audio_against_cli" ];
-      });
-    };
-  };
+  paperless-ngx = applicationPkgs.paperless.paperless-ngx.override;
 }

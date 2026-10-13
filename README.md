@@ -23,8 +23,8 @@ or over Tailscale (`tailscale0` is trusted).
 nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
 at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
 (`modules/services/proxy.nix`: Forgejo as `git`, Immich as `photos`, Paperless as
-`documents`, MicroBin as `notes`, the dashboard as `server`, Open WebUI as `ai`) are at `https://<app>.steenblik.ch`, through
-443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
+`documents`, MicroBin as `notes`, the dashboard as `server`, Open WebUI as `ai`) are at `https://<app>.steenblik.ch`,
+through 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed.
 
@@ -61,27 +61,27 @@ Plex/Tdarr transcode cache.
 
 ## Services
 
-| Service                                       | Port                       | Runs as                                         |
-|-----------------------------------------------|----------------------------|-------------------------------------------------|
-| Plex                                          | 32400                      | native                                          |
-| Sonarr / Radarr / Bazarr                      | 8989 / 7878 / 6767         | native                                          |
-| Jackett (+ FlareSolverr on localhost:8191)    | 9117                       | native                                          |
-| qBittorrent                                   | 8080                       | native                                          |
-| Tdarr                                         | 8265 (UI), 8266 (server)   | native, GPU node                                |
-| Cleanuparr                                    | 11011                      | podman container                                |
-| Pulsarr                                       | 3003                       | podman container                                |
-| Maintainerr                                   | 6246                       | podman container                                |
-| Immich (photos.steenblik.ch)                  | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container   |
-| Paperless-ngx (documents.steenblik.ch)        | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL |
-| Forgejo (git.steenblik.ch)                    | 3000 (localhost), SSH 2222 | native                                          |
-| MicroBin (notes.steenblik.ch)                 | 8081 (localhost)           | native                                          |
-| CoolerControl                                 | 11987 (localhost)          | native                                          |
-| Dashboard (server.steenblik.ch)               | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
-| node_exporter                                 | 9100 (localhost)           | native                                          |
-| Prometheus / Alertmanager (mails alerts)      | 9090 / 9093 (localhost)    | native                                          |
-| Grafana (grafana.internal.steenblik.ch)       | 3002 (localhost)           | native                                          |
-| Tailscale (exit node)                         | —                          | native                                          |
-| Ollama + Open WebUI (ai.steenblik.ch)         | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
+| Service                                    | Port                       | Runs as                                         |
+|--------------------------------------------|----------------------------|-------------------------------------------------|
+| Plex                                       | 32400                      | native                                          |
+| Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                          |
+| Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                          |
+| qBittorrent                                | 8080                       | native                                          |
+| Tdarr                                      | 8265 (UI), 8266 (server)   | native, GPU node                                |
+| Cleanuparr                                 | 11011                      | podman container                                |
+| Pulsarr                                    | 3003                       | podman container                                |
+| Maintainerr                                | 6246                       | podman container                                |
+| Immich (photos.steenblik.ch)               | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container   |
+| Paperless-ngx (documents.steenblik.ch)     | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL |
+| Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                          |
+| MicroBin (notes.steenblik.ch)              | 8081 (localhost)           | native                                          |
+| CoolerControl                              | 11987 (localhost)          | native                                          |
+| Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
+| node_exporter                              | 9100 (localhost)           | native                                          |
+| Prometheus / Alertmanager (mails alerts)   | 9090 / 9093 (localhost)    | native                                          |
+| Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                          |
+| Tailscale (exit node)                      | —                          | native                                          |
+| Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
 
 ## AI
 
@@ -89,8 +89,8 @@ One Ollama serves every model, to:
 
 - **Open WebUI** at `https://ai.steenblik.ch`: chat, behind its own login. Signup is off; the
   first account becomes the admin, who adds everyone else (Admin Panel → Users).
-- **The API** at `https://ai.steenblik.ch/v1`, for CLIs and IDEs: OpenAI-compatible
-  (`/v1/chat/completions`, `/v1/responses`, `/v1/embeddings`, `/v1/models`) and
+- **The API** at `https://ai.steenblik.ch/v1`, for CLIs and IDEs: OpenAI-compatible (`/v1/chat/completions`,
+  `/v1/responses`, `/v1/embeddings`, `/v1/models`) and
   Anthropic-compatible (`/v1/messages`). It needs the `ai-api-key` secret, as
   `Authorization: Bearer <key>` or `x-api-key: <key>`.
 - **Paperless**: tag/correspondent suggestions and chat with documents, on the `chat` model;
@@ -101,8 +101,8 @@ vision models that Ollama doesn't serve.
 
 ### Models
 
-`host.ai.models` in `hosts/nixos-server/default.nix`, as Ollama tags
-(<https://ollama.com/library>). `chat` is Open WebUI's default and Paperless' model,
+`host.ai.models` in `hosts/nixos-server/default.nix`, as Ollama tags (<https://ollama.com/library>). `chat` is Open
+WebUI's default and Paperless' model,
 `embedding` is for document search in both, any other name (`code`) is only pulled. Deploy
 pulls new tags and deletes dropped ones; `journalctl -fu ollama-model-loader` shows the
 download. A model is loaded on first request and unloaded after 5 minutes idle, so the GPU
