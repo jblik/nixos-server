@@ -136,19 +136,26 @@ for trusted repositories and do not run untrusted pull-request code on it.
 ### Registration
 
 In the intended repository or organization's Settings → Actions → Runners,
-create a registration token. Before the first deployment, on the server:
+create a registration token. From this repository, edit the encrypted secrets:
 
 ```sh
-sudo install -d -m 0700 /var/lib/forgejo-runner
-sudoedit /var/lib/forgejo-runner/token.env
-sudo chmod 0600 /var/lib/forgejo-runner/token.env
+nix shell nixpkgs#sops -c sops secrets/secrets.yaml
 ```
 
-The file must contain `TOKEN=<registration-token>` (an environment file, not a
-bare token). Keep this runtime credential out of Git and the Nix store. The
-service manager reads it as root; the runner registers automatically and keeps
-its registration under `/var/lib/gitea-runner/docker`. A missing token file
-prevents the runner from starting. After deploying, check:
+Add this top-level YAML key in the editor, then save and close:
+
+```yaml
+forgejo-runner.env: |
+  TOKEN=<registration-token>
+```
+
+The value is an environment file, not a bare token. Commit the encrypted file
+with `jj commit -m 'chore: add encrypted Forgejo runner registration token'`, then
+deploy as described above. sops-nix decrypts it to the root-only
+`/run/secrets/forgejo-runner.env`; systemd reads it for the runner. Changing the
+secret restarts the runner and triggers registration with the new token. The
+runner keeps its registration under `/var/lib/gitea-runner/docker`. The secret
+must exist before deployment. After deploying, check:
 
 ```sh
 systemctl status gitea-runner-docker

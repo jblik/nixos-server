@@ -10,6 +10,10 @@ let
 in
 {
   config = lib.mkIf config.host.forgejo.enable {
+    sops.secrets."forgejo-runner.env" = {
+      restartUnits = [ "gitea-runner-docker.service" ];
+    };
+
     services.forgejo = {
       enable = true;
       settings = {
@@ -36,7 +40,7 @@ in
         enable = true;
         name = "${config.networking.hostName}-docker";
         url = "https://${domain}/";
-        tokenFile = "/var/lib/forgejo-runner/token.env";
+        tokenFile = config.sops.secrets."forgejo-runner.env".path;
         labels = [
           "docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04"
         ];
