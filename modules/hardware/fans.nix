@@ -180,45 +180,9 @@ let
       ++ [
         (mix "case" "Case" (map (p: p.uid) caseSources))
         (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) 60 85))
-        (
-          (graph "chipset" sensors.chipset.name (source sensors.chipset) 75 95)
-          // {
-            speed_profile = [
-              [
-                0
-                0
-              ]
-              [
-                75
-                0
-              ]
-              [
-                76
-                15
-              ]
-              [
-                80
-                25
-              ]
-              [
-                85
-                50
-              ]
-              [
-                90
-                75
-              ]
-              [
-                95
-                100
-              ]
-              [
-                100
-                100
-              ]
-            ];
-          }
-        )
+        (graph "chipset" sensors.chipset.name (
+          source sensors.chipset // { sensor = "Smbusmaster 1"; }
+        ) 80 95)
         {
           uid = "full";
           name = "Full";
