@@ -3,8 +3,8 @@
 #
 #   /data/torrents/{tv,movies}   qBittorrent downloads
 #   /data/media/{tv,movies}      the library (Plex, Sonarr, Radarr, Bazarr)
-#   /scratch/incomplete          qBittorrent in-progress downloads (fast storage)
-#   /scratch/transcode           Tdarr cache (fast storage)
+#   /scratch/incomplete        qBittorrent in-progress downloads (fast storage)
+#   /scratch/transcode         Tdarr cache (fast storage)
 #
 # Downloads and library share one mount so imports are hardlinks, not copies.
 let
@@ -56,9 +56,7 @@ in
         "transcode"
       ];
 
-    # Every service that touches /data runs in the `users` group (gid 100) with
-    # umask 002, the same ownership unraid gave these files (99:100), so the
-    # unraid disks can be adopted without a chown.
+    # Every service that touches /data runs in the `users` group (gid 100) with umask 002
     systemd.services = lib.genAttrs mediaServices (_: {
       unitConfig.RequiresMountsFor = [
         bulkMount

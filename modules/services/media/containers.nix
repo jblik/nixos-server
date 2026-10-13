@@ -1,6 +1,6 @@
 { config, lib, ... }:
 # *arr helpers that have no NixOS module. Host networking so they reach Plex and
-# the *arr apps on localhost; all run as 99:100 like on unraid.
+# the *arr apps on localhost; all run as 99:100
 let
   inherit (config.host.storage) bulkMount;
   m = config.host.media;

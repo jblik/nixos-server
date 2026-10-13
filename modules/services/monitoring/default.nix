@@ -95,13 +95,12 @@ in
       ];
     };
 
-    # The iCloud app password Paperless sends mail with.
     sops.secrets."paperless.env" = { };
 
     services.prometheus.alertmanager = {
       enable = true;
       listenAddress = "127.0.0.1";
-      # todo consolidate and make it a better file so I don't reuse specific things
+      # todo consolidate and make it a better file so Idon't reuse specific things
       environmentFile = config.sops.secrets."paperless.env".path;
       configuration = {
         route = {

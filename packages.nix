@@ -3,7 +3,6 @@
 { pkgs-unstable }:
 final: prev:
 let
-  # Unraid runs 2.91.01 and its database gets imported; unstable only has 2.87.01.
   tdarr =
     component: hash:
     pkgs-unstable."tdarr-${component}".overrideAttrs (
@@ -20,7 +19,6 @@ let
     );
 in
 {
-  # Not older than unraid's, whose databases get imported; a downgrade can't open them.
   plex = pkgs-unstable.plex;
   bazarr = pkgs-unstable.bazarr;
   tdarr-server = tdarr "server" "sha256-QWXV8a9UJZXD/Obo8xDICAtN2ZndInD5/M/W8e/Xd5M=";
@@ -33,6 +31,13 @@ in
   # 26.05 only has the end-of-life 2.x, marked insecure; 3.x needs the same vectorchord.
   immich = pkgs-unstable.immich;
 
-  # unraid runs 3.x and the importer needs the same version; 26.05 only has 2.x.
-  paperless-ngx = pkgs-unstable.paperless-ngx;
+  # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
+  paperless-ngx = pkgs-unstable.paperless-ngx.override {
+    extraPythonPackageOverrides = _final: prev: {
+      # Uncached on unstable: its mp3 encoder tests fail against nixpkgs' ffmpeg.
+      torchcodec = prev.torchcodec.overridePythonAttrs (old: {
+        disabledTests = old.disabledTests ++ [ "test_audio_against_cli" ];
+      });
+    };
+  };
 }

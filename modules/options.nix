@@ -249,10 +249,6 @@
           Mountpoint of the mergerfs union that services see as one filesystem.
           Keep downloads and the media library both under here, or hardlinks
           between them break and every import becomes a full copy.
-
-          `/data` is what Sonarr and Radarr saw inside their unraid containers,
-          so their root folders and download paths stay valid if that appdata
-          is ever imported.
         '';
       };
 

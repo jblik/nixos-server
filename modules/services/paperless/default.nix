@@ -11,7 +11,7 @@ let
   thumbnails = "${mediaDir}/documents/thumbnails";
 in
 {
-  # unraid runs 3.x and the importer needs the same version; 26.05's module only handles 2.x.
+  # we run 3.x and the importer needs the same version; 26.05's module only handles 2.x.
   disabledModules = [ "services/misc/paperless.nix" ];
   imports = [ "${inputs.nixpkgs-unstable}/nixos/modules/services/misc/paperless.nix" ];
 
