@@ -26,38 +26,12 @@ let
   # A sensor, found by its device's name (or disk model) and the sensor's key or label.
   source = part: { inherit (part) device sensor; };
 
-  # Lower duties may not start a stopped fan.
-  startDuty = 35;
-
-  # Off up to `off` °C, then `startDuty` up to full speed at `full` °C.
-  graph = uid: name: source: off: full: {
-    inherit uid name;
+  graph = uid: name: source: speed_profile: {
+    inherit uid name speed_profile;
     p_type = "Graph";
     temp_source = source;
     function_uid = "calm";
     member_profile_uids = [ ];
-    speed_profile = [
-      [
-        0
-        0
-      ]
-      [
-        off
-        0
-      ]
-      [
-        (off + 1)
-        startDuty
-      ]
-      [
-        full
-        100
-      ]
-      [
-        100
-        100
-      ]
-    ];
   };
 
   # Tdie jumps by ~10 °C every few seconds even at idle.
@@ -73,13 +47,234 @@ let
 
   caseGraph = uid: part: graph uid "Case: ${part.name}" (source part);
 
+  # fan3 stops at 35% even while the other case fans are still turning.
+  caseDuty = 40;
+
   caseSources = [
-    (smoothed (caseGraph "case-cpu" sensors.cpu 65 85))
-    (caseGraph "case-gpu" sensors.gpu 60 80)
-    (caseGraph "case-hdd" sensors.disk1 45 55)
-    (caseGraph "case-sandisk" sensors.sandisk 60 70)
-    (caseGraph "case-peaq" sensors.peaq 60 70)
-    (caseGraph "case-nvme" sensors.nvme 65 75)
+    (smoothed (
+      caseGraph "case-cpu" sensors.cpu [
+        [
+          0
+          caseDuty
+        ]
+        [
+          55
+          caseDuty
+        ]
+        [
+          65
+          50
+        ]
+        [
+          75
+          70
+        ]
+        [
+          80
+          100
+        ]
+        [
+          100
+          100
+        ]
+      ]
+    ))
+    (caseGraph "case-gpu" sensors.gpu [
+      [
+        0
+        caseDuty
+      ]
+      [
+        50
+        caseDuty
+      ]
+      [
+        60
+        50
+      ]
+      [
+        70
+        65
+      ]
+      [
+        80
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-board" sensors.motherboard [
+      [
+        0
+        caseDuty
+      ]
+      [
+        40
+        caseDuty
+      ]
+      [
+        50
+        50
+      ]
+      [
+        60
+        75
+      ]
+      [
+        70
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-chipset" sensors.chipset [
+      [
+        0
+        caseDuty
+      ]
+      [
+        65
+        caseDuty
+      ]
+      [
+        75
+        50
+      ]
+      [
+        85
+        70
+      ]
+      [
+        90
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-hdd" sensors.disk1 [
+      [
+        0
+        caseDuty
+      ]
+      [
+        35
+        caseDuty
+      ]
+      [
+        40
+        50
+      ]
+      [
+        45
+        70
+      ]
+      [
+        50
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-hdd2" sensors.disk2 [
+      [
+        0
+        caseDuty
+      ]
+      [
+        35
+        caseDuty
+      ]
+      [
+        40
+        50
+      ]
+      [
+        45
+        70
+      ]
+      [
+        50
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-sandisk" sensors.sandisk [
+      [
+        0
+        caseDuty
+      ]
+      [
+        45
+        caseDuty
+      ]
+      [
+        55
+        60
+      ]
+      [
+        65
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-peaq" sensors.peaq [
+      [
+        0
+        caseDuty
+      ]
+      [
+        45
+        caseDuty
+      ]
+      [
+        55
+        60
+      ]
+      [
+        65
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
+    (caseGraph "case-nvme" sensors.nvme [
+      [
+        0
+        caseDuty
+      ]
+      [
+        50
+        caseDuty
+      ]
+      [
+        60
+        60
+      ]
+      [
+        70
+        100
+      ]
+      [
+        100
+        100
+      ]
+    ])
   ];
 
   # The dashboard calls a sensor warm at the same readings (server-dashboard's Readings.fs).
@@ -154,7 +349,7 @@ let
         step_size_min_decreasing = 0;
         step_size_max_decreasing = 0;
         response_delay = 3;
-        # Hysteresis: a fan only slows once it is 3 °C cooler, so it does not flap at `off`.
+        # Hysteresis keeps small temperature fluctuations from repeatedly slowing a fan.
         deviance = 3;
         only_downward = true;
         threshold_hopping = true;
@@ -168,7 +363,7 @@ let
         duty_maximum = 100;
         step_size_min_decreasing = 0;
         step_size_max_decreasing = 0;
-        sample_window = 20;
+        sample_window = 8;
         threshold_hopping = true;
         bypass_min_at_extremes = true;
       }
@@ -179,10 +374,68 @@ let
       ++ coolSources
       ++ [
         (mix "case" "Case" (map (p: p.uid) caseSources))
-        (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) 60 85))
-        (graph "chipset" sensors.chipset.name (
-          source sensors.chipset // { sensor = "Smbusmaster 1"; }
-        ) 80 95)
+        (smoothed (
+          graph "cpu" sensors.cpu.name (source sensors.cpu) [
+            [
+              0
+              35
+            ]
+            [
+              45
+              35
+            ]
+            [
+              55
+              40
+            ]
+            [
+              65
+              50
+            ]
+            [
+              75
+              70
+            ]
+            [
+              80
+              100
+            ]
+            [
+              100
+              100
+            ]
+          ]
+        ))
+        (graph "chipset" sensors.chipset.name (source sensors.chipset) [
+          [
+            0
+            15
+          ]
+          [
+            70
+            15
+          ]
+          [
+            75
+            20
+          ]
+          [
+            80
+            25
+          ]
+          [
+            85
+            45
+          ]
+          [
+            90
+            100
+          ]
+          [
+            100
+            100
+          ]
+        ])
         {
           uid = "full";
           name = "Full";
