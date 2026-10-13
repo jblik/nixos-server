@@ -44,27 +44,27 @@ let
   services =
     lib.optionals host.media.enable [
       (service media internal "plex" "Plex" "Stream the library" (svg "plex"))
-      (service media internal "sonarr" "Sonarr" "TV series" (svg "sonarr"))
-      (service media internal "radarr" "Radarr" "Movies" (svg "radarr"))
-      (service media internal "bazarr" "Bazarr" "Subtitles" (svg "bazarr"))
+      (service media internal "sonarr" "Sonarr" "TV series fetcher" (svg "sonarr"))
+      (service media internal "radarr" "Radarr" "Movie fetcher" (svg "radarr"))
+      (service media internal "bazarr" "Bazarr" "Subtitle fetcher" (svg "bazarr"))
       (service media internal "jackett" "Jackett" "Indexer proxy" (svg "jackett"))
-      (service media internal "qbittorrent" "qBittorrent" "Downloads" (svg "qbittorrent"))
-      (service media internal "tdarr" "Tdarr" "Transcoding on the RTX 3060" (svg "tdarr"))
+      (service media internal "qbittorrent" "qBittorrent" "Download client" (svg "qbittorrent"))
+      (service media internal "tdarr" "Tdarr" "Transcoding Plex library" (svg "tdarr"))
       (service media internal "cleanuparr" "Cleanuparr" "Clears stalled downloads" (png "cleanuparr"))
       (service media internal "pulsarr" "Pulsarr" "Plex watchlist sync" (svg "pulsarr"))
       (service media internal "maintainerr" "Maintainerr" "Library cleanup rules" (svg "maintainerr"))
     ]
     ++ lib.optionals host.immich.enable [
-      (service library public "photos" "Photos" "Immich photo library" (svg "immich"))
+      (service library public "photos" "Photos" "Photo library" (svg "immich"))
     ]
     ++ lib.optionals host.paperless.enable [
-      (service library public "documents" "Paperless" "Scanned documents" (svg "paperless-ngx"))
+      (service library public "documents" "Documents" "Scanned documents" (svg "paperless-ngx"))
     ]
     ++ lib.optionals host.forgejo.enable [
       (service tools public "git" "Git" "Forgejo" (svg "forgejo"))
     ]
     ++ lib.optionals host.microbin.enable [
-      (service tools public "notes" "Notes" "MicroBin pastes" (png "microbin"))
+      (service tools public "notes" "Notes" "One time links" (png "microbin"))
     ]
     ++ lib.optionals host.ai.enable [
       (service tools public "ai" "AI" "Open WebUI chat on local models" (svg "open-webui"))
