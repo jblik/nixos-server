@@ -22,6 +22,7 @@ in
       loadModels = lib.attrValues cfg.models;
       syncModels = true;
       environmentVariables = {
+        HOME = "/var/lib/open-webui";
         # Its default of 4k is too short for coding agents; flash attention and a q8_0 KV
         # cache keep that context affordable on a card shared with Immich ML and NVENC.
         OLLAMA_CONTEXT_LENGTH = "32768";
