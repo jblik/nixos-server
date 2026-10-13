@@ -141,6 +141,16 @@ let
       "80" = 100;
       "100" = 100;
     };
+    rearGpu = {
+      "0" = 0;
+      "59" = 0;
+      "60" = 35;
+      "65" = 35;
+      "70" = 50;
+      "75" = 70;
+      "80" = 100;
+      "100" = 100;
+    };
     caseBoard = {
       "0" = 0;
       "50" = 0;
@@ -195,12 +205,20 @@ let
     nvme = curves.caseNvme;
   };
 
+  # The only exhaust must start with component cooling, before the intake triggers.
+  rearCurves = caseCurves // {
+    cpu = curves.cpu;
+    chipset = curves.chipset;
+    gpu = curves.rearGpu;
+  };
+
   caseGraphs = lib.mapAttrs (
     uid: fan:
     map (
       key:
       let
-        points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) caseCurves.${key};
+        temperatureCurve = (if uid == "rear" then rearCurves else caseCurves).${key};
+        points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) temperatureCurve;
         profile = graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" (source
           sensors.${key}
         ) points;
