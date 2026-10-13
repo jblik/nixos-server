@@ -115,7 +115,7 @@ Plex/Tdarr transcode cache.
 
 ## Forgejo CI
 
-`gitea-runner-docker.service` runs the Forgejo runner continuously, starts at boot
+`forgejo-runner-docker.service` runs the Forgejo runner continuously, starts at boot
 and restarts on exit. Its `docker` label uses an Ubuntu Actions image with Git,
 Node and the Docker CLI, with one job at a time. The runner package has its own
 `nixpkgs-forgejo-runner` input.
@@ -136,7 +136,10 @@ for trusted repositories and do not run untrusted pull-request code on it.
 ### Registration
 
 In the intended repository or organization's Settings → Actions → Runners,
-create a registration token. From this repository, edit the encrypted secrets:
+choose Create new runner. Forgejo displays a UUID and token for that runner.
+Both are required. Set the UUID directly in the `--uuid` argument in
+`modules/services/forgejo.nix`; it is an identifier, not a secret. From this
+repository, edit the encrypted token:
 
 ```sh
 nix shell nixpkgs#sops -c sops secrets/secrets.yaml
@@ -146,25 +149,28 @@ Add this top-level YAML key in the editor, then save and close:
 
 ```yaml
 forgejo-runner.env: |
-  TOKEN=<registration-token>
+  TOKEN=<runner-token>
 ```
 
-The value is an environment file, not a bare token. Commit the encrypted file
-with `jj commit -m 'chore: add encrypted Forgejo runner registration token'`, then
+The value is an environment file, not a bare token. Use the UUID and token from
+the same runner. Commit the encrypted file
+with `jj commit -m 'chore: add encrypted Forgejo runner credentials'`, then
 deploy as described above. sops-nix decrypts it to the root-only
-`/run/secrets/forgejo-runner.env`; systemd reads it for the runner. Changing the
-secret restarts the runner and triggers registration with the new token. The
-runner keeps its registration under `/var/lib/gitea-runner/docker`. The secret
-must exist before deployment. After deploying, check:
+`/run/secrets/forgejo-runner.env`; systemd reads it for the runner. The service
+connects using the supplied UUID and token, without running the deprecated
+`register` command. Changing the secret restarts the runner. Its working data
+is under `/var/lib/forgejo-runner`, and a private token file exists only while
+the service runs, under `/run/forgejo-runner`. The secret must exist before
+deployment. After deploying, check:
 
 ```sh
-systemctl status gitea-runner-docker
-journalctl -u gitea-runner-docker -n 50
+systemctl status forgejo-runner-docker
+journalctl -u forgejo-runner-docker -n 50
 ```
 
 Enable Actions in the repository's settings. Set repository secrets
 `REGISTRY_USER` and `REGISTRY_TOKEN`; for Forgejo's registry the token needs
-package write access. The runner registration token is a separate credential.
+package write access. The runner's connection token is a separate credential.
 
 ### Build and push an image
 
