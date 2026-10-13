@@ -21,6 +21,7 @@
 let
   api = "http://127.0.0.1:${toString config.host.fans.port}";
   stateDir = "/var/lib/coolercontrol-defaults";
+  gpuExhaustFile = "/run/coolercontrol-gpu-exhaust/temperature";
   sensors = config.host.sensors;
   board = sensors.motherboard.device;
 
@@ -145,7 +146,7 @@ let
     };
     rearGpu = {
       "0" = 0;
-      "59" = 0;
+      "1" = 35;
       "60" = 35;
       "65" = 35;
       "70" = 50;
@@ -221,9 +222,15 @@ let
       let
         temperatureCurve = (if uid == "rear" then rearCurves else caseCurves).${key};
         points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) temperatureCurve;
-        profile = graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" (source
-          sensors.${key}
-        ) points;
+        tempSource =
+          if uid == "rear" && key == "gpu" then
+            {
+              device = "Custom Sensors";
+              sensor = "gpu-exhaust";
+            }
+          else
+            source sensors.${key};
+        profile = graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" tempSource points;
       in
       (if key == "cpu" then smoothed else lib.id) profile
     ) fan.sources
@@ -278,6 +285,16 @@ let
   ) quietGraphs;
 
   defaults = {
+    custom_sensors = [
+      {
+        id = "gpu-exhaust";
+        cs_type = "File";
+        mix_function = "Min";
+        sources = [ ];
+        file_path = gpuExhaustFile;
+      }
+    ];
+
     settings = {
       # disk1 spins down; reading its temperature must not wake it.
       drivetemp_suspend = true;
@@ -370,6 +387,15 @@ let
     ];
     text = builtins.readFile ./coolercontrol-defaults.sh;
   };
+
+  gpuExhaust = pkgs.writeShellApplication {
+    name = "coolercontrol-gpu-exhaust";
+    runtimeInputs = with pkgs; [
+      curl
+      jq
+    ];
+    text = builtins.readFile ./coolercontrol-gpu-exhaust.sh;
+  };
 in
 {
   boot.kernelModules = [
@@ -392,6 +418,31 @@ in
   };
 
   sops.secrets.coolercontrol-password = { };
+
+  systemd.tmpfiles.rules = [
+    "d /run/coolercontrol-gpu-exhaust 0755 root root -"
+    "f ${gpuExhaustFile} 0644 root root - 0"
+  ];
+
+  systemd.services.coolercontrol-gpu-exhaust = {
+    description = "Report GPU temperature while its fans are running";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "coolercontrol-defaults.service" ];
+    after = [ "coolercontrol-defaults.service" ];
+    partOf = [ "coolercontrold.service" ];
+    environment = {
+      API = api;
+      GPU_DEVICE = sensors.gpu.device;
+      GPU_SENSOR = sensors.gpu.sensor;
+      TEMP_FILE = gpuExhaustFile;
+      TOKEN_FILE = "${stateDir}/dashboard-token";
+    };
+    serviceConfig = {
+      ExecStart = lib.getExe gpuExhaust;
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+  };
 
   systemd.services.coolercontrol-defaults = {
     description = "Apply the CoolerControl defaults";

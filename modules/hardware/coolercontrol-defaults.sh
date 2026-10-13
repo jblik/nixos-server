@@ -41,6 +41,15 @@ fi
 
 jq -c .settings "$DEFAULTS" | call PATCH /settings --data @- >/dev/null
 
+jq -c '.custom_sensors[]' "$DEFAULTS" | while read -r sensor; do
+  id=$(jq -r .id <<<"$sensor")
+  if call GET "/custom-sensors/$id" >/dev/null 2>&1; then
+    call PUT /custom-sensors --data "$sensor" >/dev/null
+  else
+    call POST /custom-sensors --data "$sensor" >/dev/null
+  fi
+done
+
 devices=$(call GET /devices)
 
 resolve_sensor() {
