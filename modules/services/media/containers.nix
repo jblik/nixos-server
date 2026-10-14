@@ -24,7 +24,7 @@ let
     };
 
     pulsarr = {
-      image = "lakker/pulsarr:latest";
+      image = "lakker/pulsarr:0.19.7";
       environment = {
         PUID = uid;
         PGID = gid;
