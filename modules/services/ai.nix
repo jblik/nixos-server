@@ -42,6 +42,11 @@ in
         # The first account becomes the admin; everyone else is invited from the admin panel.
         ENABLE_SIGNUP = "False";
         OLLAMA_BASE_URL = ollama;
+        OLLAMA_API_CONFIGS = builtins.toJSON {
+          "0" = {
+            model_ids = [ cfg.models.chat ];
+          };
+        };
         ENABLE_OPENAI_API = "False";
         DEFAULT_MODELS = cfg.models.chat;
         TASK_MODEL = cfg.models.chat;

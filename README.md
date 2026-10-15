@@ -231,8 +231,10 @@ vision models that Ollama doesn't serve.
 ### Models
 
 `host.ai.models` in `hosts/nixos-server/default.nix`, as Ollama tags (<https://ollama.com/library>). `chat` is Open
-WebUI's default and Paperless' model,
-`embedding` is for document search in both, any other name (`code`) is only pulled. Deploy
+WebUI's only selectable chat model and Paperless' model,
+`embedding` is for document search in both, any other name (`code`) is only pulled for API
+clients. Open WebUI's connection filter hides the coding and embedding models from its
+model selector; embeddings remain available internally for document search. Deploy
 pulls new tags and deletes dropped ones; `journalctl -fu ollama-model-loader` shows the
 download. A model is loaded on first request and unloaded after 5 minutes idle, so the GPU
 is free for Plex, Tdarr and Immich otherwise.
