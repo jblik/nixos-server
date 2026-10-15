@@ -113,6 +113,17 @@ Plex/Tdarr transcode cache.
 | Tailscale (exit node)                      | —                          | native                                          |
 | Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
 
+## Home Assistant
+
+Home Assistant runs natively through `services.home-assistant`, enabled by
+`host.home-assistant.enable`. Nix manages the service, integration dependencies,
+base configuration and HomeKit Bridge. Pairings and credentials are managed in
+the UI and stored under `/var/lib/hass`; this directory is not yet a dedicated
+snapshotted ZFS dataset.
+
+TCP 8123 (UI), TCP 21063 (HomeKit) and UDP 5353 (mDNS discovery) are allowed from
+`host.lanCidr`. Keep the server, hubs and iPhone on the same LAN for pairing.
+
 ## Forgejo CI
 
 `forgejo-runner-docker.service` runs the Forgejo runner continuously, starts at boot

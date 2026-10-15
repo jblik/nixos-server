@@ -71,6 +71,8 @@
 
     immich.enable = lib.mkEnableOption "the Immich photo library (modules/services/immich.nix)";
 
+    home-assistant.enable = lib.mkEnableOption "Home Assistant and its Apple Home bridge (modules/services/home-assistant.nix)";
+
     paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
 
     microbin = {

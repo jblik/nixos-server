@@ -25,7 +25,10 @@ let
     };
 
   privateServices =
-    lib.optionalAttrs config.host.media.enable {
+    lib.optionalAttrs config.host.home-assistant.enable {
+      home = s.home-assistant.config.http.server_port;
+    }
+    // lib.optionalAttrs config.host.media.enable {
       plex = config.host.media.plex.port;
       sonarr = s.sonarr.settings.server.port;
       radarr = s.radarr.settings.server.port;

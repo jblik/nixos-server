@@ -34,6 +34,7 @@ in
     media.enable = true;
     forgejo.enable = true;
     immich.enable = true;
+    home-assistant.enable = true;
     paperless.enable = true;
     microbin.enable = true;
     dashboard.enable = true;
@@ -50,31 +51,33 @@ in
 
     storage = {
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
+      # before adding something here: sudo zfs create -o mountpoint=legacy fast/{name}
       fastPool = "fast";
       hostId = "c60968bd";
       fastDatasets = {
         snapshot = {
-          forgejo = "/var/lib/forgejo";
-          plex = "/var/lib/plex";
-          sonarr = "/var/lib/sonarr";
-          radarr = "/var/lib/radarr";
           bazarr = "/var/lib/bazarr";
-          jackett = "/var/lib/jackett";
-          qbittorrent = "/var/lib/qBittorrent";
-          tdarr = "/var/lib/tdarr";
           cleanuparr = "/var/lib/cleanuparr";
-          pulsarr = "/var/lib/pulsarr";
-          maintainerr = "/var/lib/maintainerr";
-          postgresql = "/var/lib/postgresql";
-          paperless = "/var/lib/paperless";
-          microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
+          forgejo = "/var/lib/forgejo";
+          hass = "/var/lib/hass";
           immich = "/var/lib/immich";
+          jackett = "/var/lib/jackett";
+          plex = "/var/lib/plex";
+          maintainerr = "/var/lib/maintainerr";
+          microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
           open-webui = "/var/lib/private/open-webui"; # DynamicUser
+          paperless = "/var/lib/paperless";
+          postgresql = "/var/lib/postgresql";
+          pulsarr = "/var/lib/pulsarr";
+          qbittorrent = "/var/lib/qBittorrent";
+          radarr = "/var/lib/radarr";
+          sonarr = "/var/lib/sonarr";
+          tdarr = "/var/lib/tdarr";
         };
         # Regeneratable from the originals.
         noSnapshot = {
-          immich-thumbs = "/var/lib/immich/thumbs";
           immich-encoded-video = "/var/lib/immich/encoded-video";
+          immich-thumbs = "/var/lib/immich/thumbs";
           paperless-thumbnails = "/var/lib/paperless/media/documents/thumbnails";
         };
       };

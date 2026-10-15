@@ -1,0 +1,39 @@
+{ config, lib, ... }:
+{
+  config = lib.mkIf config.host.home-assistant.enable {
+    services.home-assistant = {
+      enable = true;
+      extraComponents = [
+        "default_config"
+        "homekit_controller"
+        "hue"
+        "roborock"
+      ];
+      config = {
+        default_config = { };
+        homeassistant.time_zone = config.host.timezone;
+        http = {
+          server_port = 8123;
+          use_x_forwarded_for = true;
+          trusted_proxies = [ "127.0.0.1" ];
+        };
+        homekit = [
+          {
+            name = "Home Assistant";
+            port = 21063;
+            filter.include_domains = [
+              "light"
+              "sensor"
+              "vacuum"
+            ];
+          }
+        ];
+      };
+    };
+
+    networking.firewall.extraInputRules = ''
+      ip saddr ${config.host.lanCidr} tcp dport { 8123, 21063 } accept
+      ip saddr ${config.host.lanCidr} udp dport 5353 accept
+    '';
+  };
+}
