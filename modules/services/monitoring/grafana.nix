@@ -62,7 +62,15 @@ let
   # The same fans and names as the dashboard (modules/services/dashboard.nix).
   fan =
     name: device: channel:
-    target ''coolercontrol_fan_rpm{device="${device}",channel="${channel}"}'' name;
+    let
+      selector = ''{device="${device}",channel="${channel}"}'';
+    in
+    {
+      inherit name;
+      rpm = "coolercontrol_fan_rpm${selector}";
+      pwm = "coolercontrol_duty_percent${selector}";
+      stopped = "(coolercontrol_duty_percent${selector} > bool 0) * (coolercontrol_fan_rpm${selector} == bool 0)";
+    };
   board = host.sensors.motherboard.device;
   gpu = host.sensors.gpu.device;
   fans = [
@@ -75,6 +83,97 @@ let
     (fan "GPU 1" gpu "fan1")
     (fan "GPU 2" gpu "fan2")
   ];
+
+  fanStatus = {
+    description = "PWM > 0% with RPM = 0 means rotation is requested but not reported. Brief flags can occur during startup. Missing readings remain unknown.";
+    fieldConfig.defaults = {
+      min = 0;
+      max = 1;
+      noValue = "Unknown";
+      mappings = [
+        {
+          type = "value";
+          options = {
+            "0" = {
+              text = "OK";
+              color = "green";
+            };
+            "1" = {
+              text = "No rotation";
+              color = "red";
+            };
+          };
+        }
+      ];
+    };
+  };
+
+  fanStatusTargets = map (f: target f.stopped f.name) fans;
+
+  fanDashboard = {
+    title = "Fans";
+    uid = "fans";
+    timezone = "browser";
+    refresh = "30s";
+    time = {
+      from = "now-6h";
+      to = "now";
+    };
+    schemaVersion = 39;
+    panels = [
+      (panel "stat" "Requested but not spinning — now" 0 0 24 4 (map (
+        t: t // { instant = true; }
+      ) fanStatusTargets) (fanStatus // { options.colorMode = "background"; }))
+      (panel "state-timeline" "Requested but not spinning — history" 0 4 24 7 fanStatusTargets fanStatus)
+    ]
+    ++ lib.imap0 (
+      i: f:
+      panel "timeseries" f.name (lib.mod i 2 * 12) (11 + builtins.div i 2 * 8) 12 8
+        [
+          (target f.rpm "RPM")
+          (target f.pwm "PWM")
+        ]
+        {
+          fieldConfig = {
+            defaults = {
+              unit = "rotrpm";
+              min = 0;
+              custom.axisPlacement = "left";
+            };
+            overrides = [
+              {
+                matcher = {
+                  id = "byName";
+                  options = "PWM";
+                };
+                properties = [
+                  {
+                    id = "unit";
+                    value = "percent";
+                  }
+                  {
+                    id = "max";
+                    value = 100;
+                  }
+                  {
+                    id = "custom.axisPlacement";
+                    value = "right";
+                  }
+                ];
+              }
+            ];
+          };
+          options = {
+            tooltip.mode = "multi";
+            legend = {
+              displayMode = "table";
+              placement = "bottom";
+              calcs = [ "lastNotNull" ];
+            };
+          };
+        }
+    ) fans;
+  };
 
   mounts = [
     storage.bulkMount
@@ -134,7 +233,7 @@ let
       (panel "timeseries" "Temperatures" 0 4 12 9 (map temperature (lib.attrValues host.sensors)) (
         unit "celsius"
       ))
-      (panel "timeseries" "Fans" 12 4 12 9 fans (unit "rotrpm"))
+      (panel "timeseries" "Fans — RPM" 12 4 12 9 (map (f: target f.rpm f.name) fans) (unit "rotrpm"))
       (panel "bargauge" "Disk usage" 0 13 12 9
         (
           [
@@ -179,11 +278,28 @@ let
         (target "speedtest_download_bytes_per_second * 8" "Down")
         (target "speedtest_upload_bytes_per_second * 8" "Up")
       ] (unit "bps"))
+      (panel "timeseries" "Fans — PWM" 0 31 12 9 (map (f: target f.pwm f.name) fans) {
+        fieldConfig.defaults = {
+          unit = "percent";
+          min = 0;
+          max = 100;
+        };
+        links = [
+          {
+            title = "Compare PWM and RPM per fan";
+            url = "/d/fans";
+          }
+        ];
+      })
+      (panel "stat" "Fans — requested but not spinning" 12 31 12 9 (map (
+        t: t // { instant = true; }
+      ) fanStatusTargets) (fanStatus // { options.colorMode = "background"; }))
     ];
   };
 
   dashboards = pkgs.linkFarm "grafana-dashboards" {
     "server.json" = pkgs.writeText "server.json" (builtins.toJSON server);
+    "fans.json" = pkgs.writeText "fans.json" (builtins.toJSON fanDashboard);
     "node-exporter-full.json" =
       communityDashboard "node-exporter-full" 1860 45
         "sha256-GExrdAnzBtp1Ul13cvcZRbEM6iOtFrXXjEaY6g6lGYY=";
