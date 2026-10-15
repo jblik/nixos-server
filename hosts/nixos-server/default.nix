@@ -69,7 +69,7 @@ in
           paperless = "/var/lib/paperless";
           microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
           immich = "/var/lib/immich";
-          open-webui = "/var/lib/private/open-webui"; # DynamicUser, like microbin
+          open-webui = "/var/lib/private/open-webui"; # DynamicUser
         };
         # Regeneratable from the originals.
         noSnapshot = {

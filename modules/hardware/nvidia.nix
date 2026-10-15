@@ -1,6 +1,5 @@
 { config, ... }:
-# NVIDIA proprietary driver. The one GPU is shared by Plex and Tdarr (NVENC)
-# and, once enabled, the AI backend.
+# NVIDIA proprietary driver. The one GPU is shared by Plex and Tdarr (NVENC) and the AI backend.
 {
   hardware.graphics.enable = true;
 
