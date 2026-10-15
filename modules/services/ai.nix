@@ -81,8 +81,14 @@ in
     services.nginx.virtualHosts.${domain} = {
       locations."/v1/" = {
         proxyPass = ollama;
+        recommendedProxySettings = false;
         extraConfig = ''
           proxy_set_header Host $proxy_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Server $hostname;
 
           if ($ai_api_key_ok = 0) {
             return 401;
