@@ -82,6 +82,8 @@ in
       locations."/v1/" = {
         proxyPass = ollama;
         extraConfig = ''
+          proxy_set_header Host $proxy_host;
+
           if ($ai_api_key_ok = 0) {
             return 401;
           }
