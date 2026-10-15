@@ -97,7 +97,7 @@ let
     rear = {
       name = "Rear exhaust";
       channel = "fan6";
-      start = 35;
+      start = 40;
       night = 45;
       sources = lib.attrNames caseCurves;
     };
