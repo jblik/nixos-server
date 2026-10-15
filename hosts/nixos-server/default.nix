@@ -42,9 +42,9 @@ in
       enable = true;
       # Any tag from https://ollama.com/library; deploy pulls new ones and deletes dropped ones.
       models = {
-        chat = "qwen3:8b";
+        chat = "qwen3.5:9b";
+        code = "qwen3.8:27b";
         embedding = "embeddinggemma";
-        code = "qwen3-coder:30b";
       };
     };
 
