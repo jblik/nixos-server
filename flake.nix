@@ -24,7 +24,7 @@
     nixpkgs-alertmanager.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-grafana.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-tailscale.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-open-webui.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-postgresql.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
