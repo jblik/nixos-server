@@ -27,6 +27,12 @@ in
 
     environment.systemPackages = [ pkgs.pulseaudio ];
 
+    # Soloist is downloaded at runtime as a generic Linux executable.
+    programs.nix-ld = {
+      enable = true;
+      libraries = [ pkgs.libpulseaudio ];
+    };
+
     services.pipewire = {
       enable = true;
       systemWide = true;

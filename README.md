@@ -143,6 +143,8 @@ GStreamer dependencies from the independently locked `nixpkgs-sendspin` unstable
 input. Its upstream configuration/runtime tests and Sendspin/GStreamer checks run
 during the build. Both versions use aiosendspin 9.1.1. BlueZ, system-wide PipeWire
 and WirePlumber run natively, without a desktop login. This stack uses no containers.
+Soloist's runtime downloads use `nix-ld` and the PulseAudio client library to run
+on NixOS.
 
 The UIs use the existing internal wildcard DNS and certificate:
 
