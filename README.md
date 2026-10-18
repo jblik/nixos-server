@@ -146,6 +146,7 @@ and WirePlumber run natively, without a desktop login. This stack uses no contai
 Soloist's runtime downloads use `nix-ld` and the PulseAudio client library to run
 on NixOS. Music Assistant's state directory allows execution so its downloaded
 Soloist binary can start inside the service sandbox.
+The service also exposes the PulseAudio client library to Python's ctypes loader.
 The syscall filter permits `setresuid` and `capset` for the private PulseAudio
 capture daemon's startup cleanup.
 

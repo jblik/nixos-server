@@ -60,6 +60,8 @@ in
     systemd.services = {
       music-assistant = {
         path = [ pkgs.pulseaudio ];
+        # Python's ctypes loader does not use nix-ld's library search path.
+        environment.LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.libpulseaudio ];
         # DynamicUser's private state mount otherwise prevents Soloist from executing.
         serviceConfig.ExecPaths = [ "/var/lib/music-assistant" ];
         # Spotify's audio capture and Sendspin use local Unix sockets.
