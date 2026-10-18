@@ -69,6 +69,15 @@ let
     ++ lib.optionals host.ai.enable [
       (service tools public "ai" "AI" "Open WebUI chat on local models" (svg "open-webui"))
     ]
+    ++ lib.optionals host.music-assistant.enable [
+      (service tools internal "music" "Music Assistant" "Music Playback UI" (svg "music-assistant"))
+      (service tools internal "sendspin" "Sendspin" "Bluetooth Bridge"
+        "https://www.music-assistant.io/assets/icons/sendspin-icon.svg"
+      )
+    ]
+    ++ lib.optionals host.home-assistant.enable [
+      (service tools internal "home" "Home Assistant" "something" (svg "home-assistant"))
+    ]
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))
       (service system internal "grafana" "Grafana" "Metrics history and alerts" (svg "grafana"))
