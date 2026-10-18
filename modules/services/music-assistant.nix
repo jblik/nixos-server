@@ -60,6 +60,8 @@ in
     systemd.services = {
       music-assistant = {
         path = [ pkgs.pulseaudio ];
+        # DynamicUser's private state mount otherwise prevents Soloist from executing.
+        serviceConfig.ExecPaths = [ "/var/lib/music-assistant" ];
         # Spotify's audio capture and Sendspin use local Unix sockets.
         serviceConfig.RestrictAddressFamilies = [ "AF_UNIX" ];
       };

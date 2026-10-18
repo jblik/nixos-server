@@ -144,7 +144,8 @@ input. Its upstream configuration/runtime tests and Sendspin/GStreamer checks ru
 during the build. Both versions use aiosendspin 9.1.1. BlueZ, system-wide PipeWire
 and WirePlumber run natively, without a desktop login. This stack uses no containers.
 Soloist's runtime downloads use `nix-ld` and the PulseAudio client library to run
-on NixOS.
+on NixOS. Music Assistant's state directory allows execution so its downloaded
+Soloist binary can start inside the service sandbox.
 
 The UIs use the existing internal wildcard DNS and certificate:
 
