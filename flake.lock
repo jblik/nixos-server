@@ -224,6 +224,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-music-assistant": {
+      "locked": {
+        "lastModified": 1792116957,
+        "narHash": "sha256-EjZqHKObBfIOeHZnMRVV87HB3pPq/WBkmRJWyFxmZu8=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f20cd90e28fe0403873f473b29e42662cd86e8c4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-nginx": {
       "locked": {
         "lastModified": 1791765022,
@@ -400,6 +416,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-sendspin": {
+      "locked": {
+        "lastModified": 1792116957,
+        "narHash": "sha256-EjZqHKObBfIOeHZnMRVV87HB3pPq/WBkmRJWyFxmZu8=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f20cd90e28fe0403873f473b29e42662cd86e8c4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-sonarr": {
       "locked": {
         "lastModified": 1791765022,
@@ -480,6 +512,7 @@
         "nixpkgs-jackett": "nixpkgs-jackett",
         "nixpkgs-matter-server": "nixpkgs-matter-server",
         "nixpkgs-microbin": "nixpkgs-microbin",
+        "nixpkgs-music-assistant": "nixpkgs-music-assistant",
         "nixpkgs-nginx": "nixpkgs-nginx",
         "nixpkgs-node-exporter": "nixpkgs-node-exporter",
         "nixpkgs-ollama": "nixpkgs-ollama",
@@ -491,6 +524,7 @@
         "nixpkgs-qbittorrent": "nixpkgs-qbittorrent",
         "nixpkgs-radarr": "nixpkgs-radarr",
         "nixpkgs-redis": "nixpkgs-redis",
+        "nixpkgs-sendspin": "nixpkgs-sendspin",
         "nixpkgs-sonarr": "nixpkgs-sonarr",
         "nixpkgs-speedtest": "nixpkgs-speedtest",
         "nixpkgs-tailscale": "nixpkgs-tailscale",

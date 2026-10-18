@@ -135,10 +135,14 @@ through a Thread border router.
 
 ## Music Assistant and Bluetooth audio
 
-`host.music-assistant.enable` starts Music Assistant 2.10.7 and Sendspin Bluetooth
-Bridge 2.76.4 as host-networked Podman containers. The bridge release requires
-Music Assistant 2.10 or 2.11; the system's native package is still 2.8.7. BlueZ,
-system-wide PipeWire and WirePlumber run natively, without a desktop login.
+`host.music-assistant.enable` starts native systemd services for Music Assistant
+and Sendspin Bluetooth Bridge. Music Assistant comes from its independently locked
+`nixpkgs-music-assistant` unstable input (currently 2.10.6). The bridge is not in
+Nixpkgs: `packages/sendspin-bt-bridge.nix` packages release 2.76.4 using Python and
+GStreamer dependencies from the independently locked `nixpkgs-sendspin` unstable
+input. Its upstream configuration/runtime tests and Sendspin/GStreamer checks run
+during the build. Both versions use aiosendspin 9.1.1. BlueZ, system-wide PipeWire
+and WirePlumber run natively, without a desktop login. This stack uses no containers.
 
 The UIs use the existing internal wildcard DNS and certificate:
 
@@ -163,7 +167,8 @@ system PulseAudio-compatible socket, with BlueZ control over the system D-Bus.
 - Have the server sudo password available for the deployment command above.
   Initial application does not need Spotify credentials or the speaker's address.
 
-State directories `/var/lib/music-assistant` and `/var/lib/sendspin` are created
+State directories `/var/lib/music-assistant` (systemd DynamicUser, backed by
+`/var/lib/private/music-assistant`) and `/var/lib/sendspin` are created
 automatically. No ZFS datasets need creating first. They are not dedicated
 snapshotted datasets; BlueZ also keeps pairing state under `/var/lib/bluetooth`.
 The initial bridge configuration is copied only when absent, so rebuilds preserve
@@ -183,7 +188,11 @@ UI changes, pairings and credentials. Keep these runtime files out of Git.
    Spotify Premium account to create the personal API key during setup; follow
    its authorization flow. Keep the phone and server on the same LAN for
    discovery. The Spotify music provider is optional for browsing the library
-   from Music Assistant; it is separate from Spotify Connect discovery.
+   from Music Assistant; it is separate from Spotify Connect discovery. Native
+   Nixpkgs builds do not include upstream's shared service credentials. If using
+   the Spotify music provider, supply your own Spotify client ID through
+   `systemd.services.music-assistant.environment.MASS_APP_VAR_SPOTIFY_CLIENT_ID`;
+   Spotify Connect's Soloist API key is entered through the UI instead.
 4. Add **Music Assistant** in Home Assistant's Devices & services, using
    `http://127.0.0.1:8095` and the credentials/token requested by the integration.
 5. Play audio from Home Assistant and Spotify's device picker. Then restart the
@@ -192,17 +201,18 @@ UI changes, pairings and credentials. Keep these runtime files out of Git.
 Check the deployed services and audio path with:
 
 ```sh
-systemctl status bluetooth pipewire pipewire-pulse wireplumber podman-music-assistant podman-sendspin
-sudo journalctl -u podman-music-assistant -u podman-sendspin -n 100
-sudo podman exec sendspin pactl info
-sudo podman exec sendspin pactl list short sinks
+systemctl status bluetooth pipewire pipewire-pulse wireplumber music-assistant sendspin
+sudo journalctl -u music-assistant -u sendspin -n 100
+sudo env PULSE_SERVER=unix:/run/pulse/native pactl info
+sudo env PULSE_SERVER=unix:/run/pulse/native pactl list short sinks
 curl --fail http://127.0.0.1:8098/api/preflight
 ```
 
 The sinks should include a `bluez_output.*` or `bluez_sink.*` device after pairing.
 The bridge's preflight page checks Bluetooth, audio and Music Assistant readiness.
-The images are pinned by release tag; update and test them together. Upstream:
-[bridge installation](https://trudenboy.github.io/sendspin-bt-bridge/installation/docker/),
+Update the Music Assistant and Sendspin Nixpkgs inputs independently, and test
+protocol compatibility when updating either. Upstream:
+[bridge installation](https://github.com/trudenboy/sendspin-bt-bridge/tree/v2.76.4),
 [bridge compatibility](https://github.com/trudenboy/sendspin-bt-bridge/blob/v2.76.4/CHANGELOG.md),
 [Spotify Connect setup](https://www.music-assistant.io/plugins/spotify-connect/).
 

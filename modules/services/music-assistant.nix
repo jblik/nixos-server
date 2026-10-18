@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -15,11 +16,16 @@ let
   );
 in
 {
+  disabledModules = [ "services/audio/music-assistant.nix" ];
+  imports = [ "${inputs.nixpkgs-music-assistant}/nixos/modules/services/audio/music-assistant.nix" ];
+
   config = lib.mkIf config.host.music-assistant.enable {
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = true;
     };
+
+    environment.systemPackages = [ pkgs.pulseaudio ];
 
     services.pipewire = {
       enable = true;
@@ -31,67 +37,65 @@ in
       };
     };
 
-    virtualisation.podman.enable = true;
-    virtualisation.oci-containers = {
-      backend = "podman";
-      containers = {
-        music-assistant = {
-          image = "ghcr.io/music-assistant/server:2.10.7";
-          environment.TZ = config.host.timezone;
-          volumes = [ "/var/lib/music-assistant:/data" ];
-          extraOptions = [ "--network=host" ];
-        };
-        sendspin = {
-          image = "ghcr.io/trudenboy/sendspin-bt-bridge:2.76.4";
-          environment = {
-            TZ = config.host.timezone;
-            WEB_PORT = "8098";
-            BASE_LISTEN_PORT = "8928";
-            CONFIG_DIR = "/config";
-            PULSE_SERVER = "unix:/run/pulse/native";
-            PIPEWIRE_RUNTIME_DIR = "/run/pipewire";
-          };
-          volumes = [
-            "/var/lib/sendspin:/config"
-            "/run/dbus:/var/run/dbus:ro"
-            "/run/pulse:/run/pulse:ro"
-            "/run/pipewire:/run/pipewire:ro"
-          ];
-          extraOptions = [
-            "--network=host"
-            "--cap-add=NET_ADMIN"
-            "--cap-add=NET_RAW"
-            "--group-add=${toString config.ids.gids.pipewire}"
-          ];
-        };
-      };
+    services.music-assistant = {
+      enable = true;
+      providers = [
+        "spotify"
+        "spotify_connect"
+      ];
     };
 
     systemd.tmpfiles.rules = [
-      "d /var/lib/music-assistant 0700 root root -"
       "d /var/lib/sendspin 0700 root root -"
       # Seed once; pairing and authentication settings remain writable in the UI.
       "C /var/lib/sendspin/config.json 0600 root root - ${bridgeConfig}"
     ];
 
     systemd.services = {
-      podman-music-assistant.unitConfig.RequiresMountsFor = [ "/var/lib/music-assistant" ];
-      podman-sendspin = {
+      music-assistant = {
+        path = [ pkgs.pulseaudio ];
+        # Spotify's audio capture and Sendspin use local Unix sockets.
+        serviceConfig.RestrictAddressFamilies = [ "AF_UNIX" ];
+      };
+      sendspin = {
+        description = "Sendspin Bluetooth bridge";
+        wantedBy = [ "multi-user.target" ];
         requires = [
           "bluetooth.service"
           "pipewire.service"
           "pipewire-pulse.service"
           "wireplumber.service"
         ];
-        wants = [ "podman-music-assistant.service" ];
+        wants = [ "music-assistant.service" ];
         after = [
           "bluetooth.service"
           "pipewire.service"
           "pipewire-pulse.service"
           "wireplumber.service"
-          "podman-music-assistant.service"
+          "music-assistant.service"
         ];
-        unitConfig.RequiresMountsFor = [ "/var/lib/sendspin" ];
+        path = [
+          pkgs.bluez
+          pkgs.pulseaudio
+          pkgs.usbutils
+          pkgs.kmod
+        ];
+        environment = {
+          TZ = config.host.timezone;
+          WEB_PORT = "8098";
+          BASE_LISTEN_PORT = "8928";
+          CONFIG_DIR = "/var/lib/sendspin";
+          PULSE_SERVER = "unix:/run/pulse/native";
+          PIPEWIRE_RUNTIME_DIR = "/run/pipewire";
+        };
+        serviceConfig = {
+          ExecStart = lib.getExe pkgs.sendspin-bt-bridge;
+          Restart = "on-failure";
+          StateDirectory = "sendspin";
+          StateDirectoryMode = "0700";
+          SupplementaryGroups = [ "pipewire" ];
+          UMask = "0077";
+        };
       };
     };
 

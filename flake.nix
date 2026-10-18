@@ -9,6 +9,8 @@
     nixpkgs-tdarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-paperless.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-music-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-sendspin.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     nixpkgs-sonarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
@@ -100,7 +102,7 @@
         in
         nixpkgs.lib.mapAttrs (name: _: {
           here = pkgs.${name}.version;
-          nixpkgs = stable.${name}.version;
+          nixpkgs = stable.${name}.version or null;
         }) (nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) (overlay pkgs pkgs));
     };
 }

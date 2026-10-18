@@ -46,6 +46,9 @@ in
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   home-assistant = applicationPkgs.home-assistant.home-assistant;
   python-matter-server = applicationPkgs.matter-server.python-matter-server;
+  music-assistant = applicationPkgs.music-assistant.music-assistant;
+  go-librespot = applicationPkgs.music-assistant.go-librespot;
+  sendspin-bt-bridge = applicationPkgs.sendspin.callPackage ./packages/sendspin-bt-bridge.nix { };
 
   tdarr-server = tdarr "server" "sha256-QWXV8a9UJZXD/Obo8xDICAtN2ZndInD5/M/W8e/Xd5M=";
   tdarr-node = tdarr "node" "sha256-IbYyaxeYGVoWN/zadvhrblFRddtRc6ALyBABNzq0Wdc=";
