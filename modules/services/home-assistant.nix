@@ -15,7 +15,6 @@
         "hue"
         "matter"
         "ollama"
-        "openerz"
         "plex"
         "roborock"
         "swiss_public_transport"
@@ -34,7 +33,8 @@
             name = "Home Assistant";
             port = 21063;
             filter.include_domains = [
-              "button"
+              "button.rocky_all_but_shower"
+              "button.button.rocky_kitchen"
               "light"
               "sensor"
               "vacuum"
