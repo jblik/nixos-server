@@ -9,11 +9,14 @@
     services.home-assistant = {
       enable = true;
       extraComponents = [
+        "alexa"
+        "apple_tv"
         "default_config"
         "homekit_controller"
         "hue"
         "matter"
         "roborock"
+        "switchbot"
       ];
       config = {
         default_config = { };
