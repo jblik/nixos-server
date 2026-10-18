@@ -133,6 +133,76 @@ link-local and unique-local addresses for Thread devices. Keep the server, hubs
 and iPhone on the same LAN for pairing; Thread devices need IPv6 connectivity
 through a Thread border router.
 
+## Music Assistant and Bluetooth audio
+
+`host.music-assistant.enable` starts Music Assistant 2.10.7 and Sendspin Bluetooth
+Bridge 2.76.4 as host-networked Podman containers. The bridge release requires
+Music Assistant 2.10 or 2.11; the system's native package is still 2.8.7. BlueZ,
+system-wide PipeWire and WirePlumber run natively, without a desktop login.
+
+The UIs use the existing internal wildcard DNS and certificate:
+
+- `https://music.internal.steenblik.ch` — Music Assistant
+- `https://sendspin.internal.steenblik.ch` — Bluetooth bridge
+
+nginx restricts both to LAN and Tailscale clients. The backend UI ports 8095 and
+8098 are not opened to the LAN. TCP 8097 (audio streams), TCP 8927 (Sendspin) and
+UDP 5353 (mDNS discovery) are allowed from `host.lanCidr`; the bridge and Home
+Assistant connect to Music Assistant locally. Bluetooth audio uses the host's
+system PulseAudio-compatible socket, with BlueZ control over the system D-Bus.
+
+### Before applying
+
+- Attach a Linux-supported Bluetooth adapter within range of the Sony. The server
+  had `hci0` during configuration; it still needs testing with the speaker.
+- Keep the Sony on its supplied power adapter and disable Auto Standby in Sony
+  Music Center for continuous availability.
+- Have the server sudo password available for the deployment command above.
+  Initial application does not need Spotify credentials or the speaker's address.
+
+State directories `/var/lib/music-assistant` and `/var/lib/sendspin` are created
+automatically. No ZFS datasets need creating first. They are not dedicated
+snapshotted datasets; BlueZ also keeps pairing state under `/var/lib/bluetooth`.
+The initial bridge configuration is copied only when absent, so rebuilds preserve
+UI changes, pairings and credentials. Keep these runtime files out of Git.
+
+### After applying
+
+1. Open Music Assistant, create its administrator account and verify the Sendspin
+   player provider is enabled. In its webserver settings, set the base URL to
+   `https://music.internal.steenblik.ch` if it advertises its direct HTTP address.
+2. Open the bridge UI, put the Sony into pairing mode, scan and pair it. Select
+   the adapter and save the speaker as a player. The initial Music Assistant URL
+   is `http://127.0.0.1:8095`; authorize the bridge through its Music Assistant
+   configuration page. Restart the bridge from its UI if prompted.
+3. In Music Assistant, add the **Spotify Connect** plugin and select the Sony
+   player under Connected players. The recommended Soloist engine requires a
+   Spotify Premium account to create the personal API key during setup; follow
+   its authorization flow. Keep the phone and server on the same LAN for
+   discovery. The Spotify music provider is optional for browsing the library
+   from Music Assistant; it is separate from Spotify Connect discovery.
+4. Add **Music Assistant** in Home Assistant's Devices & services, using
+   `http://127.0.0.1:8095` and the credentials/token requested by the integration.
+5. Play audio from Home Assistant and Spotify's device picker. Then restart the
+   bridge and verify the Sony reconnects and plays again without a desktop login.
+
+Check the deployed services and audio path with:
+
+```sh
+systemctl status bluetooth pipewire pipewire-pulse wireplumber podman-music-assistant podman-sendspin
+sudo journalctl -u podman-music-assistant -u podman-sendspin -n 100
+sudo podman exec sendspin pactl info
+sudo podman exec sendspin pactl list short sinks
+curl --fail http://127.0.0.1:8098/api/preflight
+```
+
+The sinks should include a `bluez_output.*` or `bluez_sink.*` device after pairing.
+The bridge's preflight page checks Bluetooth, audio and Music Assistant readiness.
+The images are pinned by release tag; update and test them together. Upstream:
+[bridge installation](https://trudenboy.github.io/sendspin-bt-bridge/installation/docker/),
+[bridge compatibility](https://github.com/trudenboy/sendspin-bt-bridge/blob/v2.76.4/CHANGELOG.md),
+[Spotify Connect setup](https://www.music-assistant.io/plugins/spotify-connect/).
+
 ## Forgejo CI
 
 `forgejo-runner-docker.service` runs the Forgejo runner continuously, starts at boot

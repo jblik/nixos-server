@@ -28,6 +28,10 @@ let
     lib.optionalAttrs config.host.home-assistant.enable {
       home = s.home-assistant.config.http.server_port;
     }
+    // lib.optionalAttrs config.host.music-assistant.enable {
+      music = 8095;
+      sendspin = 8098;
+    }
     // lib.optionalAttrs config.host.media.enable {
       plex = config.host.media.plex.port;
       sonarr = s.sonarr.settings.server.port;

@@ -35,6 +35,7 @@ in
     forgejo.enable = true;
     immich.enable = true;
     home-assistant.enable = true;
+    music-assistant.enable = true;
     paperless.enable = true;
     microbin.enable = true;
     dashboard.enable = true;

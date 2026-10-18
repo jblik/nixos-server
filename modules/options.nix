@@ -73,6 +73,8 @@
 
     home-assistant.enable = lib.mkEnableOption "Home Assistant and its Apple Home bridge (modules/services/home-assistant.nix)";
 
+    music-assistant.enable = lib.mkEnableOption "Music Assistant and the Sendspin Bluetooth bridge (modules/services/music-assistant.nix)";
+
     paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
 
     microbin = {

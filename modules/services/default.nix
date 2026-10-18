@@ -8,6 +8,7 @@
     ./media
     ./microbin.nix
     ./monitoring
+    ./music-assistant.nix
     ./paperless
     ./proxy.nix
     ./speedtest.nix
