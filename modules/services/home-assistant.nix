@@ -31,6 +31,7 @@
             name = "Home Assistant";
             port = 21063;
             filter.include_domains = [
+              "button"
               "light"
               "sensor"
               "vacuum"
