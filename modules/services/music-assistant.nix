@@ -101,6 +101,8 @@ in
 
     networking.firewall.extraInputRules = ''
       ip saddr ${config.host.lanCidr} tcp dport { 8097, 8927 } accept
+      # Spotify Connect chooses a new listener port from the host's ephemeral range.
+      ip saddr ${config.host.lanCidr} tcp dport 32768-60999 accept
       ip saddr ${config.host.lanCidr} udp dport 5353 accept
     '';
   };

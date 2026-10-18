@@ -147,7 +147,10 @@ The UIs use the existing internal wildcard DNS and certificate:
 
 nginx restricts both to LAN and Tailscale clients. The backend UI ports 8095 and
 8098 are not opened to the LAN. TCP 8097 (audio streams), TCP 8927 (Sendspin) and
-UDP 5353 (mDNS discovery) are allowed from `host.lanCidr`; the bridge and Home
+UDP 5353 (mDNS discovery) are allowed from `host.lanCidr`. Spotify Connect chooses
+a random TCP listener, so TCP 32768–60999 (the server's ephemeral port range) is
+also allowed from that LAN. This permits LAN access to other services listening
+in that range too; it does not grant access from the internet. The bridge and Home
 Assistant connect to Music Assistant locally. Bluetooth audio uses the host's
 system PulseAudio-compatible socket, with BlueZ control over the system D-Bus.
 
