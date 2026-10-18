@@ -31,6 +31,8 @@
     nixpkgs-nginx.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-cloudflare-dyndns.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-speedtest.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-home-assistant.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-matter-server.url = "github:NixOS/nixpkgs/nixos-26.05";
     server-dashboard = {
       url = "git+ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git";
       inputs.nixpkgs.follows = "nixpkgs";

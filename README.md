@@ -121,8 +121,17 @@ base configuration and HomeKit Bridge. Pairings and credentials are managed in
 the UI and stored under `/var/lib/hass`; this directory is not yet a dedicated
 snapshotted ZFS dataset.
 
-TCP 8123 (UI), TCP 21063 (HomeKit) and UDP 5353 (mDNS discovery) are allowed from
-`host.lanCidr`. Keep the server, hubs and iPhone on the same LAN for pairing.
+Matter Server runs natively alongside Home Assistant, with persistent pairings
+under `/var/lib/private/matter-server`. In Home Assistant's Matter integration,
+use `ws://127.0.0.1:5580/ws`. The WebSocket endpoint listens only on localhost.
+Home Assistant and Matter Server have independent `nixpkgs-home-assistant` and
+`nixpkgs-matter-server` inputs.
+
+TCP 8123 (UI), TCP 21063 (HomeKit), UDP 5353 (mDNS discovery) and UDP 5540 (Matter)
+are allowed from `host.lanCidr`. mDNS and Matter are also allowed from IPv6
+link-local and unique-local addresses for Thread devices. Keep the server, hubs
+and iPhone on the same LAN for pairing; Thread devices need IPv6 connectivity
+through a Thread border router.
 
 ## Forgejo CI
 

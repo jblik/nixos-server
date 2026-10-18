@@ -44,6 +44,8 @@ in
   nginxStable = applicationPkgs.nginx.nginxStable;
   cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
+  home-assistant = applicationPkgs.home-assistant.home-assistant;
+  python-matter-server = applicationPkgs.matter-server.python-matter-server;
 
   tdarr-server = tdarr "server" "sha256-QWXV8a9UJZXD/Obo8xDICAtN2ZndInD5/M/W8e/Xd5M=";
   tdarr-node = tdarr "node" "sha256-IbYyaxeYGVoWN/zadvhrblFRddtRc6ALyBABNzq0Wdc=";

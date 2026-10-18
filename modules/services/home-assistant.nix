@@ -1,12 +1,18 @@
 { config, lib, ... }:
 {
   config = lib.mkIf config.host.home-assistant.enable {
+    services.matter-server = {
+      enable = true;
+      extraArgs.listen-address = "127.0.0.1";
+    };
+
     services.home-assistant = {
       enable = true;
       extraComponents = [
         "default_config"
         "homekit_controller"
         "hue"
+        "matter"
         "roborock"
       ];
       config = {
@@ -33,7 +39,7 @@
 
     networking.firewall.extraInputRules = ''
       ip saddr ${config.host.lanCidr} tcp dport { 8123, 21063 } accept
-      ip saddr ${config.host.lanCidr} udp dport 5353 accept
+      ip saddr ${config.host.lanCidr} udp dport { 5353, 5540 } accept
     '';
   };
 }
