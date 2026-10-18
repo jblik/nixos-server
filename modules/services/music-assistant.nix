@@ -40,6 +40,11 @@ in
       wireplumber.extraConfig."99-headless-bluetooth" = {
         # A server has no active graphical seat to grant Bluetooth audio access.
         "wireplumber.profiles".main."monitor.bluez.seat-monitoring" = "disabled";
+        # Hands-free call profiles make the music speaker sound muffled.
+        "monitor.bluez.properties"."bluez5.roles" = [
+          "a2dp_sink"
+          "a2dp_source"
+        ];
       };
     };
 
