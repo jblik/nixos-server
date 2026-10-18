@@ -9,13 +9,16 @@
     services.home-assistant = {
       enable = true;
       extraComponents = [
-        "alexa"
         "apple_tv"
         "default_config"
         "homekit_controller"
         "hue"
         "matter"
+        "ollama"
+        "openerz"
+        "plex"
         "roborock"
+        "swiss_public_transport"
         "switchbot"
       ];
       config = {
