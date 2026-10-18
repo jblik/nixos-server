@@ -6,7 +6,7 @@
   gst_all_1,
   wrapGAppsNoGuiHook,
 }:
-python3Packages.buildPythonApplication {
+python3Packages.buildPythonApplication rec {
   pname = "sendspin-bt-bridge";
   version = "2.76.4";
   pyproject = true;
@@ -74,6 +74,8 @@ python3Packages.buildPythonApplication {
   dontWrapGApps = true;
   preFixup = ''
     makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    # The daemon and restart helpers use sys.executable, bypassing the entry-point wrapper.
+    makeWrapperArgs+=(--prefix PYTHONPATH : "$out/${python3Packages.python.sitePackages}:${python3Packages.makePythonPath dependencies}")
   '';
 
   nativeCheckInputs = with python3Packages; [
