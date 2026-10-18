@@ -64,6 +64,11 @@ in
         serviceConfig.ExecPaths = [ "/var/lib/music-assistant" ];
         # Spotify's audio capture and Sendspin use local Unix sockets.
         serviceConfig.RestrictAddressFamilies = [ "AF_UNIX" ];
+        # PulseAudio drops credentials and capabilities during capture-daemon startup.
+        serviceConfig.SystemCallFilter = lib.mkAfter [
+          "setresuid"
+          "capset"
+        ];
       };
       sendspin = {
         description = "Sendspin Bluetooth bridge";
