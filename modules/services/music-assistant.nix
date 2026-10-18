@@ -59,6 +59,8 @@ in
       };
       sendspin = {
         description = "Sendspin Bluetooth bridge";
+        # The bridge detects systemd and requests restarts using this upstream unit name.
+        aliases = [ "sendspin-client.service" ];
         wantedBy = [ "multi-user.target" ];
         requires = [
           "bluetooth.service"
