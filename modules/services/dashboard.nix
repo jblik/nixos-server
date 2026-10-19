@@ -76,7 +76,7 @@ let
       )
     ]
     ++ lib.optionals host.home-assistant.enable [
-      (service tools internal "home" "Home Assistant" "something" (svg "home-assistant"))
+      (service tools public "home" "Home Assistant" "Smart Home Control" (svg "home-assistant"))
     ]
     ++ [
       (service system internal "fans" "Fans" "CoolerControl fan curves" (svg "cooler-control"))

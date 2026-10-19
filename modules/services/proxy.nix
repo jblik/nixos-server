@@ -22,13 +22,13 @@ let
     }
     // lib.optionalAttrs config.host.ai.enable {
       ai = config.host.ai.openWebuiPort;
+    }
+    // lib.optionalAttrs config.host.home-assistant.enable {
+      home = s.home-assistant.config.http.server_port;
     };
 
   privateServices =
-    lib.optionalAttrs config.host.home-assistant.enable {
-      home = s.home-assistant.config.http.server_port;
-    }
-    // lib.optionalAttrs config.host.music-assistant.enable {
+    lib.optionalAttrs config.host.music-assistant.enable {
       music = 8095;
       sendspin = 8098;
     }
