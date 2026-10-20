@@ -36,6 +36,7 @@ in
 {
   imports = [
     ./arr.nix
+    ./qbittorrent-vpn.nix
     ./containers.nix
     ./media-preview-generator.nix
     ./plex.nix
