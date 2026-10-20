@@ -20,11 +20,6 @@
       group = "users";
       listenPort = 6767;
     };
-    services.qbittorrent = {
-      enable = true;
-      group = "users";
-      webuiPort = 8080;
-    };
     services.jackett = {
       enable = true;
       port = 9117;
@@ -34,10 +29,7 @@
       port = 8191;
     };
 
-    # Not StateDirectories, so nothing else stops these from running without their datasets.
-    systemd.services.qbittorrent.unitConfig.RequiresMountsFor = [
-      config.services.qbittorrent.profileDir
-    ];
+    # Not a StateDirectory, so nothing else stops Jackett from running without its dataset.
     systemd.services.jackett.unitConfig.RequiresMountsFor = [ config.services.jackett.dataDir ];
   };
 }

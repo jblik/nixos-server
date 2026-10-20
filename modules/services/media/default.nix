@@ -17,7 +17,6 @@ let
     "sonarr"
     "radarr"
     "bazarr"
-    "qbittorrent"
     "tdarr-server"
     "tdarr-node-main"
   ];
@@ -26,7 +25,6 @@ let
     s.radarr.settings.server.port
     s.bazarr.listenPort
     s.jackett.port
-    s.qbittorrent.webuiPort
     s.tdarr.server.webUIPort
     m.cleanuparr.port
     m.pulsarr.port
@@ -36,7 +34,7 @@ in
 {
   imports = [
     ./arr.nix
-    ./qbittorrent-vpn.nix
+    ./qbittorrent.nix
     ./containers.nix
     ./media-preview-generator.nix
     ./plex.nix

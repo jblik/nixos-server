@@ -22,6 +22,12 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
+    services.qbittorrent = {
+      enable = true;
+      group = "users";
+      webuiPort = 8080;
+    };
+
     sops.secrets.nordvpn-wireguard-key = {
       restartUnits = [ "qbittorrent-vpn.service" ];
     };
@@ -69,6 +75,11 @@ in
     };
 
     systemd.services.qbittorrent = {
+      unitConfig.RequiresMountsFor = [
+        config.services.qbittorrent.profileDir
+        config.host.storage.bulkMount
+        config.host.storage.scratchDir
+      ];
       requires = [ "qbittorrent-vpn.service" ];
       after = [ "qbittorrent-vpn.service" ];
       partOf = [ "qbittorrent-vpn.service" ];
@@ -83,6 +94,7 @@ in
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
       '';
       serviceConfig = {
+        UMask = lib.mkForce "0002";
         NetworkNamespacePath = namespacePath;
         BindReadOnlyPaths = [
           "${resolver}:/etc/resolv.conf"
@@ -113,5 +125,9 @@ in
         ProtectHome = true;
       };
     };
+
+    networking.firewall.extraInputRules = ''
+      ip saddr ${config.host.lanCidr} tcp dport ${toString config.services.qbittorrent.webuiPort} accept
+    '';
   };
 }
