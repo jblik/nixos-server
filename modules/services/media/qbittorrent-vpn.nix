@@ -80,7 +80,7 @@ in
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\Interface' ${interface}
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceName' ${interface}
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceAddress' ""
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\UPnP' false
+        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
       '';
       serviceConfig = {
         NetworkNamespacePath = namespacePath;
