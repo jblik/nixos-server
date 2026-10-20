@@ -22,6 +22,7 @@
       ];
       config = {
         default_config = { };
+        automation = "!include automations.yaml";
         homeassistant.time_zone = config.host.timezone;
         http = {
           server_port = 8123;
