@@ -1,10 +1,19 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (config.host.storage) bulkMount scratchDir;
   plex = config.services.plex;
   plexRoot = "${plex.dataDir}/Plex Media Server";
   stateDir = "/var/lib/media-preview-generator";
   port = 8280;
+  nvidiaVulkanIcd = pkgs.runCommand "nvidia-egl-icd.json" { nativeBuildInputs = [ pkgs.jq ]; } ''
+    jq '.ICD.library_path = "/usr/local/nvidia/lib64/libEGL_nvidia.so.0"' \
+      ${config.hardware.nvidia.package}/share/vulkan/icd.d/nvidia_icd.json > "$out"
+  '';
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -22,6 +31,7 @@ in
         PLEX_BIF_FRAME_INTERVAL = "10";
         NVIDIA_VISIBLE_DEVICES = "all";
         NVIDIA_DRIVER_CAPABILITIES = "all";
+        VK_DRIVER_FILES = "/etc/vulkan/icd.d/nvidia_icd.json";
       };
       volumes = [
         "${stateDir}:/config"
@@ -30,8 +40,8 @@ in
         # Explicitly expose the HDD directory rather than relying on nested mount propagation.
         "${bulkMount}/plex-media:/plex/Media"
         "${scratchDir}/plex-previews:/tmp"
-        # CDI supplies the driver library but omits its Vulkan registration file.
-        "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json:ro"
+        # The headless container can initialize Vulkan through EGL but not GLX.
+        "${nvidiaVulkanIcd}:/etc/vulkan/icd.d/nvidia_icd.json:ro"
       ];
       extraOptions = [
         "--network=host"
