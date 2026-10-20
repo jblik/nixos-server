@@ -3,6 +3,11 @@
   lib,
   ...
 }:
+let
+  inherit (config.host.storage) bulkMount;
+  plexRoot = "${config.services.plex.dataDir}/Plex Media Server";
+  mediaDir = "${plexRoot}/Media";
+in
 {
   config = lib.mkIf config.host.media.enable {
     services.plex = {
@@ -12,7 +17,19 @@
       openFirewall = true;
     };
 
-    # Not a StateDirectory, so nothing else stops Plex from running without its dataset.
-    systemd.services.plex.unitConfig.RequiresMountsFor = [ config.services.plex.dataDir ];
+    fileSystems.${mediaDir} = {
+      device = "${bulkMount}/plex-media";
+      fsType = "none";
+      options = [
+        "bind"
+        "nofail"
+      ];
+      depends = [
+        bulkMount
+        config.services.plex.dataDir
+      ];
+    };
+
+    systemd.services.plex.unitConfig.RequiresMountsFor = [ mediaDir ];
   };
 }

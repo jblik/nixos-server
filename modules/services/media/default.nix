@@ -37,6 +37,7 @@ in
   imports = [
     ./arr.nix
     ./containers.nix
+    ./media-preview-generator.nix
     ./plex.nix
     ./tdarr.nix
   ];
