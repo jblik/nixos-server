@@ -88,11 +88,17 @@ migrations; use the service's backups and upgrade guidance for those.
 `/scratch/{incomplete,transcode}` (NVMe, off the pool): in-progress downloads and the
 Plex/Tdarr transcode cache.
 
+Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
+HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port
+8280. Follow [the migration and setup steps](docs/plex-previews.md) before activating
+this configuration on an existing server.
+
 ## Services
 
 | Service                                    | Port                       | Runs as                                         |
 |--------------------------------------------|----------------------------|-------------------------------------------------|
 | Plex                                       | 32400                      | native                                          |
+| Media Preview Generator                    | 8280                       | Podman, NVIDIA GPU                              |
 | Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                          |
 | Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                          |
 | qBittorrent                                | 8080                       | native                                          |
