@@ -34,6 +34,8 @@ let
     }
     // lib.optionalAttrs config.host.media.enable {
       plex = config.host.media.plex.port;
+      media-preview-generator =
+        config.virtualisation.oci-containers.containers.media-preview-generator.environment.WEB_PORT;
       sonarr = s.sonarr.settings.server.port;
       radarr = s.radarr.settings.server.port;
       bazarr = s.bazarr.listenPort;

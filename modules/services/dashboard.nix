@@ -44,6 +44,9 @@ let
   services =
     lib.optionals host.media.enable [
       (service media internal "plex" "Plex" "Stream the library" (svg "plex"))
+      (service media internal "media-preview-generator" "Media Preview Generator" "Generate Plex previews"
+        (svg "plex")
+      )
       (service media internal "sonarr" "Sonarr" "TV series fetcher" (svg "sonarr"))
       (service media internal "radarr" "Radarr" "Movie fetcher" (svg "radarr"))
       (service media internal "bazarr" "Bazarr" "Subtitle fetcher" (svg "bazarr"))

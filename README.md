@@ -89,9 +89,7 @@ migrations; use the service's backups and upgrade guidance for those.
 Plex/Tdarr transcode cache.
 
 Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
-HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port
-8280. Follow [the migration and setup steps](docs/plex-previews.md) before activating
-this configuration on an existing server.
+HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port 8280.
 
 ## Services
 
