@@ -188,7 +188,7 @@
       openWebuiPort = lib.mkOption {
         type = lib.types.port;
         default = 8082;
-        description = "Open WebUI port (localhost). Its default 8080 is qBittorrent's.";
+        description = "Open WebUI port (localhost)";
       };
     };
 
