@@ -30,6 +30,8 @@ in
         # Explicitly expose the HDD directory rather than relying on nested mount propagation.
         "${bulkMount}/plex-media:/plex/Media"
         "${scratchDir}/plex-previews:/tmp"
+        # CDI supplies the driver library but omits its Vulkan registration file.
+        "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json:ro"
       ];
       extraOptions = [
         "--network=host"
