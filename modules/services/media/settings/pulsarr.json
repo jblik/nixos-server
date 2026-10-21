@@ -1,0 +1,1606 @@
+{
+  "schema": [
+    "CREATE TABLE `knex_migrations` (`id` integer not null primary key autoincrement, `name` varchar(255), `batch` integer, `migration_time` datetime)",
+    "CREATE TABLE `knex_migrations_lock` (`index` integer not null primary key autoincrement, `is_locked` integer)",
+    "CREATE TABLE `admin_users` (`id` integer not null primary key autoincrement, `username` varchar(255) not null, `password` varchar(255) not null, `email` varchar(255) not null, `role` varchar(255) not null, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP)",
+    "CREATE UNIQUE INDEX `admin_users_username_unique` on `admin_users` (`username`)",
+    "CREATE UNIQUE INDEX `admin_users_email_unique` on `admin_users` (`email`)",
+    "CREATE INDEX `admin_users_email_username_index` on `admin_users` (`email`, `username`)",
+    "CREATE TABLE `sonarr_instances` (`id` integer not null primary key autoincrement, `name` varchar(255) not null, `base_url` varchar(255) not null, `api_key` varchar(255) not null, `quality_profile` varchar(255), `root_folder` varchar(255), `bypass_ignored` boolean default '0', `season_monitoring` varchar(255) default 'all', `tags` json default '[]', `synced_instances` json default '[]', `is_default` boolean default '0', `is_enabled` boolean default '1', `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, `monitor_new_items` varchar(255) default 'all', `search_on_add` boolean default '1', `series_type` varchar(255) default 'standard', `create_season_folders` boolean default '0', `skip_default_routing_when_no_match` boolean default '0')",
+    "CREATE UNIQUE INDEX `sonarr_instances_name_unique` on `sonarr_instances` (`name`)",
+    "CREATE INDEX `sonarr_instances_name_index` on `sonarr_instances` (`name`)",
+    "CREATE INDEX `sonarr_instances_is_default_index` on `sonarr_instances` (`is_default`)",
+    "CREATE INDEX `sonarr_instances_is_enabled_index` on `sonarr_instances` (`is_enabled`)",
+    "CREATE TABLE `radarr_instances` (`id` integer not null primary key autoincrement, `name` varchar(255) not null, `base_url` varchar(255) not null, `api_key` varchar(255) not null, `quality_profile` varchar(255), `root_folder` varchar(255), `bypass_ignored` boolean default '0', `tags` json default '[]', `synced_instances` json default '[]', `is_default` boolean default '0', `is_enabled` boolean default '1', `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, `search_on_add` boolean default '1', `minimum_availability` varchar(255) default 'released', `monitor` varchar(20) default 'movieOnly', `skip_default_routing_when_no_match` boolean default '0')",
+    "CREATE UNIQUE INDEX `radarr_instances_name_unique` on `radarr_instances` (`name`)",
+    "CREATE INDEX `radarr_instances_name_index` on `radarr_instances` (`name`)",
+    "CREATE INDEX `radarr_instances_is_default_index` on `radarr_instances` (`is_default`)",
+    "CREATE INDEX `radarr_instances_is_enabled_index` on `radarr_instances` (`is_enabled`)",
+    "CREATE TABLE `watchlist_items` (`id` integer not null primary key autoincrement, `user_id` integer not null, `title` varchar(255) not null, `key` varchar(255) not null, `type` varchar(255) not null, `thumb` varchar(255), `added` varchar(255), `guids` json, `genres` json, `status` text check (`status` in ('pending', 'requested', 'grabbed', 'notified')) not null default 'pending', `last_notified_at` datetime null, `series_status` text check (`series_status` in ('continuing', 'ended')), `movie_status` text check (`movie_status` in ('available', 'unavailable')), `sonarr_instance_id` integer, `radarr_instance_id` integer, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, `imdb_rating` float null, `imdb_votes` integer null, `rt_critic_rating` float null, `rt_audience_rating` float null, `tmdb_rating` float null, foreign key(`user_id`) references `users`(`id`) on delete CASCADE, foreign key(`sonarr_instance_id`) references `sonarr_instances`(`id`) on delete SET NULL, foreign key(`radarr_instance_id`) references `radarr_instances`(`id`) on delete SET NULL)",
+    "CREATE UNIQUE INDEX `watchlist_items_user_id_key_unique` on `watchlist_items` (`user_id`, `key`)",
+    "CREATE INDEX `watchlist_items_user_id_key_index` on `watchlist_items` (`user_id`, `key`)",
+    "CREATE INDEX `watchlist_items_user_id_index` on `watchlist_items` (`user_id`)",
+    "CREATE INDEX `watchlist_items_guids_index` on `watchlist_items` (`guids`)",
+    "CREATE INDEX `watchlist_items_sonarr_instance_id_index` on `watchlist_items` (`sonarr_instance_id`)",
+    "CREATE INDEX `watchlist_items_radarr_instance_id_index` on `watchlist_items` (`radarr_instance_id`)",
+    "CREATE TABLE `genres` (`id` integer not null primary key autoincrement, `name` varchar(255) not null, `is_custom` boolean default '0', `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP)",
+    "CREATE UNIQUE INDEX `genres_name_unique` on `genres` (`name`)",
+    "CREATE INDEX `genres_name_index` on `genres` (`name`)",
+    "CREATE TABLE `watchlist_status_history` (`id` integer not null primary key autoincrement, `watchlist_item_id` integer not null, `status` text check (`status` in ('pending', 'requested', 'grabbed', 'notified')) not null, `timestamp` datetime default CURRENT_TIMESTAMP, foreign key(`watchlist_item_id`) references `watchlist_items`(`id`) on delete CASCADE)",
+    "CREATE INDEX `watchlist_status_history_watchlist_item_id_status_index` on `watchlist_status_history` (`watchlist_item_id`, `status`)",
+    "CREATE INDEX `watchlist_status_history_timestamp_index` on `watchlist_status_history` (`timestamp`)",
+    "CREATE TABLE `watchlist_radarr_instances` (`id` integer not null primary key autoincrement, `watchlist_id` integer not null, `radarr_instance_id` integer not null, `is_primary` boolean default '0', `status` text check (`status` in ('pending', 'requested', 'grabbed', 'notified')) not null default 'pending', `last_notified_at` datetime null, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, `syncing` boolean not null default '0', foreign key(`watchlist_id`) references `watchlist_items`(`id`) on delete CASCADE, foreign key(`radarr_instance_id`) references `radarr_instances`(`id`) on delete CASCADE)",
+    "CREATE UNIQUE INDEX `watchlist_radarr_instances_watchlist_id_radarr_instance_id_unique` on `watchlist_radarr_instances` (`watchlist_id`, `radarr_instance_id`)",
+    "CREATE INDEX `watchlist_radarr_instances_watchlist_id_radarr_instance_id_index` on `watchlist_radarr_instances` (`watchlist_id`, `radarr_instance_id`)",
+    "CREATE INDEX `watchlist_radarr_instances_is_primary_index` on `watchlist_radarr_instances` (`is_primary`)",
+    "CREATE TABLE `watchlist_sonarr_instances` (`id` integer not null primary key autoincrement, `watchlist_id` integer not null, `sonarr_instance_id` integer not null, `is_primary` boolean default '0', `status` text check (`status` in ('pending', 'requested', 'grabbed', 'notified')) not null default 'pending', `last_notified_at` datetime null, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, `syncing` boolean not null default '0', `sonarr_series_id` integer null, foreign key(`watchlist_id`) references `watchlist_items`(`id`) on delete CASCADE, foreign key(`sonarr_instance_id`) references `sonarr_instances`(`id`) on delete CASCADE)",
+    "CREATE UNIQUE INDEX `watchlist_sonarr_instances_watchlist_id_sonarr_instance_id_unique` on `watchlist_sonarr_instances` (`watchlist_id`, `sonarr_instance_id`)",
+    "CREATE INDEX `watchlist_sonarr_instances_watchlist_id_sonarr_instance_id_index` on `watchlist_sonarr_instances` (`watchlist_id`, `sonarr_instance_id`)",
+    "CREATE INDEX `watchlist_sonarr_instances_is_primary_index` on `watchlist_sonarr_instances` (`is_primary`)",
+    "CREATE INDEX `watchlist_radarr_instances_syncing_index` on `watchlist_radarr_instances` (`syncing`)",
+    "CREATE INDEX `watchlist_sonarr_instances_syncing_index` on `watchlist_sonarr_instances` (`syncing`)",
+    "CREATE TABLE `schedules` (`id` integer not null primary key autoincrement, `name` varchar(255) not null, `type` varchar(255) not null, `config` json not null, `enabled` boolean default '1', `last_run` json null, `next_run` json null, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP)",
+    "CREATE UNIQUE INDEX `schedules_name_unique` on `schedules` (`name`)",
+    "CREATE INDEX `schedules_name_index` on `schedules` (`name`)",
+    "CREATE INDEX `schedules_enabled_index` on `schedules` (`enabled`)",
+    "CREATE TABLE `pending_webhooks` (`id` integer not null primary key autoincrement, `instance_type` varchar(10) not null, `instance_id` integer null, `guid` varchar(255) not null, `title` varchar(255) not null, `media_type` varchar(10) not null, `payload` json not null, `received_at` datetime not null default CURRENT_TIMESTAMP, `expires_at` datetime not null, check (\"instance_type\" IN ('radarr', 'sonarr')), check (\"media_type\" IN ('movie', 'show')))",
+    "CREATE INDEX `idx_guid_media` on `pending_webhooks` (`guid`, `media_type`)",
+    "CREATE INDEX `idx_expires` on `pending_webhooks` (`expires_at`)",
+    "CREATE TABLE `quota_usage` (`id` integer not null primary key autoincrement, `user_id` integer not null, `content_type` text check (`content_type` in ('movie', 'show')) not null, `request_date` date not null, `created_at` datetime default CURRENT_TIMESTAMP, foreign key(`user_id`) references `users`(`id`) on delete CASCADE)",
+    "CREATE INDEX `quota_usage_user_id_request_date_index` on `quota_usage` (`user_id`, `request_date`)",
+    "CREATE INDEX `quota_usage_user_id_content_type_request_date_index` on `quota_usage` (`user_id`, `content_type`, `request_date`)",
+    "CREATE INDEX `quota_usage_request_date_index` on `quota_usage` (`request_date`)",
+    "CREATE TABLE \"user_quotas\" (`id` integer not null primary key autoincrement, `user_id` integer not null, `content_type` text check (`content_type` in ('movie', 'show')) not null, `quota_type` text check (`quota_type` in ('daily', 'weekly_rolling', 'monthly')) not null, `quota_limit` integer not null, `bypass_approval` boolean default '0', `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP, \"watchlist_cap\" integer null default null, foreign key(`user_id`) references `users`(`id`) on delete CASCADE)",
+    "CREATE UNIQUE INDEX `user_quotas_new_user_id_content_type_unique` on \"user_quotas\" (`user_id`, `content_type`)",
+    "CREATE INDEX `user_quotas_new_user_id_quota_type_index` on \"user_quotas\" (`user_id`, `quota_type`)",
+    "CREATE INDEX `user_quotas_new_bypass_approval_index` on \"user_quotas\" (`bypass_approval`)",
+    "CREATE INDEX `user_quotas_new_content_type_index` on \"user_quotas\" (`content_type`)",
+    "CREATE TABLE `anime_ids` (`id` integer not null primary key autoincrement, `external_id` varchar(255) not null, `source` varchar(255) not null, `created_at` datetime default CURRENT_TIMESTAMP, `updated_at` datetime default CURRENT_TIMESTAMP)",
+    "CREATE UNIQUE INDEX `anime_ids_external_id_source_unique` on `anime_ids` (`external_id`, `source`)",
+    "CREATE INDEX `anime_ids_external_id_index` on `anime_ids` (`external_id`)",
+    "CREATE INDEX `anime_ids_source_index` on `anime_ids` (`source`)",
+    "CREATE TABLE `pending_label_syncs` (`id` integer not null primary key autoincrement, `watchlist_item_id` integer not null, `content_title` varchar(255) not null, `webhook_tags` json not null default '[]', `retry_count` integer default '0', `last_retry_at` datetime null, `created_at` datetime default CURRENT_TIMESTAMP, `expires_at` datetime not null, foreign key(`watchlist_item_id`) references `watchlist_items`(`id`) on delete CASCADE)",
+    "CREATE UNIQUE INDEX `pending_label_syncs_watchlist_item_id_unique` on `pending_label_syncs` (`watchlist_item_id`)",
+    "CREATE INDEX `pending_label_syncs_watchlist_item_id_index` on `pending_label_syncs` (`watchlist_item_id`)",
+    "CREATE INDEX `pending_label_syncs_expires_at_index` on `pending_label_syncs` (`expires_at`)",
+    "CREATE UNIQUE INDEX `uq_watchlist_status_history_item_status` on `watchlist_status_history` (`watchlist_item_id`, `status`)",
+    "CREATE TABLE \"api_keys\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `name` varchar(255) NOT NULL, `key` varchar(255) NOT NULL, `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `is_active` boolean DEFAULT '1', `user_id` integer NULL, FOREIGN KEY (`user_id`) REFERENCES `admin_users` (`id`) ON DELETE CASCADE)",
+    "CREATE UNIQUE INDEX `api_keys_key_unique` on `api_keys` (`key`)",
+    "CREATE INDEX `api_keys_key_index` on `api_keys` (`key`)",
+    "CREATE INDEX `api_keys_is_active_index` on `api_keys` (`is_active`)",
+    "CREATE INDEX `idx_api_keys_user_id` on `api_keys` (`user_id`)",
+    "CREATE TABLE \"approval_requests\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `user_id` integer NOT NULL, `content_type` text NOT NULL CHECK (`content_type` in('movie' , 'show')), `content_title` varchar(255) NOT NULL, `content_key` varchar(255) NOT NULL, `content_guids` json DEFAULT '[]', `router_decision` json NOT NULL, `router_rule_id` integer NULL, `approval_reason` text NULL, `triggered_by` text NOT NULL CHECK (`triggered_by` in('quota_exceeded' , 'router_rule' , 'manual_flag' , 'content_criteria')), `approved_by` integer NULL, `approval_notes` text NULL, `expires_at` datetime NULL, `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `updated_at` datetime DEFAULT CURRENT_TIMESTAMP, \"status\" text NOT NULL CHECK (\"status\" in('pending' , 'approved' , 'rejected' , 'expired' , 'auto_approved')) DEFAULT 'pending', `thumb` varchar(255) null, FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE, FOREIGN KEY (`approved_by`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL)",
+    "CREATE UNIQUE INDEX `approval_requests_user_id_content_key_unique` on `approval_requests` (`user_id`, `content_key`)",
+    "CREATE INDEX `approval_requests_user_id_index` on `approval_requests` (`user_id`)",
+    "CREATE INDEX `approval_requests_content_type_index` on `approval_requests` (`content_type`)",
+    "CREATE INDEX `approval_requests_triggered_by_index` on `approval_requests` (`triggered_by`)",
+    "CREATE INDEX `approval_requests_expires_at_index` on `approval_requests` (`expires_at`)",
+    "CREATE INDEX `approval_requests_created_at_index` on `approval_requests` (`created_at`)",
+    "CREATE INDEX `approval_requests_status_index` on `approval_requests` (`status`)",
+    "CREATE TABLE \"plex_label_tracking\" (\n        id INTEGER PRIMARY KEY AUTOINCREMENT,\n        content_guids TEXT NOT NULL,\n        content_type TEXT NOT NULL CHECK(content_type IN ('movie', 'show')),\n        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,\n        plex_rating_key VARCHAR(50) NOT NULL,\n        labels_applied TEXT NOT NULL DEFAULT '[]',\n        synced_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(content_guids, user_id, content_type, plex_rating_key)\n      )",
+    "CREATE INDEX idx_plex_label_tracking_user_id ON plex_label_tracking(user_id)",
+    "CREATE INDEX idx_plex_label_tracking_plex_rating_key ON plex_label_tracking(plex_rating_key)",
+    "CREATE INDEX idx_plex_label_tracking_synced_at ON plex_label_tracking(synced_at)",
+    "CREATE INDEX idx_plex_label_tracking_content_type ON plex_label_tracking(content_type)",
+    "CREATE TABLE `webhook_endpoints` (`id` integer not null primary key autoincrement, `name` varchar(255) not null, `url` varchar(255) not null, `auth_header_name` varchar(255) null, `auth_header_value` varchar(255) null, `event_types` json not null, `enabled` boolean not null default '1', `created_at` datetime not null default CURRENT_TIMESTAMP, `updated_at` datetime not null default CURRENT_TIMESTAMP)",
+    "CREATE INDEX `webhook_endpoints_enabled_index` on `webhook_endpoints` (`enabled`)",
+    "CREATE TABLE \"users\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `name` varchar(255) NOT NULL, `apprise` varchar(255) NULL, `alias` varchar(255) NULL, `discord_id` varchar(255), `notify_apprise` boolean DEFAULT '0', `notify_discord` boolean DEFAULT '0', `can_sync` boolean DEFAULT '1', `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `updated_at` datetime DEFAULT CURRENT_TIMESTAMP, `is_primary_token` boolean DEFAULT '0', `notify_plex_mobile` boolean DEFAULT '0', `requires_approval` boolean DEFAULT '0', `notify_discord_mention` boolean DEFAULT '1', `plex_uuid` varchar(255) NULL, `avatar` varchar(255) NULL, `display_name` varchar(255) NULL, `friend_created_at` varchar(255) NULL)",
+    "CREATE INDEX `users_name_index` on `users` (`name`)",
+    "CREATE INDEX `users_notify_discord_discord_id_index` on `users` (`notify_discord`, `discord_id`)",
+    "CREATE UNIQUE INDEX `idx_unique_primary_token` on `users` (`is_primary_token`) where is_primary_token = 1",
+    "CREATE INDEX `users_requires_approval_index` on `users` (`requires_approval`)",
+    "CREATE INDEX `users_plex_uuid_index` on `users` (`plex_uuid`)",
+    "CREATE TABLE \"configs\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `port` integer, `dbPath` varchar(255), `baseUrl` varchar(255), `cookieSecret` varchar(255), `cookieName` varchar(255), `cookieSecured` boolean, `logLevel` varchar(255), `closeGraceDelay` integer, `rateLimitMax` integer, `queueProcessDelaySeconds` integer DEFAULT '60', `discordWebhookUrl` varchar(255), `discordBotToken` varchar(255), `discordClientId` varchar(255), `queueWaitTime` integer DEFAULT '120000', `newEpisodeThreshold` integer DEFAULT '172800000', `plexTokens` json, `skipFriendSync` boolean, `deleteMovie` boolean, `deleteEndedShow` boolean, `deleteContinuingShow` boolean, `deleteFiles` boolean, `selfRss` varchar(255), `friendsRss` varchar(255), `_isReady` boolean DEFAULT '0', `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `updated_at` datetime DEFAULT CURRENT_TIMESTAMP, `respectUserSyncSetting` boolean DEFAULT '1', `deleteSyncNotify` varchar(255) DEFAULT 'none', `maxDeletionPrevention` integer DEFAULT '10', `enableApprise` boolean DEFAULT '0', `appriseUrl` varchar(255) DEFAULT '', `systemAppriseUrl` varchar(255) NULL, `tagUsersInSonarr` boolean DEFAULT '0', `tagUsersInRadarr` boolean DEFAULT '0', `cleanupOrphanedTags` boolean DEFAULT '1', `persistHistoricalTags` boolean DEFAULT '0', `tagPrefix` varchar(255) DEFAULT 'pulsarr:user', `enablePlexPlaylistProtection` boolean DEFAULT '0', `plexProtectionPlaylistName` varchar(255) DEFAULT 'Do Not Delete', `plexServerUrl` varchar(255) DEFAULT 'http://localhost:32400', `removedTagMode` varchar(255) DEFAULT 'remove', `removedTagPrefix` varchar(255) DEFAULT 'pulsarr:removed', `deletionMode` varchar(255) DEFAULT 'watchlist', `pendingWebhookRetryInterval` integer DEFAULT '20', `pendingWebhookMaxAge` integer DEFAULT '10', `pendingWebhookCleanupInterval` integer DEFAULT '60', `plexMobileEnabled` boolean DEFAULT '0', `deleteSyncNotifyOnlyOnDeletion` boolean DEFAULT '0', `plexSessionMonitoring` json NULL, `newUserDefaultCanSync` boolean DEFAULT '1', `publicContentNotifications` json NULL, `quotaSettings` json NULL, `approvalExpiration` json NULL, `approvalNotify` text CHECK (`approvalNotify` in('none' , 'all' , 'discord-only' , 'apprise-only' , 'webhook-only' , 'dm-only' , 'discord-webhook' , 'discord-message' , 'discord-both')) DEFAULT 'none', `newUserDefaultRequiresApproval` boolean DEFAULT '0', `newUserDefaultMovieQuotaEnabled` boolean DEFAULT '0', `newUserDefaultMovieQuotaType` varchar(255) DEFAULT 'monthly', `newUserDefaultMovieQuotaLimit` integer DEFAULT '10', `newUserDefaultMovieBypassApproval` boolean DEFAULT '0', `newUserDefaultShowQuotaEnabled` boolean DEFAULT '0', `newUserDefaultShowQuotaType` varchar(255) DEFAULT 'monthly', `newUserDefaultShowQuotaLimit` integer DEFAULT '10', `newUserDefaultShowBypassApproval` boolean DEFAULT '0', `tmdbRegion` varchar(255) DEFAULT 'US', `plexLabelSync` json NULL, `deleteSyncTrackedOnly` boolean DEFAULT '0', `deleteSyncCleanupApprovals` boolean DEFAULT '0', `deleteSyncRequiredTagRegex` text NULL, `skipIfExistsOnPlex` boolean DEFAULT '0', `tagMigration` json NULL, `appriseEmailSender` varchar(255) NULL, \"newUserDefaultMovieWatchlistCap\" integer null default null, \"newUserDefaultShowWatchlistCap\" integer null default null, `watchlistCapNotify` varchar(255) default 'none', `watchlistCapNotifyUser` boolean default '0', `tagNamingSource` varchar(255) not null default 'username', `notifyOnUpdate` varchar(255) not null default 'none', `lastNotifiedVersion` varchar(255) null, `watchlistAddNotify` varchar(255) not null default 'all', `notifyOnAvailability` boolean not null default '1', `webhookSecret` varchar(255) null, `maintainerrEnabled` boolean not null default '0', `maintainerrUrl` varchar(255) null, `maintainerrWebhookSecret` varchar(255) null, `maintainerrExclusionMode` varchar(255) not null default 'watchlisters')",
+    "CREATE TABLE \"rolling_monitored_shows\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `sonarr_series_id` integer NOT NULL, `sonarr_instance_id` integer NOT NULL, `tvdb_id` varchar(255) NULL, `imdb_id` varchar(255) NULL, `show_title` varchar(255) NOT NULL, `current_monitored_season` integer NOT NULL DEFAULT '1', `last_watched_season` integer NOT NULL DEFAULT '0', `last_watched_episode` integer NOT NULL DEFAULT '0', `last_session_date` datetime NULL, `plex_user_id` varchar(255) NULL, `plex_username` varchar(255) NULL, `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, `last_updated_at` datetime NOT NULL, \"monitoring_type\" text NOT NULL CHECK (\"monitoring_type\" in('pilotRolling' , 'firstSeasonRolling' , 'allSeasonPilotRolling')) DEFAULT 'pilotRolling', `plex_user_uuid` varchar(255) null, FOREIGN KEY (`sonarr_instance_id`) REFERENCES `sonarr_instances` (`id`) ON DELETE CASCADE)",
+    "CREATE INDEX `rolling_monitored_shows_sonarr_series_id_sonarr_instance_id_index` on `rolling_monitored_shows` (`sonarr_series_id`, `sonarr_instance_id`)",
+    "CREATE INDEX `rolling_monitored_shows_tvdb_id_index` on `rolling_monitored_shows` (`tvdb_id`)",
+    "CREATE INDEX `rolling_monitored_shows_show_title_index` on `rolling_monitored_shows` (`show_title`)",
+    "CREATE INDEX `rolling_monitored_shows_last_updated_at_index` on `rolling_monitored_shows` (`last_updated_at`)",
+    "CREATE UNIQUE INDEX `uq_rmshows_series_instance_user` on `rolling_monitored_shows` (`sonarr_series_id`, `sonarr_instance_id`, `plex_user_id`)",
+    "CREATE INDEX `rolling_monitored_shows_monitoring_type_index` on `rolling_monitored_shows` (`monitoring_type`)",
+    "CREATE TABLE \"notifications\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `watchlist_item_id` integer NULL, `user_id` integer NULL, `title` varchar(255) NOT NULL, `message` varchar(255) NULL, `season_number` integer NULL, `episode_number` integer NULL, `sent_to_discord` boolean DEFAULT '0', `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `notification_status` varchar(255) DEFAULT 'active', `sent_to_apprise` boolean DEFAULT '0', `sent_to_plex_mobile` boolean DEFAULT '0', `sent_to_native_webhook` boolean NOT NULL DEFAULT '0', \"type\" text NOT NULL CHECK (\"type\" in('episode' , 'season' , 'movie' , 'watchlist_add' , 'watchlist_removed' , 'approval_resolved' , 'approval_auto' , 'user_created' , 'watchlist_cap')) DEFAULT 'episode', FOREIGN KEY (`watchlist_item_id`) REFERENCES `watchlist_items` (`id`) ON DELETE CASCADE, FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)",
+    "CREATE INDEX `notifications_watchlist_item_id_index` on `notifications` (`watchlist_item_id`)",
+    "CREATE INDEX `notifications_user_id_index` on `notifications` (`user_id`)",
+    "CREATE INDEX `notifications_created_at_index` on `notifications` (`created_at`)",
+    "CREATE INDEX `notifications_type_index` on `notifications` (`type`)",
+    "CREATE INDEX `idx_notifications_status` on `notifications` (`watchlist_item_id`, `type`, `notification_status`)",
+    "CREATE UNIQUE INDEX `notifications_unique_content_user` on `notifications` (`user_id`, `watchlist_item_id`, `type`, `season_number`, `episode_number`, `notification_status`)",
+    "CREATE TABLE `watchlist_exclusions` (`id` integer not null primary key autoincrement, `user_id` integer not null, `key` varchar(255) not null, `title` varchar(255) not null, `type` varchar(255) not null, `guids` json not null default '[]', `excluded_at` datetime not null default CURRENT_TIMESTAMP, foreign key(`user_id`) references `users`(`id`) on delete CASCADE)",
+    "CREATE UNIQUE INDEX `watchlist_exclusions_user_id_key_unique` on `watchlist_exclusions` (`user_id`, `key`)",
+    "CREATE INDEX `watchlist_exclusions_user_id_index` on `watchlist_exclusions` (`user_id`)",
+    "CREATE INDEX `watchlist_exclusions_key_index` on `watchlist_exclusions` (`key`)",
+    "CREATE TABLE \"router_rules\" (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `name` varchar(255) NOT NULL, `type` varchar(255) NOT NULL, `criteria` json NOT NULL, `target_type` varchar(255) NOT NULL, `target_instance_id` integer, `root_folder` varchar(255), `quality_profile` integer, `order` integer DEFAULT '50', `enabled` boolean DEFAULT '1', `metadata` json NULL, `created_at` datetime DEFAULT CURRENT_TIMESTAMP, `updated_at` datetime DEFAULT CURRENT_TIMESTAMP, `tags` json DEFAULT '[]', `search_on_add` boolean NULL, `season_monitoring` varchar(255) NULL, `series_type` varchar(255) NULL, `always_require_approval` boolean DEFAULT '0', `bypass_user_quotas` boolean DEFAULT '0', `approval_reason` varchar(255) NULL, `monitor` varchar(20) NULL, `exclude_from_routing` boolean DEFAULT '0')",
+    "CREATE INDEX `router_rules_type_enabled_index` on `router_rules` (`type`, `enabled`)",
+    "CREATE INDEX `router_rules_target_type_index` on `router_rules` (`target_type`)",
+    "CREATE INDEX `router_rules_target_instance_id_index` on `router_rules` (`target_instance_id`)",
+    "CREATE INDEX `router_rules_always_require_approval_index` on `router_rules` (`always_require_approval`)",
+    "CREATE INDEX `router_rules_bypass_user_quotas_index` on `router_rules` (`bypass_user_quotas`)",
+    "CREATE TRIGGER fk_router_rules_sonarr_delete\n    BEFORE DELETE ON sonarr_instances\n    FOR EACH ROW\n    BEGIN\n      DELETE FROM router_rules\n      WHERE target_type = 'sonarr' AND target_instance_id = OLD.id;\n    END",
+    "CREATE TRIGGER fk_router_rules_radarr_delete\n    BEFORE DELETE ON radarr_instances\n    FOR EACH ROW\n    BEGIN\n      DELETE FROM router_rules\n      WHERE target_type = 'radarr' AND target_instance_id = OLD.id;\n    END",
+    "CREATE UNIQUE INDEX `users_name_unique` on `users` (`name`)"
+  ],
+  "migrations": {
+    "knex_migrations": [
+      {
+        "id": 1,
+        "name": "001_initial_schema.ts",
+        "batch": 1,
+        "migration_time": 1789227716479
+      },
+      {
+        "id": 2,
+        "name": "002_20250302_add_status_history.ts",
+        "batch": 1,
+        "migration_time": 1789227716505
+      },
+      {
+        "id": 3,
+        "name": "003_20250303_add_notifications_history.ts",
+        "batch": 1,
+        "migration_time": 1789227716526
+      },
+      {
+        "id": 4,
+        "name": "004_20250306_add_junction_tables.ts",
+        "batch": 1,
+        "migration_time": 1789227716547
+      },
+      {
+        "id": 5,
+        "name": "005_20250310_add_notification_tracking.ts",
+        "batch": 1,
+        "migration_time": 1789227716568
+      },
+      {
+        "id": 6,
+        "name": "006_20250311_add_sync_status.ts",
+        "batch": 1,
+        "migration_time": 1789227716590
+      },
+      {
+        "id": 7,
+        "name": "007_20250312_seed_genres.ts",
+        "batch": 1,
+        "migration_time": 1789227716611
+      },
+      {
+        "id": 8,
+        "name": "008_20250320_add_schedules.ts",
+        "batch": 1,
+        "migration_time": 1789227716631
+      },
+      {
+        "id": 9,
+        "name": "009_20250323_add_respect_user_sync_setting.ts",
+        "batch": 1,
+        "migration_time": 1789227716660
+      },
+      {
+        "id": 10,
+        "name": "010_20250325_add_delete_sync_notifications.ts",
+        "batch": 1,
+        "migration_time": 1789227716682
+      },
+      {
+        "id": 11,
+        "name": "011_20250328_add_apprise_integration.ts",
+        "batch": 1,
+        "migration_time": 1789227716713
+      },
+      {
+        "id": 12,
+        "name": "012-20250403_add_unified_routing.ts",
+        "batch": 1,
+        "migration_time": 1789227716731
+      },
+      {
+        "id": 13,
+        "name": "013_20250414_update_router_rules_format.ts",
+        "batch": 1,
+        "migration_time": 1789227716745
+      },
+      {
+        "id": 14,
+        "name": "014_20250425_add_monitor_new_items.ts",
+        "batch": 1,
+        "migration_time": 1789227716764
+      },
+      {
+        "id": 15,
+        "name": "015-20250427_add_user_tagging.ts",
+        "batch": 1,
+        "migration_time": 1789227716785
+      },
+      {
+        "id": 16,
+        "name": "016-20250428_add_primary_user_flag.ts",
+        "batch": 1,
+        "migration_time": 1789227716817
+      },
+      {
+        "id": 17,
+        "name": "017-20250428_extend_user_tagging.ts",
+        "batch": 1,
+        "migration_time": 1789227716841
+      },
+      {
+        "id": 18,
+        "name": "018_20250505_add_search_on_add.ts",
+        "batch": 1,
+        "migration_time": 1789227716862
+      },
+      {
+        "id": 19,
+        "name": "019_20250505_add_route_tags.ts",
+        "batch": 1,
+        "migration_time": 1789227716882
+      },
+      {
+        "id": 20,
+        "name": "020_20250506_add_minimum_availability.ts",
+        "batch": 1,
+        "migration_time": 1789227716902
+      },
+      {
+        "id": 21,
+        "name": "021_20250507_add_router_search_and_monitoring.ts",
+        "batch": 1,
+        "migration_time": 1789227716922
+      },
+      {
+        "id": 22,
+        "name": "022_20250508_add_plex_playlist_protection.ts",
+        "batch": 1,
+        "migration_time": 1789227716942
+      },
+      {
+        "id": 23,
+        "name": "023_20250513_add_tag_removal_options.ts",
+        "batch": 1,
+        "migration_time": 1789227716963
+      },
+      {
+        "id": 24,
+        "name": "024_20250513_add_tag_based_deletion_mode.ts",
+        "batch": 1,
+        "migration_time": 1789227716983
+      },
+      {
+        "id": 25,
+        "name": "025_20250514_add_series_type_to_sonarr.ts",
+        "batch": 1,
+        "migration_time": 1789227717008
+      },
+      {
+        "id": 26,
+        "name": "026_20250515_add_pending_webhooks.ts",
+        "batch": 1,
+        "migration_time": 1789227717028
+      },
+      {
+        "id": 27,
+        "name": "027_20250518_add_pending_webhook_config.ts",
+        "batch": 1,
+        "migration_time": 1789227717048
+      },
+      {
+        "id": 28,
+        "name": "028_20250527_add_tautulli_integration.ts",
+        "batch": 1,
+        "migration_time": 1789227717069
+      },
+      {
+        "id": 29,
+        "name": "029_20250528_add_delete_sync_notify_only_on_deletion.ts",
+        "batch": 1,
+        "migration_time": 1789227717089
+      },
+      {
+        "id": 30,
+        "name": "030_20250529_add_rolling_monitoring.ts",
+        "batch": 1,
+        "migration_time": 1789227717114
+      },
+      {
+        "id": 31,
+        "name": "031_20250530_add_new_user_defaults.ts",
+        "batch": 1,
+        "migration_time": 1789227717130
+      },
+      {
+        "id": 32,
+        "name": "032_20250531_add_rolling_monitoring_reset.ts",
+        "batch": 1,
+        "migration_time": 1789227717164
+      },
+      {
+        "id": 33,
+        "name": "033_20250601_add_plex_rolling_auto_reset_schedule.ts",
+        "batch": 1,
+        "migration_time": 1789227717181
+      },
+      {
+        "id": 34,
+        "name": "034_postgres_initial_schema.ts",
+        "batch": 1,
+        "migration_time": 1789227717192
+      },
+      {
+        "id": 35,
+        "name": "035_20250607_add_create_season_folders_to_sonarr.ts",
+        "batch": 1,
+        "migration_time": 1789227717212
+      },
+      {
+        "id": 36,
+        "name": "036_20250609_add_public_content_notifications.ts",
+        "batch": 1,
+        "migration_time": 1789227717232
+      },
+      {
+        "id": 37,
+        "name": "037_20250614_add_notification_unique_constraint.ts",
+        "batch": 1,
+        "migration_time": 1789227717255
+      },
+      {
+        "id": 38,
+        "name": "038_20250617_add_triggered_by_user_ids_to_notifications.ts",
+        "batch": 1,
+        "migration_time": 1789227717285
+      },
+      {
+        "id": 39,
+        "name": "039_20250618_add_approval_system.ts",
+        "batch": 1,
+        "migration_time": 1789227717365
+      },
+      {
+        "id": 40,
+        "name": "040_20250618_add_user_requires_approval.ts",
+        "batch": 1,
+        "migration_time": 1789227717406
+      },
+      {
+        "id": 41,
+        "name": "041_20250618_add_router_approval_actions.ts",
+        "batch": 1,
+        "migration_time": 1789227717426
+      },
+      {
+        "id": 42,
+        "name": "042_20250623_add_quota_and_approval_config.ts",
+        "batch": 1,
+        "migration_time": 1789227717446
+      },
+      {
+        "id": 43,
+        "name": "043_20250624_add_discord_approval_integration.ts",
+        "batch": 1,
+        "migration_time": 1789227717467
+      },
+      {
+        "id": 44,
+        "name": "044_20250625_separate_content_quotas.ts",
+        "batch": 1,
+        "migration_time": 1789227717494
+      },
+      {
+        "id": 45,
+        "name": "045_20250630_add_new_user_approval_quota_defaults.ts",
+        "batch": 1,
+        "migration_time": 1789227717518
+      },
+      {
+        "id": 46,
+        "name": "046_20250702_add_anime_ids_table.ts",
+        "batch": 1,
+        "migration_time": 1789227717538
+      },
+      {
+        "id": 47,
+        "name": "047_20250703_normalize_admin_emails.ts",
+        "batch": 1,
+        "migration_time": 1789227717549
+      },
+      {
+        "id": 48,
+        "name": "048_20250722_add_tmdb_region_config.ts",
+        "batch": 1,
+        "migration_time": 1789227717599
+      },
+      {
+        "id": 49,
+        "name": "049_20250725_add_api_keys_table.ts",
+        "batch": 1,
+        "migration_time": 1789227717750
+      },
+      {
+        "id": 50,
+        "name": "050_20250801_add_pending_label_syncs_table.ts",
+        "batch": 1,
+        "migration_time": 1789227717971
+      },
+      {
+        "id": 51,
+        "name": "051_20250801_add_plex_label_tracking_table.ts",
+        "batch": 1,
+        "migration_time": 1789227718142
+      },
+      {
+        "id": 52,
+        "name": "052_20250801_add_plex_label_sync_config.ts",
+        "batch": 1,
+        "migration_time": 1789227718303
+      },
+      {
+        "id": 53,
+        "name": "053_20250817_add_status_history_unique_constraint.ts",
+        "batch": 1,
+        "migration_time": 1789227718475
+      },
+      {
+        "id": 54,
+        "name": "054_20250826_add_rolling_shows_unique_constraint.ts",
+        "batch": 1,
+        "migration_time": 1789227718636
+      },
+      {
+        "id": 55,
+        "name": "055_20250827_make_user_id_nullable_for_system_operations.ts",
+        "batch": 1,
+        "migration_time": 1789227718817
+      },
+      {
+        "id": 56,
+        "name": "056_20250828_add_user_id_to_api_keys.ts",
+        "batch": 1,
+        "migration_time": 1789227719018
+      },
+      {
+        "id": 57,
+        "name": "057_20250902_add_imdb_ratings_table.ts",
+        "batch": 1,
+        "migration_time": 1789227719182
+      },
+      {
+        "id": 58,
+        "name": "058_20250922_add_auto_approved_status.ts",
+        "batch": 1,
+        "migration_time": 1789227719353
+      },
+      {
+        "id": 59,
+        "name": "059_20250922_add_system_user.ts",
+        "batch": 1,
+        "migration_time": 1789227719657
+      },
+      {
+        "id": 60,
+        "name": "060_20251004_add_delete_sync_tracked_only.ts",
+        "batch": 1,
+        "migration_time": 1789227719932
+      },
+      {
+        "id": 61,
+        "name": "061_20251027_add_delete_sync_required_tag_regex.ts",
+        "batch": 1,
+        "migration_time": 1789227720253
+      },
+      {
+        "id": 62,
+        "name": "062_20251031_add_rating_key_to_label_tracking_constraint.ts",
+        "batch": 1,
+        "migration_time": 1789227720527
+      },
+      {
+        "id": 63,
+        "name": "063_20251107_add_skip_if_exists_on_plex.ts",
+        "batch": 1,
+        "migration_time": 1789227720795
+      },
+      {
+        "id": 64,
+        "name": "064_20251118_migrate_tag_prefixes_to_hyphens.ts",
+        "batch": 1,
+        "migration_time": 1789227721026
+      },
+      {
+        "id": 65,
+        "name": "065_20251126_add_routed_to_temp_rss_items.ts",
+        "batch": 1,
+        "migration_time": 1789227721347
+      },
+      {
+        "id": 66,
+        "name": "066_20251201_drop_sync_interval_seconds.ts",
+        "batch": 1,
+        "migration_time": 1789227721659
+      },
+      {
+        "id": 67,
+        "name": "067_20251202_migrate_log_file_extensions.ts",
+        "batch": 1,
+        "migration_time": 1789227721833
+      },
+      {
+        "id": 68,
+        "name": "068_20251208_drop_temp_rss_items.ts",
+        "batch": 1,
+        "migration_time": 1789227722095
+      },
+      {
+        "id": 69,
+        "name": "069_20251214_drop_discord_guild_id.ts",
+        "batch": 1,
+        "migration_time": 1789227722277
+      },
+      {
+        "id": 70,
+        "name": "070_20251216_fix_anime_tmdb_namespace.ts",
+        "batch": 1,
+        "migration_time": 1789227722412
+      },
+      {
+        "id": 71,
+        "name": "071_20251216_drop_sent_to_webhook.ts",
+        "batch": 1,
+        "migration_time": 1789227722765
+      },
+      {
+        "id": 72,
+        "name": "072_20251218_add_native_webhook_support.ts",
+        "batch": 1,
+        "migration_time": 1789227722906
+      },
+      {
+        "id": 73,
+        "name": "073_20251218_cleanup_orphaned_public_notifications.ts",
+        "batch": 1,
+        "migration_time": 1789227722977
+      },
+      {
+        "id": 74,
+        "name": "074_20251219_add_notification_type_enum_values.ts",
+        "batch": 1,
+        "migration_time": 1789227723037
+      },
+      {
+        "id": 75,
+        "name": "075_20251228_add_apprise_email_sender.ts",
+        "batch": 1,
+        "migration_time": 1789227723170
+      },
+      {
+        "id": 76,
+        "name": "076_20251230_add_plex_ratings_columns.ts",
+        "batch": 1,
+        "migration_time": 1789227723321
+      },
+      {
+        "id": 77,
+        "name": "077_20251230_drop_imdb_ratings_table.ts",
+        "batch": 1,
+        "migration_time": 1789227723462
+      },
+      {
+        "id": 78,
+        "name": "078_20260102_add_radarr_monitor.ts",
+        "batch": 1,
+        "migration_time": 1789227723599
+      },
+      {
+        "id": 79,
+        "name": "079_20260106_add_user_discord_mention_preference.ts",
+        "batch": 1,
+        "migration_time": 1789227723813
+      },
+      {
+        "id": 80,
+        "name": "080_20260109_normalize_poster_paths.ts",
+        "batch": 1,
+        "migration_time": 1789227723881
+      },
+      {
+        "id": 81,
+        "name": "081_20260126_drop_upgrade_buffer_time.ts",
+        "batch": 1,
+        "migration_time": 1789227724024
+      },
+      {
+        "id": 82,
+        "name": "082_20260206_add_plex_classification_columns.ts",
+        "batch": 1,
+        "migration_time": 1789227724172
+      },
+      {
+        "id": 83,
+        "name": "083_20260217_rename_tautulli_to_plex_mobile.ts",
+        "batch": 1,
+        "migration_time": 1789227724761
+      },
+      {
+        "id": 84,
+        "name": "084_20260224_add_lifetime_quota.ts",
+        "batch": 1,
+        "migration_time": 1789227724980
+      },
+      {
+        "id": 85,
+        "name": "085_20260306_rename_lifetime_to_watchlist_cap.ts",
+        "batch": 1,
+        "migration_time": 1789227725222
+      },
+      {
+        "id": 86,
+        "name": "086_20260306_add_watchlist_cap_notifications.ts",
+        "batch": 1,
+        "migration_time": 1789227725444
+      },
+      {
+        "id": 87,
+        "name": "087_20260313_add_all_season_pilot_rolling_enum.ts",
+        "batch": 1,
+        "migration_time": 1789227725674
+      },
+      {
+        "id": 88,
+        "name": "088_20260316_add_sonarr_series_id_to_junction.ts",
+        "batch": 1,
+        "migration_time": 1789227726067
+      },
+      {
+        "id": 89,
+        "name": "089_20260406_add_tag_naming_source.ts",
+        "batch": 1,
+        "migration_time": 1789227726297
+      },
+      {
+        "id": 90,
+        "name": "090_20260513_fix_notification_type_check.ts",
+        "batch": 1,
+        "migration_time": 1789227726540
+      },
+      {
+        "id": 91,
+        "name": "091_20260430_add_update_notify_columns.ts",
+        "batch": 1,
+        "migration_time": 1789227726684
+      },
+      {
+        "id": 92,
+        "name": "092_20260516_add_watchlist_exclusions.ts",
+        "batch": 1,
+        "migration_time": 1789227726835
+      },
+      {
+        "id": 93,
+        "name": "093_20260602_add_notification_toggle_columns.ts",
+        "batch": 1,
+        "migration_time": 1789227726976
+      },
+      {
+        "id": 94,
+        "name": "094_20260702_add_webhook_secret_column.ts",
+        "batch": 1,
+        "migration_time": 1789227727117
+      },
+      {
+        "id": 95,
+        "name": "095_20260707_add_skip_default_routing_when_no_match.ts",
+        "batch": 1,
+        "migration_time": 1789227727328
+      },
+      {
+        "id": 96,
+        "name": "096_20260708_add_router_rule_exclude.ts",
+        "batch": 1,
+        "migration_time": 1789227727482
+      },
+      {
+        "id": 97,
+        "name": "097_20260817_add_maintainerr_config.ts",
+        "batch": 1,
+        "migration_time": 1789227727639
+      },
+      {
+        "id": 98,
+        "name": "098_20260823_add_unique_user_name.ts",
+        "batch": 1,
+        "migration_time": 1789227727871
+      },
+      {
+        "id": 99,
+        "name": "099_20260824_add_rolling_plex_user_uuid.ts",
+        "batch": 1,
+        "migration_time": 1789227728004
+      },
+      {
+        "id": 100,
+        "name": "100_20260919_fix_anime_imdb_canonical.ts",
+        "batch": 2,
+        "migration_time": 1790961354398
+      },
+      {
+        "id": 101,
+        "name": "101_20261008_add_approval_request_thumb.ts",
+        "batch": 3,
+        "migration_time": 1791956647143
+      },
+      {
+        "id": 102,
+        "name": "102_20261010_null_safe_plex_label_tracking_unique.ts",
+        "batch": 3,
+        "migration_time": 1791956647144
+      }
+    ],
+    "knex_migrations_lock": [
+      {
+        "index": 1,
+        "is_locked": 0
+      }
+    ]
+  },
+  "tables": {
+    "configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "port",
+        "dbPath",
+        "baseUrl",
+        "cookieSecret",
+        "cookieName",
+        "cookieSecured",
+        "logLevel",
+        "closeGraceDelay",
+        "rateLimitMax",
+        "queueProcessDelaySeconds",
+        "discordWebhookUrl",
+        "discordBotToken",
+        "discordClientId",
+        "queueWaitTime",
+        "newEpisodeThreshold",
+        "plexTokens",
+        "skipFriendSync",
+        "deleteMovie",
+        "deleteEndedShow",
+        "deleteContinuingShow",
+        "deleteFiles",
+        "selfRss",
+        "friendsRss",
+        "respectUserSyncSetting",
+        "deleteSyncNotify",
+        "maxDeletionPrevention",
+        "enableApprise",
+        "appriseUrl",
+        "systemAppriseUrl",
+        "tagUsersInSonarr",
+        "tagUsersInRadarr",
+        "cleanupOrphanedTags",
+        "persistHistoricalTags",
+        "tagPrefix",
+        "enablePlexPlaylistProtection",
+        "plexProtectionPlaylistName",
+        "plexServerUrl",
+        "removedTagMode",
+        "removedTagPrefix",
+        "deletionMode",
+        "pendingWebhookRetryInterval",
+        "pendingWebhookMaxAge",
+        "pendingWebhookCleanupInterval",
+        "plexMobileEnabled",
+        "deleteSyncNotifyOnlyOnDeletion",
+        "plexSessionMonitoring",
+        "newUserDefaultCanSync",
+        "publicContentNotifications",
+        "quotaSettings",
+        "approvalExpiration",
+        "approvalNotify",
+        "newUserDefaultRequiresApproval",
+        "newUserDefaultMovieQuotaEnabled",
+        "newUserDefaultMovieQuotaType",
+        "newUserDefaultMovieQuotaLimit",
+        "newUserDefaultMovieBypassApproval",
+        "newUserDefaultShowQuotaEnabled",
+        "newUserDefaultShowQuotaType",
+        "newUserDefaultShowQuotaLimit",
+        "newUserDefaultShowBypassApproval",
+        "tmdbRegion",
+        "plexLabelSync",
+        "deleteSyncTrackedOnly",
+        "deleteSyncCleanupApprovals",
+        "deleteSyncRequiredTagRegex",
+        "skipIfExistsOnPlex",
+        "appriseEmailSender",
+        "newUserDefaultMovieWatchlistCap",
+        "newUserDefaultShowWatchlistCap",
+        "watchlistCapNotify",
+        "watchlistCapNotifyUser",
+        "tagNamingSource",
+        "notifyOnUpdate",
+        "watchlistAddNotify",
+        "notifyOnAvailability",
+        "webhookSecret",
+        "maintainerrEnabled",
+        "maintainerrUrl",
+        "maintainerrWebhookSecret",
+        "maintainerrExclusionMode"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "port": 3003,
+          "dbPath": "./data/db/pulsarr.db",
+          "baseUrl": "http://127.0.0.1",
+          "cookieSecret": {
+            "__sops": "configs-1-cookieSecret"
+          },
+          "cookieName": "pulsarr",
+          "cookieSecured": 0,
+          "logLevel": "info",
+          "closeGraceDelay": 10000,
+          "rateLimitMax": 500,
+          "queueProcessDelaySeconds": 60,
+          "discordWebhookUrl": {
+            "__sops": "configs-1-discordWebhookUrl"
+          },
+          "discordBotToken": {
+            "__sops": "configs-1-discordBotToken"
+          },
+          "discordClientId": "",
+          "queueWaitTime": 120000,
+          "newEpisodeThreshold": 172800000,
+          "plexTokens": {
+            "__sops": "configs-1-plexTokens"
+          },
+          "skipFriendSync": 0,
+          "deleteMovie": 1,
+          "deleteEndedShow": 1,
+          "deleteContinuingShow": 0,
+          "deleteFiles": 1,
+          "selfRss": {
+            "__sops": "configs-1-selfRss"
+          },
+          "friendsRss": {
+            "__sops": "configs-1-friendsRss"
+          },
+          "respectUserSyncSetting": 1,
+          "deleteSyncNotify": "none",
+          "maxDeletionPrevention": 10,
+          "enableApprise": 0,
+          "appriseUrl": {
+            "__sops": "configs-1-appriseUrl"
+          },
+          "systemAppriseUrl": {
+            "__sops": "configs-1-systemAppriseUrl"
+          },
+          "tagUsersInSonarr": 1,
+          "tagUsersInRadarr": 1,
+          "cleanupOrphanedTags": 1,
+          "persistHistoricalTags": 0,
+          "tagPrefix": "pulsarr",
+          "enablePlexPlaylistProtection": 0,
+          "plexProtectionPlaylistName": "Do Not Delete",
+          "plexServerUrl": "http://127.0.0.1:32400",
+          "removedTagMode": "remove",
+          "removedTagPrefix": "pulsarr-removed",
+          "deletionMode": "watchlist",
+          "pendingWebhookRetryInterval": 20,
+          "pendingWebhookMaxAge": 10,
+          "pendingWebhookCleanupInterval": 60,
+          "plexMobileEnabled": 0,
+          "deleteSyncNotifyOnlyOnDeletion": 0,
+          "plexSessionMonitoring": "{\"enabled\":true,\"pollingIntervalMinutes\":15,\"remainingEpisodes\":3,\"filterUsers\":[\"3\",\"1\",\"452\",\"66\"],\"enableAutoReset\":false,\"inactivityResetDays\":70,\"autoResetIntervalHours\":24,\"enableProgressiveCleanup\":true}",
+          "newUserDefaultCanSync": 1,
+          "publicContentNotifications": {
+            "__sops": "configs-1-publicContentNotifications"
+          },
+          "quotaSettings": "{\"cleanup\":{\"enabled\":true,\"retentionDays\":90},\"weeklyRolling\":{\"resetDays\":7},\"monthly\":{\"resetDay\":1,\"handleMonthEnd\":\"last-day\"}}",
+          "approvalExpiration": "{\"enabled\":false,\"defaultExpirationHours\":72,\"expirationAction\":\"expire\",\"autoApproveOnQuotaAvailable\":false,\"cleanupExpiredDays\":30}",
+          "approvalNotify": "none",
+          "newUserDefaultRequiresApproval": 0,
+          "newUserDefaultMovieQuotaEnabled": 0,
+          "newUserDefaultMovieQuotaType": "monthly",
+          "newUserDefaultMovieQuotaLimit": 10,
+          "newUserDefaultMovieBypassApproval": 0,
+          "newUserDefaultShowQuotaEnabled": 0,
+          "newUserDefaultShowQuotaType": "monthly",
+          "newUserDefaultShowQuotaLimit": 10,
+          "newUserDefaultShowBypassApproval": 0,
+          "tmdbRegion": "US",
+          "plexLabelSync": "{\"enabled\":false,\"labelPrefix\":\"pulsarr\",\"labelNamingSource\":\"username\",\"concurrencyLimit\":5,\"cleanupOrphanedLabels\":false,\"removedLabelMode\":\"remove\",\"removedLabelPrefix\":\"pulsarr:removed\",\"autoResetOnScheduledSync\":false,\"tagSync\":{\"enabled\":false,\"syncRadarrTags\":true,\"syncSonarrTags\":true}}",
+          "deleteSyncTrackedOnly": 0,
+          "deleteSyncCleanupApprovals": 0,
+          "deleteSyncRequiredTagRegex": "",
+          "skipIfExistsOnPlex": 1,
+          "appriseEmailSender": {
+            "__sops": "configs-1-appriseEmailSender"
+          },
+          "newUserDefaultMovieWatchlistCap": null,
+          "newUserDefaultShowWatchlistCap": null,
+          "watchlistCapNotify": "none",
+          "watchlistCapNotifyUser": 0,
+          "tagNamingSource": "username",
+          "notifyOnUpdate": "none",
+          "watchlistAddNotify": "all",
+          "notifyOnAvailability": 1,
+          "webhookSecret": {
+            "__sops": "configs-1-webhookSecret"
+          },
+          "maintainerrEnabled": 0,
+          "maintainerrUrl": "http://127.0.0.1:6246",
+          "maintainerrWebhookSecret": {
+            "__sops": "configs-1-maintainerrWebhookSecret"
+          },
+          "maintainerrExclusionMode": "watchlisters"
+        }
+      ]
+    },
+    "admin_users": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "username",
+        "password",
+        "email",
+        "role"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "username": "Jacob",
+          "password": {
+            "__sops": "admin_users-1-password"
+          },
+          "email": "jacob@steenblik.ch",
+          "role": "admin"
+        }
+      ]
+    },
+    "users": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "apprise",
+        "alias",
+        "discord_id",
+        "notify_apprise",
+        "notify_discord",
+        "can_sync",
+        "is_primary_token",
+        "notify_plex_mobile",
+        "requires_approval",
+        "notify_discord_mention",
+        "plex_uuid"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "name": "System",
+          "apprise": {
+            "__sops": "users-0-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-0-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 1,
+          "plex_uuid": null
+        },
+        {
+          "id": 1,
+          "name": "jas341",
+          "apprise": {
+            "__sops": "users-1-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 1,
+          "is_primary_token": {
+            "__sops": "users-1-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "af789a2c63654f17"
+        },
+        {
+          "id": 2,
+          "name": "66sven",
+          "apprise": {
+            "__sops": "users-2-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-2-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 1,
+          "notify_discord_mention": 0,
+          "plex_uuid": "e1e663b7d820eb8d"
+        },
+        {
+          "id": 3,
+          "name": "alexanderm830",
+          "apprise": {
+            "__sops": "users-3-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 1,
+          "is_primary_token": {
+            "__sops": "users-3-is_primary_token"
+          },
+          "notify_plex_mobile": 1,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "de74356affdd9872"
+        },
+        {
+          "id": 4,
+          "name": "brown3218",
+          "apprise": {
+            "__sops": "users-4-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-4-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "52b7a891728260c6"
+        },
+        {
+          "id": 5,
+          "name": "heidij1",
+          "apprise": {
+            "__sops": "users-5-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-5-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "8a8c802412c020f7"
+        },
+        {
+          "id": 6,
+          "name": "jefftro4",
+          "apprise": {
+            "__sops": "users-6-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-6-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "6902ccdf34ce2313"
+        },
+        {
+          "id": 7,
+          "name": "jon723",
+          "apprise": {
+            "__sops": "users-7-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-7-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "87bd1e3db2c4fbfb"
+        },
+        {
+          "id": 8,
+          "name": "momania",
+          "apprise": {
+            "__sops": "users-8-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-8-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "fd5ddff939f934ee"
+        },
+        {
+          "id": 9,
+          "name": "oxtailsc",
+          "apprise": {
+            "__sops": "users-9-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 0,
+          "is_primary_token": {
+            "__sops": "users-9-is_primary_token"
+          },
+          "notify_plex_mobile": 0,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "0212a39abf1add7f"
+        },
+        {
+          "id": 66,
+          "name": "paivi.man",
+          "apprise": {
+            "__sops": "users-66-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 1,
+          "is_primary_token": {
+            "__sops": "users-66-is_primary_token"
+          },
+          "notify_plex_mobile": 1,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "197a2be2b5b93896"
+        },
+        {
+          "id": 452,
+          "name": "Neil Gallagher",
+          "apprise": {
+            "__sops": "users-452-apprise"
+          },
+          "alias": null,
+          "discord_id": null,
+          "notify_apprise": 0,
+          "notify_discord": 0,
+          "can_sync": 1,
+          "is_primary_token": {
+            "__sops": "users-452-is_primary_token"
+          },
+          "notify_plex_mobile": 1,
+          "requires_approval": 0,
+          "notify_discord_mention": 0,
+          "plex_uuid": "9b458e999034dc58"
+        }
+      ],
+      "prune": false
+    },
+    "sonarr_instances": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "base_url",
+        "api_key",
+        "quality_profile",
+        "root_folder",
+        "bypass_ignored",
+        "season_monitoring",
+        "tags",
+        "synced_instances",
+        "is_default",
+        "is_enabled",
+        "monitor_new_items",
+        "search_on_add",
+        "series_type",
+        "create_season_folders",
+        "skip_default_routing_when_no_match"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "name": "Sonarr",
+          "base_url": "http://localhost:8989",
+          "api_key": {
+            "__sops": "sonarr_instances-1-api_key"
+          },
+          "quality_profile": "6",
+          "root_folder": "/data/media/tv",
+          "bypass_ignored": 0,
+          "season_monitoring": "allSeasonPilotRolling",
+          "tags": "[]",
+          "synced_instances": "[]",
+          "is_default": 1,
+          "is_enabled": 1,
+          "monitor_new_items": "all",
+          "search_on_add": 1,
+          "series_type": "standard",
+          "create_season_folders": 0,
+          "skip_default_routing_when_no_match": 0
+        }
+      ]
+    },
+    "radarr_instances": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "base_url",
+        "api_key",
+        "quality_profile",
+        "root_folder",
+        "bypass_ignored",
+        "tags",
+        "synced_instances",
+        "is_default",
+        "is_enabled",
+        "search_on_add",
+        "minimum_availability",
+        "monitor",
+        "skip_default_routing_when_no_match"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "name": "Radarr 1080p",
+          "base_url": "http://localhost:7878",
+          "api_key": {
+            "__sops": "radarr_instances-1-api_key"
+          },
+          "quality_profile": "6",
+          "root_folder": "/data/media/movies",
+          "bypass_ignored": 0,
+          "tags": "[]",
+          "synced_instances": "[]",
+          "is_default": 1,
+          "is_enabled": 1,
+          "search_on_add": 1,
+          "minimum_availability": "released",
+          "monitor": "movieOnly",
+          "skip_default_routing_when_no_match": 0
+        }
+      ]
+    },
+    "router_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "type",
+        "criteria",
+        "target_type",
+        "target_instance_id",
+        "root_folder",
+        "quality_profile",
+        "order",
+        "enabled",
+        "metadata",
+        "tags",
+        "search_on_add",
+        "season_monitoring",
+        "series_type",
+        "always_require_approval",
+        "bypass_user_quotas",
+        "approval_reason",
+        "monitor",
+        "exclude_from_routing"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "name": "Ourselves 4k",
+          "type": "conditional",
+          "criteria": "{\"condition\":{\"operator\":\"AND\",\"conditions\":[{\"field\":\"user\",\"operator\":\"equals\",\"value\":1,\"negate\":false}],\"negate\":false}}",
+          "target_type": "radarr",
+          "target_instance_id": 1,
+          "root_folder": "/data/media/movies",
+          "quality_profile": 7,
+          "order": 50,
+          "enabled": 1,
+          "metadata": null,
+          "tags": "[]",
+          "search_on_add": 1,
+          "season_monitoring": null,
+          "series_type": null,
+          "always_require_approval": 0,
+          "bypass_user_quotas": 0,
+          "approval_reason": "",
+          "monitor": "movieOnly",
+          "exclude_from_routing": 0
+        },
+        {
+          "id": 2,
+          "name": "Comedy, Children, Animation, Anime 1080p",
+          "type": "conditional",
+          "criteria": "{\"condition\":{\"operator\":\"OR\",\"conditions\":[{\"field\":\"genres\",\"operator\":\"contains\",\"value\":\"Comedy\",\"negate\":false},{\"field\":\"genres\",\"operator\":\"contains\",\"value\":\"Children\",\"negate\":false,\"_cid\":\"49a0fa25-d2d7-4f07-bfc0-17180870a096\"},{\"field\":\"genres\",\"operator\":\"contains\",\"value\":\"Animation\",\"negate\":false,\"_cid\":\"20a474bf-e885-4102-b2b9-42c6a345a564\"},{\"field\":\"genres\",\"operator\":\"contains\",\"value\":\"Anime\",\"negate\":false,\"_cid\":\"e5cd545b-3cef-4709-9b40-f42e52536c1f\"}],\"negate\":false}}",
+          "target_type": "radarr",
+          "target_instance_id": 1,
+          "root_folder": "/data/media/movies",
+          "quality_profile": 4,
+          "order": 60,
+          "enabled": 1,
+          "metadata": null,
+          "tags": "[]",
+          "search_on_add": 1,
+          "season_monitoring": null,
+          "series_type": null,
+          "always_require_approval": 0,
+          "bypass_user_quotas": 0,
+          "approval_reason": "",
+          "monitor": "movieOnly",
+          "exclude_from_routing": 0
+        },
+        {
+          "id": 3,
+          "name": "Ourselves 4k",
+          "type": "conditional",
+          "criteria": "{\"condition\":{\"operator\":\"AND\",\"conditions\":[{\"field\":\"user\",\"operator\":\"equals\",\"value\":1,\"negate\":false}],\"negate\":false}}",
+          "target_type": "sonarr",
+          "target_instance_id": 1,
+          "root_folder": "/data/media/tv",
+          "quality_profile": 7,
+          "order": 50,
+          "enabled": 1,
+          "metadata": null,
+          "tags": "[]",
+          "search_on_add": 1,
+          "season_monitoring": "allSeasonPilotRolling",
+          "series_type": "standard",
+          "always_require_approval": 0,
+          "bypass_user_quotas": 0,
+          "approval_reason": "",
+          "monitor": null,
+          "exclude_from_routing": 0
+        }
+      ]
+    },
+    "schedules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "type",
+        "config",
+        "enabled"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "name": "delete-sync",
+          "type": "cron",
+          "config": "{\"expression\":\"0 1 * * 0\"}",
+          "enabled": 1
+        },
+        {
+          "id": 2,
+          "name": "plex-rolling-auto-reset",
+          "type": "interval",
+          "config": "{\"hours\":24}",
+          "enabled": 0
+        },
+        {
+          "id": 3,
+          "name": "anime-update",
+          "type": "cron",
+          "config": "{\"expression\":\"0 3 * * 0\"}",
+          "enabled": 1
+        },
+        {
+          "id": 4,
+          "name": "quota-maintenance",
+          "type": "cron",
+          "config": "{\"expression\":\"0 2 * * *\"}",
+          "enabled": 1
+        },
+        {
+          "id": 5,
+          "name": "approval-maintenance",
+          "type": "cron",
+          "config": "{\"expression\":\"0 */4 * * *\"}",
+          "enabled": 1
+        },
+        {
+          "id": 6,
+          "name": "pending-label-sync-processor",
+          "type": "interval",
+          "config": "{\"seconds\":120}",
+          "enabled": 1
+        },
+        {
+          "id": 7,
+          "name": "pending-label-sync-cleanup",
+          "type": "interval",
+          "config": "{\"seconds\":60}",
+          "enabled": 1
+        },
+        {
+          "id": 8,
+          "name": "plex-label-full-sync",
+          "type": "cron",
+          "config": "{\"expression\":\"0 2 * * 0\"}",
+          "enabled": 0
+        },
+        {
+          "id": 9,
+          "name": "maintainerr-sync",
+          "type": "interval",
+          "config": "{\"hours\":1}",
+          "enabled": 0
+        },
+        {
+          "id": 10,
+          "name": "metadata-refresh",
+          "type": "cron",
+          "config": "{\"expression\":\"0 2 * * 0\"}",
+          "enabled": 1
+        },
+        {
+          "id": 11,
+          "name": "plex-session-monitor",
+          "type": "interval",
+          "config": "{\"minutes\":15}",
+          "enabled": 1
+        },
+        {
+          "id": 12,
+          "name": "plex-rolling-pilot-sync",
+          "type": "interval",
+          "config": "{\"hours\":24}",
+          "enabled": 1
+        },
+        {
+          "id": 13,
+          "name": "update-check",
+          "type": "cron",
+          "config": "{\"expression\":\"0 * * * *\"}",
+          "enabled": 1
+        },
+        {
+          "id": 14,
+          "name": "pending-webhooks-processor",
+          "type": "interval",
+          "config": "{\"seconds\":20}",
+          "enabled": 1
+        },
+        {
+          "id": 15,
+          "name": "pending-webhooks-cleanup",
+          "type": "interval",
+          "config": "{\"seconds\":60}",
+          "enabled": 1
+        },
+        {
+          "id": 24,
+          "name": "periodic-watchlist-reconciliation",
+          "type": "interval",
+          "config": "{\"minutes\":120,\"runImmediately\":false}",
+          "enabled": 1
+        }
+      ]
+    },
+    "api_keys": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "key",
+        "is_active",
+        "user_id"
+      ],
+      "rows": []
+    },
+    "user_quotas": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "user_id",
+        "content_type",
+        "quota_type",
+        "quota_limit",
+        "bypass_approval",
+        "watchlist_cap"
+      ],
+      "rows": []
+    },
+    "webhook_endpoints": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "url",
+        "auth_header_name",
+        "auth_header_value",
+        "event_types",
+        "enabled"
+      ],
+      "rows": []
+    },
+    "watchlist_exclusions": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "user_id",
+        "key",
+        "title",
+        "type",
+        "guids"
+      ],
+      "rows": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "key": "5d776831103a2d001f566bda",
+          "title": "Run Fatboy Run",
+          "type": "movie",
+          "guids": "[\"imdb:tt0425413\",\"tmdb:7942\",\"tvdb:4901\"]"
+        }
+      ]
+    },
+    "genres": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "is_custom"
+      ],
+      "rows": [],
+      "where": "is_custom = 1"
+    }
+  }
+}
