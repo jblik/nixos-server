@@ -1,6 +1,12 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (config.host.storage) bulkMount scratchDir;
+  settings = builtins.fromJSON (builtins.readFile ./tdarr-settings.json);
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -15,12 +21,19 @@ in
       };
       nodes = {
         main = {
+          pathTranslators = settings.configs."nodes/main/configs/Tdarr_Node_Config.json".pathTranslators;
           workers.transcodeCPU = 0;
           workers.healthcheckCPU = 0;
           workers.transcodeGPU = 2;
           workers.healthcheckGPU = 1;
         };
       };
+    };
+
+    sops.secrets.media-tdarr-settings = {
+      sopsFile = ../../../secrets/media-tdarr.yaml;
+      key = "settings";
+      owner = config.services.tdarr.user;
     };
 
     # The module never declares nodes/ itself, so tmpfiles creates it as root and then
@@ -35,6 +48,20 @@ in
     # The Tdarr module only lets it write to its own state; it has to replace
     # files in the library and use the cache under scratchDir.
     systemd.services = lib.mkMerge [
+      {
+        tdarr-server = {
+          restartTriggers = [
+            ./tdarr-settings.json
+            ../../../secrets/media-tdarr.yaml
+            ./settings/tdarr-settings.py
+          ];
+          preStart = lib.mkBefore ''
+            ${pkgs.python3}/bin/python3 ${./settings/tdarr-settings.py} \
+              ${./tdarr-settings.json} ${config.sops.secrets.media-tdarr-settings.path} \
+              ${config.services.tdarr.dataDir} ${config.services.tdarr.server.package.version}
+          '';
+        };
+      }
       (lib.genAttrs
         [
           "tdarr-server"

@@ -1,0 +1,3450 @@
+{
+  "version": "2.91.01",
+  "schema": [
+    "CREATE TRIGGER archive_classic_stack_before_shrink\n        BEFORE UPDATE OF json_data ON librarysettingsjsondb\n        FOR EACH ROW\n        WHEN COALESCE(json_array_length(OLD.json_data, '$.pluginIDs'), 0)\n           > COALESCE(json_array_length(NEW.json_data, '$.pluginIDs'), 0)\n        BEGIN\n            INSERT INTO config_history (\n                entity_type, entity_id, change_type, created_at, expires_at, payload\n            ) VALUES (\n                'classicStack', OLD.id, 'stackShrink', unixepoch() * 1000,\n                (unixepoch() + 30 * 24 * 60 * 60) * 1000,\n                json_object(\n                    'name', json_extract(OLD.json_data, '$.name'),\n                    'pluginIDs', json(COALESCE((\n                        SELECT json_group_array(json(old_plugin.value))\n                        FROM json_each(OLD.json_data, '$.pluginIDs') AS old_plugin\n                        WHERE NOT EXISTS (\n                            SELECT 1\n                            FROM json_each(NEW.json_data, '$.pluginIDs') AS new_plugin\n                            WHERE json_extract(new_plugin.value, '$._id')\n                                = json_extract(old_plugin.value, '$._id')\n                        )\n                    ), '[]'))\n                )\n            );\n        END",
+    "CREATE TRIGGER archive_flow_before_delete\n        BEFORE DELETE ON flowsjsondb\n        FOR EACH ROW\n        BEGIN\n            INSERT INTO config_history (\n                entity_type, entity_id, change_type, created_at, expires_at, payload\n            ) VALUES (\n                'flow', OLD.id, 'delete', unixepoch() * 1000,\n                (unixepoch() + 30 * 24 * 60 * 60) * 1000, OLD.json_data\n            );\n        END",
+    "CREATE TRIGGER archive_flow_before_update\n        BEFORE UPDATE OF json_data ON flowsjsondb\n        FOR EACH ROW\n        WHEN json_remove(OLD.json_data, '$.priority')\n           <> json_remove(NEW.json_data, '$.priority')\n         AND NOT EXISTS (\n            SELECT 1 FROM config_history\n            WHERE entity_type = 'flow'\n              AND entity_id = OLD.id\n              AND change_type = 'update'\n              AND created_at >= (unixepoch() - 5) * 1000\n         )\n        BEGIN\n            INSERT INTO config_history (\n                entity_type, entity_id, change_type, created_at, expires_at, payload\n            ) VALUES (\n                'flow', OLD.id, 'update', unixepoch() * 1000,\n                (unixepoch() + 30 * 24 * 60 * 60) * 1000, OLD.json_data\n            );\n            DELETE FROM config_history\n            WHERE entity_type = 'flow'\n              AND entity_id = OLD.id\n              AND change_type = 'update'\n              AND id NOT IN (\n                  SELECT id FROM config_history\n                  WHERE entity_type = 'flow'\n                    AND entity_id = OLD.id\n                    AND change_type = 'update'\n                  ORDER BY created_at DESC, id DESC\n                  LIMIT 30\n              );\n        END",
+    "CREATE TRIGGER archive_library_before_delete\n        BEFORE DELETE ON librarysettingsjsondb\n        FOR EACH ROW\n        BEGIN\n            INSERT INTO config_history (\n                entity_type, entity_id, change_type, created_at, expires_at, payload\n            ) VALUES (\n                'library', OLD.id, 'delete', unixepoch() * 1000,\n                (unixepoch() + 30 * 24 * 60 * 60) * 1000, OLD.json_data\n            );\n        END",
+    "CREATE TRIGGER archive_library_before_update\n        BEFORE UPDATE OF json_data ON librarysettingsjsondb\n        FOR EACH ROW\n        WHEN json_remove(\n                OLD.json_data, '$.priority', '$.totalTranscodeCount',\n                '$.totalHealthCheckCount', '$.sizeDiff', '$.scanButtons',\n                '$.scanFound', '$.navItemSelected'\n             ) <> json_remove(\n                NEW.json_data, '$.priority', '$.totalTranscodeCount',\n                '$.totalHealthCheckCount', '$.sizeDiff', '$.scanButtons',\n                '$.scanFound', '$.navItemSelected'\n             )\n         AND NOT EXISTS (\n            SELECT 1 FROM config_history\n            WHERE entity_type = 'library'\n              AND entity_id = OLD.id\n              AND change_type = 'update'\n              AND created_at >= (unixepoch() - 5) * 1000\n         )\n        BEGIN\n            INSERT INTO config_history (\n                entity_type, entity_id, change_type, created_at, expires_at, payload\n            ) VALUES (\n                'library', OLD.id, 'update', unixepoch() * 1000,\n                (unixepoch() + 30 * 24 * 60 * 60) * 1000, OLD.json_data\n            );\n            DELETE FROM config_history\n            WHERE entity_type = 'library'\n              AND entity_id = OLD.id\n              AND change_type = 'update'\n              AND id NOT IN (\n                  SELECT id FROM config_history\n                  WHERE entity_type = 'library'\n                    AND entity_id = OLD.id\n                    AND change_type = 'update'\n                  ORDER BY created_at DESC, id DESC\n                  LIMIT 30\n              );\n        END",
+    "CREATE TRIGGER update_bumped_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET bumped = json_extract(NEW.json_data, '$.bumped')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_bumped_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET bumped = json_extract(NEW.json_data, '$.bumped')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_db_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET db = json_extract(NEW.json_data, '$.DB')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_db_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET db = json_extract(NEW.json_data, '$.DB')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_file_medium_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET file_medium = json_extract(NEW.json_data, '$.fileMedium')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_file_medium_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET file_medium = json_extract(NEW.json_data, '$.fileMedium')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_health_check_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET health_check = json_extract(NEW.json_data, '$.HealthCheck')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_health_check_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET health_check = json_extract(NEW.json_data, '$.HealthCheck')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_hold_until_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET hold_until = json_extract(NEW.json_data, '$.holdUntil')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_hold_until_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET hold_until = json_extract(NEW.json_data, '$.holdUntil')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_last_health_check_date_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET last_health_check_date = json_extract(NEW.json_data, '$.lastHealthCheckDate')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_last_health_check_date_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET last_health_check_date = json_extract(NEW.json_data, '$.lastHealthCheckDate')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_last_transcode_date_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET last_transcode_date = json_extract(NEW.json_data, '$.lastTranscodeDate')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_last_transcode_date_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET last_transcode_date = json_extract(NEW.json_data, '$.lastTranscodeDate')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_transcode_decision_maker_after_json_data_insert\n        AFTER INSERT ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET transcode_decision_maker = json_extract(NEW.json_data, '$.TranscodeDecisionMaker')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TRIGGER update_transcode_decision_maker_after_json_data_update\n        AFTER UPDATE OF json_data ON filejsondb\n        FOR EACH ROW\n        BEGIN\n            UPDATE filejsondb\n            SET transcode_decision_maker = json_extract(NEW.json_data, '$.TranscodeDecisionMaker')\n            WHERE id = NEW.id;\n        END",
+    "CREATE TABLE apikeysjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE automationsjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE config_history (\n            id INTEGER PRIMARY KEY AUTOINCREMENT,\n            entity_type TEXT NOT NULL,\n            entity_id TEXT NOT NULL,\n            change_type TEXT NOT NULL,\n            created_at INTEGER NOT NULL,\n            expires_at INTEGER NOT NULL,\n            payload TEXT NOT NULL CHECK (json_valid(payload))\n        )",
+    "CREATE TABLE f2foutputjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE filejsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  , transcode_decision_maker TEXT, bumped TIMESTAMP, last_transcode_date TIMESTAMP, health_check TEXT, last_health_check_date TIMESTAMP, file_medium TEXT, hold_until TIMESTAMP, db TEXT)",
+    "CREATE TABLE flowsjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE jobsjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE librarysettingsjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE nodejsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE res_stats (\n      id INTEGER PRIMARY KEY AUTOINCREMENT,\n      timestamp INTEGER,\n      heap_used_mb REAL,\n      heap_total_mb REAL,\n      cpu_percentage REAL,\n      memory_used_gb REAL\n  )",
+    "CREATE TABLE running_worker_history (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    timestamp INTEGER,\n    tcpu INTEGER,\n    tgpu INTEGER,\n    hcpu INTEGER,\n    hgpu INTEGER \n)",
+    "CREATE TABLE settingsglobaljsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE sso_provider_configs (\n            provider TEXT PRIMARY KEY CHECK (provider IN ('google', 'microsoft', 'github', 'oidc')),\n            enabled INTEGER NOT NULL DEFAULT 0 CHECK (enabled IN (0, 1)),\n            credentials_json TEXT CHECK (\n                credentials_json IS NULL OR json_valid(credentials_json)\n            )\n        )",
+    "CREATE TABLE stagedjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE statisticsjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE storage_saved (\n        id INTEGER PRIMARY KEY AUTOINCREMENT,\n        timestamp INTEGER,\n        space_saved REAL,\n        library_id VARCHAR(20),\n        node_id VARCHAR(20),\n        worker_type VARCHAR(20),\n        plugin_id VARCHAR(100)\n    )",
+    "CREATE TABLE usersjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE variablesjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE TABLE worker_verdict_history (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  timestamp INTEGER,\n  verdict VARCHAR(20),\n  library_id VARCHAR(20),\n  node_id VARCHAR(20),\n  worker_type VARCHAR(20)\n)",
+    "CREATE TABLE workerverdicthistoryjsondb (\n    id TEXT PRIMARY KEY,\n    timestamp INTEGER,\n    json_data TEXT\n  )",
+    "CREATE INDEX idx_bumped ON filejsondb (json_extract(json_data, '$.bumped'))",
+    "CREATE INDEX idx_config_history_entity\n            ON config_history(entity_type, entity_id, created_at DESC)",
+    "CREATE INDEX idx_config_history_expiry\n            ON config_history(expires_at)",
+    "CREATE INDEX idx_file_medium ON filejsondb (json_extract(json_data, '$.fileMedium'))",
+    "CREATE INDEX idx_file_name_without_extension ON filejsondb (json_extract(json_data, '$.fileNameWithoutExtension'))",
+    "CREATE INDEX idx_file_size ON filejsondb (json_extract(json_data, '$.file_size'))",
+    "CREATE INDEX idx_filejsondb_generated_bumped ON filejsondb(bumped)",
+    "CREATE INDEX idx_filejsondb_generated_db ON filejsondb(db)",
+    "CREATE INDEX idx_filejsondb_generated_file_medium ON filejsondb(file_medium)",
+    "CREATE INDEX idx_filejsondb_generated_health_check ON filejsondb(health_check)",
+    "CREATE INDEX idx_filejsondb_generated_hold_until ON filejsondb(hold_until)",
+    "CREATE INDEX idx_filejsondb_generated_last_health_check_date ON filejsondb(last_health_check_date)",
+    "CREATE INDEX idx_filejsondb_generated_last_transcode_date ON filejsondb(last_transcode_date)",
+    "CREATE INDEX idx_filejsondb_generated_transcode_decision_maker ON filejsondb(transcode_decision_maker)",
+    "CREATE INDEX idx_health_check ON filejsondb (json_extract(json_data, '$.HealthCheck'))",
+    "CREATE INDEX idx_id ON filejsondb (id)",
+    "CREATE INDEX idx_jobsjsondb_id ON jobsjsondb (id)",
+    "CREATE INDEX idx_jobsjsondb_start ON jobsjsondb (json_extract(json_data, '$.start'))",
+    "CREATE INDEX idx_last_health_check_date ON filejsondb (json_extract(json_data, '$.lastHealthCheckDate'))",
+    "CREATE INDEX idx_last_transcode_date ON filejsondb (json_extract(json_data, '$.lastTranscodeDate'))",
+    "CREATE INDEX idx_library_id ON filejsondb (json_extract(json_data, '$.DB'))",
+    "CREATE INDEX idx_stagedjsondb_id ON stagedjsondb (id)",
+    "CREATE INDEX idx_transcode_decision_maker ON filejsondb (json_extract(json_data, '$.TranscodeDecisionMaker'))"
+  ],
+  "tableColumns": {
+    "apikeysjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "automationsjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "flowsjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "librarysettingsjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "nodejsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "settingsglobaljsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "sso_provider_configs": [
+      {
+        "cid": 0,
+        "name": "provider",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "enabled",
+        "type": "INTEGER",
+        "notnull": 1,
+        "dflt_value": "0",
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "credentials_json",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "usersjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ],
+    "variablesjsondb": [
+      {
+        "cid": 0,
+        "name": "id",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 1
+      },
+      {
+        "cid": 1,
+        "name": "timestamp",
+        "type": "INTEGER",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      },
+      {
+        "cid": 2,
+        "name": "json_data",
+        "type": "TEXT",
+        "notnull": 0,
+        "dflt_value": null,
+        "pk": 0
+      }
+    ]
+  },
+  "ignoredFields": {
+    "librarysettingsjsondb": [
+      "createdAt",
+      "scanButtons",
+      "scanFound",
+      "totalHealthCheckCount",
+      "totalTranscodeCount",
+      "sizeDiff"
+    ],
+    "settingsglobaljsondb": [
+      "lastQueueUpdateTime",
+      "pluginSearchLoading",
+      "dropdownShow",
+      "pluginCurrentSha",
+      "pluginLatestKnownSha",
+      "runningDocker",
+      "logsLoading",
+      "autoUpdaterRequiredVersion",
+      "autoUpdaterUpdateReady",
+      "autoUpdaterUpdateReadyVersion",
+      "autoUpdaterRestartInProgress",
+      "autoUpdaterUpdateCheckInProgress",
+      "version",
+      "serverEngine"
+    ]
+  },
+  "tables": {
+    "apikeysjsondb": [],
+    "automationsjsondb": [],
+    "flowsjsondb": [
+      {
+        "id": "BKy3FzXUy",
+        "json_data": {
+          "_id": "BKy3FzXUy",
+          "name": "TheOne (duplicate)",
+          "priority": 1,
+          "flowPlugins": [
+            {
+              "name": "Input File",
+              "sourceRepo": "Community",
+              "pluginName": "inputFile",
+              "version": "1.0.0",
+              "inputsDB": {},
+              "fpEnabled": true,
+              "id": "vg8a4tVxkd",
+              "position": {
+                "x": 192,
+                "y": -444
+              }
+            },
+            {
+              "name": "re-order all streams v2",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_00td_action_re_order_all_streams_v2"
+              },
+              "fpEnabled": true,
+              "id": "XkqqoVL-Y8",
+              "position": {
+                "x": 168,
+                "y": -324
+              }
+            },
+            {
+              "name": "MC93 MigzImageRemoval",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_MC93_MigzImageRemoval"
+              },
+              "fpEnabled": true,
+              "id": "QukOFiNLQC",
+              "position": {
+                "x": 168,
+                "y": -252
+              }
+            },
+            {
+              "name": "Reorder Streams",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_lmg1_Reorder_Streams"
+              },
+              "fpEnabled": true,
+              "id": "KEbzv_g-K1",
+              "position": {
+                "x": 168,
+                "y": -180
+              }
+            },
+            {
+              "name": "Transcode CPU",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz1FFMPEG_CPU"
+              },
+              "fpEnabled": true,
+              "id": "Qw2eo0bqcC",
+              "position": {
+                "x": 252,
+                "y": 192
+              }
+            },
+            {
+              "name": "New file size check",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_a9he_New_file_size_check",
+                "lowerBound": "20"
+              },
+              "fpEnabled": true,
+              "id": "J6FZ9-hGR3",
+              "position": {
+                "x": 168,
+                "y": 264
+              }
+            },
+            {
+              "name": "rename files based on codec and resolution",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_z18t_rename_files_based_on_codec_and_resolution"
+              },
+              "fpEnabled": false,
+              "id": "aRqPfNEwhFk",
+              "position": {
+                "x": 168,
+                "y": 396
+              }
+            },
+            {
+              "name": "Replace Original File",
+              "sourceRepo": "Community",
+              "pluginName": "replaceOriginalFile",
+              "version": "1.0.0",
+              "inputsDB": {},
+              "fpEnabled": true,
+              "id": "z9VzBsplQ",
+              "position": {
+                "x": 168,
+                "y": 336
+              }
+            },
+            {
+              "name": "Apply Radarr naming policy",
+              "sourceRepo": "Community",
+              "pluginName": "applyRadarrOrSonarrNamingPolicy",
+              "version": "1.0.0",
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/0/json_data/flowPlugins/8/inputsDB/arr_api_key"
+                },
+                "arr_host": "http://192.168.1.2:7878"
+              },
+              "fpEnabled": false,
+              "id": "VDQudvFiC",
+              "position": {
+                "x": 84,
+                "y": 576
+              }
+            },
+            {
+              "name": "Add To Skiplist",
+              "sourceRepo": "Community",
+              "pluginName": "processedAdd",
+              "version": "1.0.0",
+              "fpEnabled": false,
+              "id": "ADWNAw-Vd",
+              "position": {
+                "x": 180,
+                "y": 672
+              }
+            },
+            {
+              "name": "Transcode GPU",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz1FFMPEG"
+              },
+              "fpEnabled": true,
+              "id": "rqNUZFAmf",
+              "position": {
+                "x": 84,
+                "y": 192
+              }
+            },
+            {
+              "name": "Check Flow Variable",
+              "sourceRepo": "Community",
+              "pluginName": "checkFlowVariable",
+              "version": "1.0.0",
+              "inputsDB": {
+                "variable": "{{{args.workerType}}}",
+                "value": "transcodegpu"
+              },
+              "fpEnabled": true,
+              "id": "0mSzCAFWm",
+              "position": {
+                "x": 168,
+                "y": 120
+              }
+            },
+            {
+              "name": "is movies?",
+              "sourceRepo": "Community",
+              "pluginName": "checkFlowVariable",
+              "version": "1.0.0",
+              "inputsDB": {
+                "variable": "{{{args.userVariables.library.LibraryName}}}",
+                "value": "movies"
+              },
+              "fpEnabled": false,
+              "id": "Ozydc6SuX",
+              "position": {
+                "x": 168,
+                "y": 492
+              }
+            },
+            {
+              "name": "Apply Sonarr naming policy",
+              "sourceRepo": "Community",
+              "pluginName": "applyRadarrOrSonarrNamingPolicy",
+              "version": "1.0.0",
+              "inputsDB": {
+                "arr": "sonarr",
+                "arr_host": "http://192.168.1.2:8989",
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/0/json_data/flowPlugins/13/inputsDB/arr_api_key"
+                }
+              },
+              "fpEnabled": false,
+              "id": "P54ofrXhy",
+              "position": {
+                "x": 252,
+                "y": 576
+              }
+            },
+            {
+              "name": "Remove Subs",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_x7ab_Remove_Subs"
+              },
+              "fpEnabled": true,
+              "id": "RE9UHhrfD",
+              "position": {
+                "x": 168,
+                "y": 48
+              }
+            },
+            {
+              "name": "Check Skiplist",
+              "sourceRepo": "Community",
+              "pluginName": "processedCheck",
+              "version": "1.0.0",
+              "fpEnabled": true,
+              "id": "FvXsEVDas",
+              "position": {
+                "x": 192,
+                "y": -384
+              }
+            },
+            {
+              "name": "Prune audio tracks",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "id": "IrDaRuEpc",
+              "position": {
+                "x": 168,
+                "y": -84
+              },
+              "fpEnabled": true,
+              "inputsDB": {
+                "pluginSourceId": "Local:Tdarr_Plugin_nxsv_Keep_Original_Eng_Und",
+                "radarr_api_key": {
+                  "$secret": "tables/flowsjsondb/0/json_data/flowPlugins/16/inputsDB/radarr_api_key"
+                },
+                "sonarr_api_key": {
+                  "$secret": "tables/flowsjsondb/0/json_data/flowPlugins/16/inputsDB/sonarr_api_key"
+                }
+              }
+            }
+          ],
+          "flowEdges": [
+            {
+              "source": "XkqqoVL-Y8",
+              "sourceHandle": "1",
+              "target": "QukOFiNLQC",
+              "targetHandle": null,
+              "id": "S_n2WINoPJ",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "XkqqoVL-Y8",
+              "sourceHandle": "2",
+              "target": "QukOFiNLQC",
+              "targetHandle": null,
+              "id": "eqOjPUsilb",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "QukOFiNLQC",
+              "sourceHandle": "1",
+              "target": "KEbzv_g-K1",
+              "targetHandle": null,
+              "id": "39cxuWcz90",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "QukOFiNLQC",
+              "sourceHandle": "2",
+              "target": "KEbzv_g-K1",
+              "targetHandle": null,
+              "id": "MiK_4c5lK3",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "Qw2eo0bqcC",
+              "sourceHandle": "1",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "yyqp_3wurR",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "Qw2eo0bqcC",
+              "sourceHandle": "2",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "99CZ_C-Ytx",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "J6FZ9-hGR3",
+              "sourceHandle": "2",
+              "target": "z9VzBsplQ",
+              "targetHandle": null,
+              "id": "JAape3m6e",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "J6FZ9-hGR3",
+              "sourceHandle": "1",
+              "target": "z9VzBsplQ",
+              "targetHandle": null,
+              "id": "JiAr4OOyv",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "VDQudvFiC",
+              "sourceHandle": "1",
+              "target": "ADWNAw-Vd",
+              "targetHandle": null,
+              "id": "Oy2TBDt-w",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "0mSzCAFWm",
+              "sourceHandle": "2",
+              "target": "Qw2eo0bqcC",
+              "targetHandle": null,
+              "id": "FDsLeuxWV",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "0mSzCAFWm",
+              "sourceHandle": "1",
+              "target": "rqNUZFAmf",
+              "targetHandle": null,
+              "id": "x1FnPwjTW",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "rqNUZFAmf",
+              "sourceHandle": "2",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "bYswTDEWR",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "rqNUZFAmf",
+              "sourceHandle": "1",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "DgYjntpaz",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "z9VzBsplQ",
+              "sourceHandle": "1",
+              "target": "aRqPfNEwhFk",
+              "targetHandle": null,
+              "id": "xUZRi42-F",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "VDQudvFiC",
+              "sourceHandle": "2",
+              "target": "ADWNAw-Vd",
+              "targetHandle": null,
+              "id": "b0WvYe9P2",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "aRqPfNEwhFk",
+              "sourceHandle": "1",
+              "target": "Ozydc6SuX",
+              "targetHandle": null,
+              "id": "nLzsVyX-2",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "aRqPfNEwhFk",
+              "sourceHandle": "2",
+              "target": "Ozydc6SuX",
+              "targetHandle": null,
+              "id": "s6e5zjZF-",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "Ozydc6SuX",
+              "sourceHandle": "1",
+              "target": "VDQudvFiC",
+              "targetHandle": null,
+              "id": "Y7kRROzsG",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "Ozydc6SuX",
+              "sourceHandle": "2",
+              "target": "P54ofrXhy",
+              "targetHandle": null,
+              "id": "LrdVz7n0y",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "P54ofrXhy",
+              "sourceHandle": "1",
+              "target": "ADWNAw-Vd",
+              "targetHandle": null,
+              "id": "HDChAIH6C",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "P54ofrXhy",
+              "sourceHandle": "2",
+              "target": "ADWNAw-Vd",
+              "targetHandle": null,
+              "id": "7tefL2lRN",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "RE9UHhrfD",
+              "sourceHandle": "1",
+              "target": "0mSzCAFWm",
+              "targetHandle": null,
+              "id": "El2FgIXWu",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "RE9UHhrfD",
+              "sourceHandle": "2",
+              "target": "0mSzCAFWm",
+              "targetHandle": null,
+              "id": "ZyLXQ0W_w",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "FvXsEVDas",
+              "sourceHandle": "1",
+              "target": "XkqqoVL-Y8",
+              "targetHandle": null,
+              "id": "1eey0OB7k",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "vg8a4tVxkd",
+              "sourceHandle": "1",
+              "target": "FvXsEVDas",
+              "targetHandle": null,
+              "id": "Lw8ijjDaI",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "KEbzv_g-K1",
+              "sourceHandle": "1",
+              "target": "IrDaRuEpc",
+              "targetHandle": null,
+              "id": "gqyg8uBHU",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "KEbzv_g-K1",
+              "sourceHandle": "2",
+              "target": "IrDaRuEpc",
+              "targetHandle": null,
+              "id": "fKM9LMiwX",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "IrDaRuEpc",
+              "sourceHandle": "1",
+              "target": "RE9UHhrfD",
+              "targetHandle": null,
+              "id": "TBl-gRA4r",
+              "animated": true,
+              "type": "smoothstep"
+            },
+            {
+              "source": "IrDaRuEpc",
+              "sourceHandle": "2",
+              "target": "RE9UHhrfD",
+              "targetHandle": null,
+              "id": "6nBbBYFKS",
+              "animated": true,
+              "type": "smoothstep"
+            }
+          ],
+          "isUiLocked": false
+        }
+      },
+      {
+        "id": "_6hgHWHuwDJ",
+        "json_data": {
+          "_id": "_6hgHWHuwDJ",
+          "name": "TheOne",
+          "priority": 0,
+          "flowPlugins": [
+            {
+              "name": "Input File",
+              "sourceRepo": "Community",
+              "pluginName": "inputFile",
+              "version": "1.0.0",
+              "inputsDB": {},
+              "fpEnabled": true,
+              "id": "vg8a4tVxkd",
+              "position": {
+                "x": 192,
+                "y": -444
+              }
+            },
+            {
+              "name": "re-order all streams v2",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_00td_action_re_order_all_streams_v2"
+              },
+              "fpEnabled": true,
+              "id": "XkqqoVL-Y8",
+              "position": {
+                "x": 168,
+                "y": -324
+              }
+            },
+            {
+              "name": "MC93 MigzImageRemoval",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_MC93_MigzImageRemoval"
+              },
+              "fpEnabled": true,
+              "id": "QukOFiNLQC",
+              "position": {
+                "x": 168,
+                "y": -252
+              }
+            },
+            {
+              "name": "Reorder Streams",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_lmg1_Reorder_Streams"
+              },
+              "fpEnabled": true,
+              "id": "KEbzv_g-K1",
+              "position": {
+                "x": 168,
+                "y": -180
+              }
+            },
+            {
+              "name": "Transcode CPU",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_MC93_Migz1FFMPEG_CPU"
+              },
+              "fpEnabled": true,
+              "id": "Qw2eo0bqcC",
+              "position": {
+                "x": 252,
+                "y": 192
+              }
+            },
+            {
+              "name": "New file size check",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_a9he_New_file_size_check",
+                "lowerBound": "20",
+                "upperBound": "100"
+              },
+              "fpEnabled": true,
+              "id": "J6FZ9-hGR3",
+              "position": {
+                "x": 168,
+                "y": 264
+              }
+            },
+            {
+              "name": "Replace Original File",
+              "sourceRepo": "Community",
+              "pluginName": "replaceOriginalFile",
+              "version": "1.0.0",
+              "inputsDB": {},
+              "fpEnabled": true,
+              "id": "z9VzBsplQ",
+              "position": {
+                "x": 168,
+                "y": 336
+              }
+            },
+            {
+              "name": "Apply Radarr naming policy",
+              "sourceRepo": "Community",
+              "pluginName": "applyRadarrOrSonarrNamingPolicy",
+              "version": "1.0.0",
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/7/inputsDB/arr_api_key"
+                },
+                "arr_host": "http://localhost:7878"
+              },
+              "fpEnabled": false,
+              "id": "VDQudvFiC",
+              "position": {
+                "x": -24,
+                "y": 576
+              }
+            },
+            {
+              "name": "Add To Skiplist",
+              "sourceRepo": "Community",
+              "pluginName": "processedAdd",
+              "version": "1.0.0",
+              "fpEnabled": false,
+              "id": "ADWNAw-Vd",
+              "position": {
+                "x": 168,
+                "y": 720
+              }
+            },
+            {
+              "name": "Transcode GPU",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_vdka_Tiered_NVENC_CQV_BASED_CONFIGURABLE",
+                "sdCQV": "20",
+                "hdCQV": "20",
+                "fullhdCQV": "20",
+                "uhdCQV": "20",
+                "bframe": "4",
+                "ffmpeg_preset": "p6"
+              },
+              "fpEnabled": true,
+              "id": "rqNUZFAmf",
+              "position": {
+                "x": 84,
+                "y": 192
+              }
+            },
+            {
+              "name": "Check Flow Variable",
+              "sourceRepo": "Community",
+              "pluginName": "checkFlowVariable",
+              "version": "1.0.0",
+              "inputsDB": {
+                "variable": "{{{args.workerType}}}",
+                "value": "transcodegpu"
+              },
+              "fpEnabled": true,
+              "id": "0mSzCAFWm",
+              "position": {
+                "x": 168,
+                "y": 120
+              }
+            },
+            {
+              "name": "is movies?",
+              "sourceRepo": "Community",
+              "pluginName": "checkFlowVariable",
+              "version": "1.0.0",
+              "inputsDB": {
+                "variable": "{{{args.userVariables.library.LibraryName}}}",
+                "value": "movies"
+              },
+              "fpEnabled": true,
+              "id": "Ozydc6SuX",
+              "position": {
+                "x": 168,
+                "y": 408
+              }
+            },
+            {
+              "name": "Apply Sonarr naming policy",
+              "sourceRepo": "Community",
+              "pluginName": "applyRadarrOrSonarrNamingPolicy",
+              "version": "1.0.0",
+              "inputsDB": {
+                "arr": "sonarr",
+                "arr_host": "http://localhost:8989",
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/12/inputsDB/arr_api_key"
+                }
+              },
+              "fpEnabled": false,
+              "id": "P54ofrXhy",
+              "position": {
+                "x": 384,
+                "y": 576
+              }
+            },
+            {
+              "name": "Remove Subs",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Community:Tdarr_Plugin_x7ab_Remove_Subs"
+              },
+              "fpEnabled": true,
+              "id": "RE9UHhrfD",
+              "position": {
+                "x": 168,
+                "y": 48
+              }
+            },
+            {
+              "name": "Check Skiplist",
+              "sourceRepo": "Community",
+              "pluginName": "processedCheck",
+              "version": "1.0.0",
+              "fpEnabled": true,
+              "id": "FvXsEVDas",
+              "position": {
+                "x": 192,
+                "y": -384
+              }
+            },
+            {
+              "name": "Prune audio tracks",
+              "sourceRepo": "Community",
+              "pluginName": "runClassicTranscodePlugin",
+              "version": "2.0.0",
+              "inputsDB": {
+                "pluginSourceId": "Local:Tdarr_Plugin_nxsv_Keep_Original_Eng_Und",
+                "radarr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/15/inputsDB/radarr_api_key"
+                },
+                "sonarr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/15/inputsDB/sonarr_api_key"
+                }
+              },
+              "fpEnabled": true,
+              "id": "IrDaRuEpc",
+              "position": {
+                "x": 168,
+                "y": -84
+              }
+            },
+            {
+              "name": "Notify Radarr",
+              "sourceRepo": "Community",
+              "pluginName": "notifyRadarrOrSonarr",
+              "version": "3.0.0",
+              "id": "SbtjWGeat",
+              "position": {
+                "x": 84,
+                "y": 504
+              },
+              "fpEnabled": true,
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/16/inputsDB/arr_api_key"
+                }
+              }
+            },
+            {
+              "name": "Notify Sonarr",
+              "sourceRepo": "Community",
+              "pluginName": "notifyRadarrOrSonarr",
+              "version": "3.0.0",
+              "id": "vJes9U3v4",
+              "position": {
+                "x": 252,
+                "y": 504
+              },
+              "fpEnabled": true,
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/17/inputsDB/arr_api_key"
+                },
+                "arr_host": "http://192.168.1.1:8989"
+              }
+            },
+            {
+              "name": "Notify Sonarr",
+              "sourceRepo": "Community",
+              "pluginName": "notifyRadarrOrSonarr",
+              "version": "3.0.0",
+              "id": "isDWjVrK9",
+              "position": {
+                "x": 384,
+                "y": 648
+              },
+              "fpEnabled": false,
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/18/inputsDB/arr_api_key"
+                },
+                "arr_host": "http://192.168.1.1:8989"
+              }
+            },
+            {
+              "name": "Notify Radarr",
+              "sourceRepo": "Community",
+              "pluginName": "notifyRadarrOrSonarr",
+              "version": "3.0.0",
+              "id": "w1-G-Je0B",
+              "position": {
+                "x": -24,
+                "y": 648
+              },
+              "fpEnabled": false,
+              "inputsDB": {
+                "arr_api_key": {
+                  "$secret": "tables/flowsjsondb/1/json_data/flowPlugins/19/inputsDB/arr_api_key"
+                }
+              }
+            },
+            {
+              "name": "notify media-preview-generator",
+              "sourceRepo": "Community",
+              "pluginName": "webRequest",
+              "version": "1.0.0",
+              "id": "c7vsljgMC",
+              "position": {
+                "x": 168,
+                "y": 588
+              },
+              "fpEnabled": true,
+              "inputsDB": {
+                "requestHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"X-Auth-Token\": \"sawqys-javmo6-gUbcoh\"\n}",
+                "requestBody": "{\"file_path\": \"{{{args.inputFileObj._id}}}\"}",
+                "requestUrl": "http://localhost:8280/api/webhooks/custom"
+              }
+            }
+          ],
+          "flowEdges": [
+            {
+              "source": "XkqqoVL-Y8",
+              "sourceHandle": "1",
+              "target": "QukOFiNLQC",
+              "targetHandle": null,
+              "id": "S_n2WINoPJ"
+            },
+            {
+              "source": "XkqqoVL-Y8",
+              "sourceHandle": "2",
+              "target": "QukOFiNLQC",
+              "targetHandle": null,
+              "id": "eqOjPUsilb"
+            },
+            {
+              "source": "QukOFiNLQC",
+              "sourceHandle": "1",
+              "target": "KEbzv_g-K1",
+              "targetHandle": null,
+              "id": "39cxuWcz90"
+            },
+            {
+              "source": "QukOFiNLQC",
+              "sourceHandle": "2",
+              "target": "KEbzv_g-K1",
+              "targetHandle": null,
+              "id": "MiK_4c5lK3"
+            },
+            {
+              "source": "Qw2eo0bqcC",
+              "sourceHandle": "1",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "yyqp_3wurR"
+            },
+            {
+              "source": "Qw2eo0bqcC",
+              "sourceHandle": "2",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "99CZ_C-Ytx"
+            },
+            {
+              "source": "J6FZ9-hGR3",
+              "sourceHandle": "2",
+              "target": "z9VzBsplQ",
+              "targetHandle": null,
+              "id": "JAape3m6e"
+            },
+            {
+              "source": "J6FZ9-hGR3",
+              "sourceHandle": "1",
+              "target": "z9VzBsplQ",
+              "targetHandle": null,
+              "id": "JiAr4OOyv"
+            },
+            {
+              "source": "0mSzCAFWm",
+              "sourceHandle": "2",
+              "target": "Qw2eo0bqcC",
+              "targetHandle": null,
+              "id": "FDsLeuxWV"
+            },
+            {
+              "source": "0mSzCAFWm",
+              "sourceHandle": "1",
+              "target": "rqNUZFAmf",
+              "targetHandle": null,
+              "id": "x1FnPwjTW"
+            },
+            {
+              "source": "rqNUZFAmf",
+              "sourceHandle": "2",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "bYswTDEWR"
+            },
+            {
+              "source": "rqNUZFAmf",
+              "sourceHandle": "1",
+              "target": "J6FZ9-hGR3",
+              "targetHandle": null,
+              "id": "DgYjntpaz"
+            },
+            {
+              "source": "RE9UHhrfD",
+              "sourceHandle": "1",
+              "target": "0mSzCAFWm",
+              "targetHandle": null,
+              "id": "El2FgIXWu"
+            },
+            {
+              "source": "RE9UHhrfD",
+              "sourceHandle": "2",
+              "target": "0mSzCAFWm",
+              "targetHandle": null,
+              "id": "ZyLXQ0W_w"
+            },
+            {
+              "source": "FvXsEVDas",
+              "sourceHandle": "1",
+              "target": "XkqqoVL-Y8",
+              "targetHandle": null,
+              "id": "1eey0OB7k"
+            },
+            {
+              "source": "vg8a4tVxkd",
+              "sourceHandle": "1",
+              "target": "FvXsEVDas",
+              "targetHandle": null,
+              "id": "Lw8ijjDaI"
+            },
+            {
+              "source": "KEbzv_g-K1",
+              "sourceHandle": "1",
+              "target": "IrDaRuEpc",
+              "targetHandle": null,
+              "id": "gqyg8uBHU"
+            },
+            {
+              "source": "KEbzv_g-K1",
+              "sourceHandle": "2",
+              "target": "IrDaRuEpc",
+              "targetHandle": null,
+              "id": "fKM9LMiwX"
+            },
+            {
+              "source": "IrDaRuEpc",
+              "sourceHandle": "1",
+              "target": "RE9UHhrfD",
+              "targetHandle": null,
+              "id": "TBl-gRA4r"
+            },
+            {
+              "source": "IrDaRuEpc",
+              "sourceHandle": "2",
+              "target": "RE9UHhrfD",
+              "targetHandle": null,
+              "id": "6nBbBYFKS"
+            },
+            {
+              "source": "VDQudvFiC",
+              "sourceHandle": "1",
+              "target": "w1-G-Je0B",
+              "targetHandle": null,
+              "id": "YgXgg27cI"
+            },
+            {
+              "source": "VDQudvFiC",
+              "sourceHandle": "2",
+              "target": "w1-G-Je0B",
+              "targetHandle": null,
+              "id": "NPL0aVnOB"
+            },
+            {
+              "source": "P54ofrXhy",
+              "sourceHandle": "1",
+              "target": "isDWjVrK9",
+              "targetHandle": null,
+              "id": "HGc7Re_Kn"
+            },
+            {
+              "source": "P54ofrXhy",
+              "sourceHandle": "2",
+              "target": "isDWjVrK9",
+              "targetHandle": null,
+              "id": "eeIKDY4Te"
+            },
+            {
+              "source": "Ozydc6SuX",
+              "sourceHandle": "1",
+              "target": "SbtjWGeat",
+              "targetHandle": null,
+              "id": "01aRrmrMl"
+            },
+            {
+              "source": "Ozydc6SuX",
+              "sourceHandle": "2",
+              "target": "vJes9U3v4",
+              "targetHandle": null,
+              "id": "pwTJvGaCb"
+            },
+            {
+              "source": "z9VzBsplQ",
+              "sourceHandle": "1",
+              "target": "Ozydc6SuX",
+              "targetHandle": null,
+              "id": "p1t9WRkMh"
+            },
+            {
+              "source": "SbtjWGeat",
+              "sourceHandle": "1",
+              "target": "c7vsljgMC",
+              "targetHandle": null,
+              "id": "nW8RVtDLz"
+            },
+            {
+              "source": "SbtjWGeat",
+              "sourceHandle": "2",
+              "target": "c7vsljgMC",
+              "targetHandle": null,
+              "id": "ow4Fez_Uy"
+            },
+            {
+              "source": "vJes9U3v4",
+              "sourceHandle": "1",
+              "target": "c7vsljgMC",
+              "targetHandle": null,
+              "id": "Skntw-o2n"
+            },
+            {
+              "source": "vJes9U3v4",
+              "sourceHandle": "2",
+              "target": "c7vsljgMC",
+              "targetHandle": null,
+              "id": "0MnhH9ISp"
+            }
+          ],
+          "isUiLocked": false
+        }
+      }
+    ],
+    "librarysettingsjsondb": [
+      {
+        "id": "3TzX5jljc",
+        "json_data": {
+          "_id": "3TzX5jljc",
+          "priority": 1,
+          "name": "Tv Shows",
+          "folder": "/data/media/tv",
+          "foldersToIgnore": "",
+          "foldersToIgnoreCaseInsensitive": false,
+          "folderWatchScanInterval": 30,
+          "scannerThreadCount": 2,
+          "cache": "/scratch/transcode",
+          "output": ".",
+          "folderToFolderConversion": false,
+          "folderToFolderConversionDeleteSource": false,
+          "folderToFolderRecordHistory": true,
+          "copyIfConditionsMet": false,
+          "container": ".mkv",
+          "containerFilter": "mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts",
+          "folderWatching": true,
+          "useFsEvents": false,
+          "scheduledScanFindNew": false,
+          "processLibrary": true,
+          "processTranscodes": true,
+          "processHealthChecks": true,
+          "scanOnStart": true,
+          "exifToolScan": true,
+          "mediaInfoScan": true,
+          "ffprobeShowData": false,
+          "isDirectoryLibrary": false,
+          "closedCaptionScan": false,
+          "navItemSelected": "navSourceFolder",
+          "pluginIDs": [
+            {
+              "_id": "plugin1",
+              "id": "Tdarr_Plugin_MC93_MigzImageRemoval",
+              "checked": true,
+              "source": "Community",
+              "priority": 0,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin2",
+              "id": "Tdarr_Plugin_lmg1_Reorder_Streams",
+              "checked": true,
+              "source": "Community",
+              "priority": 1,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin3",
+              "id": "Tdarr_Plugin_MC93_Migz1FFMPEG_CPU",
+              "checked": true,
+              "source": "Community",
+              "priority": 2,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin4",
+              "id": "Tdarr_Plugin_MC93_Migz1FFMPEG",
+              "checked": false,
+              "source": "Community",
+              "priority": 3,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin5",
+              "id": "Tdarr_Plugin_a9he_New_file_size_check",
+              "checked": true,
+              "source": "Community",
+              "priority": 4,
+              "InputsDB": {}
+            }
+          ],
+          "pluginCommunity": true,
+          "handbrake": true,
+          "ffmpeg": false,
+          "handbrakescan": false,
+          "ffmpegscan": true,
+          "preset": "-Z \"Very Fast 1080p30\"",
+          "decisionMaker": {
+            "settingsPlugin": false,
+            "settingsFlows": true,
+            "settingsVideo": false,
+            "videoExcludeSwitch": true,
+            "video_codec_names_exclude": [
+              {
+                "codec": "hevc",
+                "checked": false
+              },
+              {
+                "codec": "h264",
+                "checked": true
+              }
+            ],
+            "video_size_range_include": {
+              "min": 0,
+              "max": 100000
+            },
+            "video_height_range_include": {
+              "min": 0,
+              "max": 3000
+            },
+            "video_width_range_include": {
+              "min": 0,
+              "max": 4000
+            },
+            "settingsAudio": false,
+            "audioExcludeSwitch": true,
+            "audio_codec_names_exclude": [
+              {
+                "codec": "mp3",
+                "checked": true
+              },
+              {
+                "codec": "aac",
+                "checked": false
+              }
+            ],
+            "audio_size_range_include": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          "schedule": [
+            {
+              "_id": "Sun:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Sun:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Sun:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Sun:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Sun:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Sun:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Sun:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Sun:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Sun:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Sun:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Sun:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Sun:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Sun:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Sun:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Sun:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Sun:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Sun:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Sun:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Sun:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Sun:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Sun:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Sun:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Sun:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Sun:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Mon:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Mon:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Mon:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Mon:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Mon:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Mon:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Mon:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Mon:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Mon:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Mon:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Mon:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Mon:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Mon:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Mon:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Mon:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Mon:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Mon:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Mon:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Mon:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Mon:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Mon:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Mon:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Mon:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Mon:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Tue:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Tue:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Tue:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Tue:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Tue:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Tue:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Tue:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Tue:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Tue:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Tue:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Tue:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Tue:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Tue:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Tue:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Tue:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Tue:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Tue:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Tue:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Tue:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Tue:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Tue:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Tue:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Tue:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Tue:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Wed:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Wed:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Wed:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Wed:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Wed:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Wed:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Wed:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Wed:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Wed:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Wed:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Wed:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Wed:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Wed:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Wed:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Wed:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Wed:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Wed:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Wed:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Wed:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Wed:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Wed:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Wed:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Wed:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Wed:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Thur:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Thur:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Thur:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Thur:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Thur:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Thur:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Thur:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Thur:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Thur:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Thur:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Thur:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Thur:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Thur:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Thur:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Thur:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Thur:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Thur:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Thur:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Thur:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Thur:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Thur:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Thur:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Thur:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Thur:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Fri:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Fri:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Fri:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Fri:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Fri:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Fri:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Fri:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Fri:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Fri:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Fri:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Fri:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Fri:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Fri:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Fri:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Fri:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Fri:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Fri:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Fri:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Fri:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Fri:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Fri:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Fri:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Fri:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Fri:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Sat:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Sat:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Sat:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Sat:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Sat:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Sat:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Sat:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Sat:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Sat:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Sat:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Sat:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Sat:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Sat:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Sat:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Sat:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Sat:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Sat:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Sat:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Sat:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Sat:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Sat:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Sat:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Sat:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Sat:23-00",
+              "checked": true
+            }
+          ],
+          "holdNewFiles": false,
+          "holdFor": 3600,
+          "holdForDisplayUnit": "hours",
+          "pluginStackOverview": true,
+          "filterResolutionsSkip": "",
+          "filterCodecsSkip": "",
+          "filterContainersSkip": "",
+          "filterHardlinked": false,
+          "processPluginsSequentially": true,
+          "flowId": "_6hgHWHuwDJ"
+        }
+      },
+      {
+        "id": "bWznkG7ZN",
+        "json_data": {
+          "_id": "bWznkG7ZN",
+          "priority": 0,
+          "name": "Movies",
+          "folder": "/data/media/movies",
+          "foldersToIgnore": "",
+          "foldersToIgnoreCaseInsensitive": false,
+          "folderWatchScanInterval": 30,
+          "scannerThreadCount": 2,
+          "cache": "/scratch/transcode",
+          "output": ".",
+          "folderToFolderConversion": false,
+          "folderToFolderConversionDeleteSource": false,
+          "folderToFolderRecordHistory": true,
+          "copyIfConditionsMet": false,
+          "container": ".mkv",
+          "containerFilter": "mkv,mp4,mov,m4v,mpg,mpeg,avi,flv,webm,wmv,vob,evo,iso,m2ts,ts",
+          "folderWatching": true,
+          "useFsEvents": false,
+          "scheduledScanFindNew": false,
+          "processLibrary": true,
+          "processTranscodes": true,
+          "processHealthChecks": true,
+          "scanOnStart": true,
+          "exifToolScan": true,
+          "mediaInfoScan": true,
+          "ffprobeShowData": false,
+          "isDirectoryLibrary": false,
+          "closedCaptionScan": false,
+          "navItemSelected": "navSourceFolder",
+          "pluginIDs": [
+            {
+              "_id": "plugin1",
+              "id": "Tdarr_Plugin_MC93_MigzImageRemoval",
+              "checked": true,
+              "source": "Community",
+              "priority": 0,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin2",
+              "id": "Tdarr_Plugin_lmg1_Reorder_Streams",
+              "checked": true,
+              "source": "Community",
+              "priority": 1,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin3",
+              "id": "Tdarr_Plugin_MC93_Migz1FFMPEG_CPU",
+              "checked": true,
+              "source": "Community",
+              "priority": 2,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin4",
+              "id": "Tdarr_Plugin_MC93_Migz1FFMPEG",
+              "checked": false,
+              "source": "Community",
+              "priority": 3,
+              "InputsDB": {}
+            },
+            {
+              "_id": "plugin5",
+              "id": "Tdarr_Plugin_a9he_New_file_size_check",
+              "checked": true,
+              "source": "Community",
+              "priority": 4,
+              "InputsDB": {}
+            }
+          ],
+          "pluginCommunity": true,
+          "handbrake": true,
+          "ffmpeg": false,
+          "handbrakescan": false,
+          "ffmpegscan": true,
+          "preset": "-Z \"Very Fast 1080p30\"",
+          "decisionMaker": {
+            "settingsPlugin": false,
+            "settingsFlows": true,
+            "settingsVideo": false,
+            "videoExcludeSwitch": true,
+            "video_codec_names_exclude": [
+              {
+                "codec": "hevc",
+                "checked": false
+              },
+              {
+                "codec": "h264",
+                "checked": true
+              }
+            ],
+            "video_size_range_include": {
+              "min": 0,
+              "max": 100000
+            },
+            "video_height_range_include": {
+              "min": 0,
+              "max": 3000
+            },
+            "video_width_range_include": {
+              "min": 0,
+              "max": 4000
+            },
+            "settingsAudio": false,
+            "audioExcludeSwitch": true,
+            "audio_codec_names_exclude": [
+              {
+                "codec": "mp3",
+                "checked": true
+              },
+              {
+                "codec": "aac",
+                "checked": false
+              }
+            ],
+            "audio_size_range_include": {
+              "min": 0,
+              "max": 10
+            }
+          },
+          "schedule": [
+            {
+              "_id": "Sun:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Sun:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Sun:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Sun:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Sun:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Sun:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Sun:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Sun:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Sun:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Sun:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Sun:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Sun:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Sun:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Sun:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Sun:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Sun:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Sun:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Sun:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Sun:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Sun:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Sun:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Sun:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Sun:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Sun:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Mon:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Mon:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Mon:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Mon:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Mon:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Mon:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Mon:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Mon:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Mon:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Mon:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Mon:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Mon:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Mon:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Mon:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Mon:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Mon:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Mon:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Mon:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Mon:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Mon:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Mon:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Mon:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Mon:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Mon:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Tue:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Tue:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Tue:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Tue:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Tue:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Tue:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Tue:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Tue:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Tue:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Tue:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Tue:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Tue:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Tue:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Tue:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Tue:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Tue:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Tue:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Tue:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Tue:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Tue:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Tue:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Tue:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Tue:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Tue:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Wed:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Wed:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Wed:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Wed:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Wed:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Wed:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Wed:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Wed:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Wed:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Wed:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Wed:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Wed:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Wed:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Wed:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Wed:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Wed:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Wed:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Wed:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Wed:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Wed:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Wed:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Wed:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Wed:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Wed:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Thur:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Thur:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Thur:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Thur:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Thur:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Thur:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Thur:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Thur:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Thur:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Thur:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Thur:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Thur:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Thur:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Thur:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Thur:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Thur:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Thur:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Thur:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Thur:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Thur:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Thur:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Thur:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Thur:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Thur:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Fri:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Fri:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Fri:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Fri:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Fri:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Fri:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Fri:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Fri:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Fri:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Fri:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Fri:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Fri:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Fri:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Fri:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Fri:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Fri:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Fri:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Fri:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Fri:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Fri:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Fri:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Fri:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Fri:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Fri:23-00",
+              "checked": true
+            },
+            {
+              "_id": "Sat:00-01",
+              "checked": true
+            },
+            {
+              "_id": "Sat:01-02",
+              "checked": true
+            },
+            {
+              "_id": "Sat:02-03",
+              "checked": true
+            },
+            {
+              "_id": "Sat:03-04",
+              "checked": true
+            },
+            {
+              "_id": "Sat:04-05",
+              "checked": true
+            },
+            {
+              "_id": "Sat:05-06",
+              "checked": true
+            },
+            {
+              "_id": "Sat:06-07",
+              "checked": true
+            },
+            {
+              "_id": "Sat:07-08",
+              "checked": true
+            },
+            {
+              "_id": "Sat:08-09",
+              "checked": true
+            },
+            {
+              "_id": "Sat:09-10",
+              "checked": true
+            },
+            {
+              "_id": "Sat:10-11",
+              "checked": true
+            },
+            {
+              "_id": "Sat:11-12",
+              "checked": true
+            },
+            {
+              "_id": "Sat:12-13",
+              "checked": true
+            },
+            {
+              "_id": "Sat:13-14",
+              "checked": true
+            },
+            {
+              "_id": "Sat:14-15",
+              "checked": true
+            },
+            {
+              "_id": "Sat:15-16",
+              "checked": true
+            },
+            {
+              "_id": "Sat:16-17",
+              "checked": true
+            },
+            {
+              "_id": "Sat:17-18",
+              "checked": true
+            },
+            {
+              "_id": "Sat:18-19",
+              "checked": true
+            },
+            {
+              "_id": "Sat:19-20",
+              "checked": true
+            },
+            {
+              "_id": "Sat:20-21",
+              "checked": true
+            },
+            {
+              "_id": "Sat:21-22",
+              "checked": true
+            },
+            {
+              "_id": "Sat:22-23",
+              "checked": true
+            },
+            {
+              "_id": "Sat:23-00",
+              "checked": true
+            }
+          ],
+          "holdNewFiles": false,
+          "holdFor": 3600,
+          "holdForDisplayUnit": "hours",
+          "pluginStackOverview": true,
+          "filterResolutionsSkip": "",
+          "filterCodecsSkip": "",
+          "filterContainersSkip": "",
+          "filterHardlinked": false,
+          "processPluginsSequentially": true,
+          "flowId": "_6hgHWHuwDJ"
+        }
+      }
+    ],
+    "nodejsondb": [
+      {
+        "id": "nixos-server-main",
+        "json_data": {
+          "workerLimits": {
+            "_id": "08-09",
+            "healthcheckcpu": 0,
+            "healthcheckgpu": 2,
+            "transcodecpu": 0,
+            "transcodegpu": 2
+          },
+          "schedule": [
+            {
+              "_id": "00-01",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "01-02",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "02-03",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 2
+            },
+            {
+              "_id": "03-04",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 2
+            },
+            {
+              "_id": "04-05",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 2
+            },
+            {
+              "_id": "05-06",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "06-07",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "07-08",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "08-09",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "09-10",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "10-11",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "11-12",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "12-13",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "13-14",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "14-15",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "15-16",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "16-17",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "17-18",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "18-19",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "19-20",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "20-21",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "21-22",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "22-23",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            },
+            {
+              "_id": "23-00",
+              "healthcheckcpu": 0,
+              "healthcheckgpu": 2,
+              "transcodecpu": 0,
+              "transcodegpu": 0
+            }
+          ],
+          "_id": "nixos-server-main",
+          "gpuSelect": "-",
+          "nodeTags": "mapped",
+          "allowGpuDoCpu": false,
+          "maxGpuWorkers": 100,
+          "nodePaused": false,
+          "deleteCacheAnyStageError": true,
+          "processPriority": "normal",
+          "thoroughHealthCheckCpuExtraInputArgs": "",
+          "thoroughHealthCheckGpuExtraInputArgs": "",
+          "thoroughHealthCheckCpuExtraArgs": "",
+          "thoroughHealthCheckGpuExtraArgs": "",
+          "librariesToNotProcess": {},
+          "scheduleEnabled": true,
+          "priority": 0
+        }
+      }
+    ],
+    "settingsglobaljsondb": [
+      {
+        "id": "globalsettings",
+        "json_data": {
+          "_id": "globalsettings",
+          "theme": "medium2",
+          "language": "en",
+          "toastNotificationPosition": "top-right",
+          "tdarrKey": "",
+          "autoAcceptTranscodes": false,
+          "logFullCliOutput": false,
+          "runMkvpropedit": false,
+          "dontCleanWorkerCacheFolder": false,
+          "jobHistorySizeLimitGB": 10,
+          "processPriority": "normal",
+          "ignoreSchedules": false,
+          "homePath": "/var/lib/tdarr/server/server",
+          "prioritiseHealthChecks": false,
+          "prioritiseTranscodes": false,
+          "workerStallDetector": false,
+          "workerStallDetectorInterval": 300,
+          "holdCheckerInterval": 300,
+          "autoPauseIfCacheFull": false,
+          "autoPauseIfCacheFullThreshold": 20,
+          "logWorkerVerdictTranscodeNotRequired": false,
+          "openJobReportsInNewTab": false,
+          "backupLimit": 30,
+          "transcodeWorkerLimit": 0,
+          "healthcheckWorkerLimit": 0,
+          "queueSortType": "noSort",
+          "enableBumpedFiles": true,
+          "prioritiseLibraries": false,
+          "alternateLibraries": false,
+          "verboseLogs": false,
+          "logInternalApiRequestReceived": false,
+          "logInternalApiRequestSuccess": false,
+          "logInternalApiRequestFail": true,
+          "logInternalApiRequestPayload": false,
+          "logExternalApiRequestReceived": false,
+          "logExternalApiRequestSuccess": false,
+          "logExternalApiRequestFail": true,
+          "logExternalApiRequestPayload": false,
+          "stagedFileLimit": 100,
+          "pauseAllNodes": false,
+          "nodePriority": false,
+          "autoUpdateServer": true,
+          "autoUpdateServerVersion": "latest",
+          "autoUpdateNodes": true,
+          "killAllProcessesDuringUpdate": true,
+          "enableUnmappedNodes": false,
+          "softPauseAllNodes": false,
+          "communityPluginRepo": "https://github.com/HaveAGitGat/Tdarr_Plugins/archive/master.zip",
+          "pluginAutoUpdate": true,
+          "pluginPinnedSha": "",
+          "searchResultColumns": {
+            "index": true,
+            "libraryName": true,
+            "fileName": true,
+            "streams": true,
+            "closedCaptions": true,
+            "codec": true,
+            "resolution": true,
+            "size": true,
+            "bitrate": true,
+            "duration": true,
+            "bump": true,
+            "createSample": true,
+            "transcode": true,
+            "healthCheck": true,
+            "info": true,
+            "history": true,
+            "remove": true
+          },
+          "resBoundaries": {
+            "res480p": {
+              "widthMin": 100,
+              "widthMax": 792,
+              "heightMin": 100,
+              "heightMax": 528
+            },
+            "res576p": {
+              "widthMin": 100,
+              "widthMax": 792,
+              "heightMin": 100,
+              "heightMax": 634
+            },
+            "res720p": {
+              "widthMin": 100,
+              "widthMax": 1408,
+              "heightMin": 100,
+              "heightMax": 792
+            },
+            "res1080p": {
+              "widthMin": 100,
+              "widthMax": 2112,
+              "heightMin": 100,
+              "heightMax": 1188
+            },
+            "res1440p": {
+              "widthMin": 100,
+              "widthMax": 2816,
+              "heightMin": 100,
+              "heightMax": 1584
+            },
+            "res4KUHD": {
+              "widthMin": 100,
+              "widthMax": 4224,
+              "heightMin": 100,
+              "heightMax": 2376
+            },
+            "resDCI4K": {
+              "widthMin": 100,
+              "widthMax": 4506,
+              "heightMin": 100,
+              "heightMax": 2376
+            },
+            "res8KUHD": {
+              "widthMin": 100,
+              "widthMax": 8448,
+              "heightMin": 100,
+              "heightMax": 4752
+            }
+          },
+          "notificationsDiscordWebhook": {
+            "$secret": "tables/settingsglobaljsondb/0/json_data/notificationsDiscordWebhook"
+          },
+          "notificationsCustomText": "",
+          "notificationsServerStarted": false,
+          "notificationsTranscodeSuccess": false,
+          "notificationsTranscodeError": false,
+          "notificationsTranscodeCancelled": false,
+          "notificationsHealthcheckSuccess": false,
+          "notificationsHealthcheckError": false,
+          "notificationsHealthcheckCancelled": false,
+          "notificationsRequireReview": false,
+          "notificationsServerUpdateReady": false,
+          "localAuth": false,
+          "selectedLibrary": 0,
+          "nodeOverviewColumns": {
+            "enabled": true,
+            "type": true,
+            "title": true,
+            "status": true,
+            "eta": true,
+            "plugin": true,
+            "stepTime": false,
+            "totalTime": false,
+            "percentage": true,
+            "fps": true,
+            "compression": true,
+            "details": true
+          }
+        }
+      }
+    ],
+    "sso_provider_configs": [],
+    "usersjsondb": [],
+    "variablesjsondb": []
+  },
+  "configs": {
+    "server/configs/Tdarr_Server_Config.json": {
+      "serverPort": "8266",
+      "webUIPort": "8265",
+      "serverIP": "0.0.0.0",
+      "serverBindIP": false,
+      "serverDualStack": false,
+      "handbrakePath": "/nix/store/8ns2fqgjwzx9a9hdm5fhb8n42i57hx90-handbrake-1.11.2/bin/HandBrakeCLI",
+      "ffmpegPath": "/nix/store/w8xhr77dwriw5idq64ld8dh9ixhwm234-jellyfin-ffmpeg-8.1.2-5-bin/bin/ffmpeg",
+      "logLevel": "INFO",
+      "mkvpropeditPath": "/nix/store/h12dg0kmaacbhrjcpzixsi2zkv0q9w1p-mkvtoolnix-102.0/bin/mkvpropedit",
+      "ccextractorPath": "/nix/store/w96ja49nf440kx4psqm0fc2f8wy08y67-ccextractor-0.96.6/bin/ccextractor",
+      "openBrowser": "false",
+      "cronPluginUpdate": "",
+      "auth": false,
+      "authSecretKey": {
+        "$secret": "configs/server/configs/Tdarr_Server_Config.json/authSecretKey"
+      },
+      "maxLogSizeMB": "10",
+      "seededApiKey": {
+        "$secret": "configs/server/configs/Tdarr_Server_Config.json/seededApiKey"
+      },
+      "jobReportsPath": "",
+      "ffprobePath": "/nix/store/w8xhr77dwriw5idq64ld8dh9ixhwm234-jellyfin-ffmpeg-8.1.2-5-bin/bin/ffprobe"
+    },
+    "nodes/main/configs/Tdarr_Node_Config.json": {
+      "pathTranslators": []
+    }
+  }
+}
