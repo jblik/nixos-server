@@ -18,7 +18,7 @@ let
       [ "hosts:     files dns" ]
       config.environment.etc."nsswitch.conf".text
   );
-  profile = "${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf";
+  profile = "${config.services.qbittorrent.profileDir}/qBittorrent/config";
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -30,6 +30,19 @@ in
 
     sops.secrets.nordvpn-wireguard-key = {
       restartUnits = [ "qbittorrent-vpn.service" ];
+    };
+
+    sops.secrets.qbittorrent-webui-password = {
+      sopsFile = ../../../secrets/media-qbittorrent.yaml;
+      restartUnits = [ "qbittorrent.service" ];
+    };
+
+    sops.templates.qbittorrent-config = {
+      content =
+        lib.replaceStrings [ "@webui-password@" ] [ config.sops.placeholder.qbittorrent-webui-password ]
+          (builtins.readFile ./qbittorrent/qBittorrent.conf);
+      owner = config.services.qbittorrent.user;
+      mode = "0400";
     };
 
     boot.kernelModules = [ "wireguard" ];
@@ -83,15 +96,17 @@ in
       requires = [ "qbittorrent-vpn.service" ];
       after = [ "qbittorrent-vpn.service" ];
       partOf = [ "qbittorrent-vpn.service" ];
+      restartTriggers = [
+        ./qbittorrent/qBittorrent.conf
+        ./qbittorrent/categories.json
+        ./qbittorrent/watched_folders.json
+        ./qbittorrent/feeds.json
+      ];
       preStart = ''
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Preferences 'WebUI\Address' 127.0.0.1
-        # The socket proxy connects over loopback; localhost must still require authentication.
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Preferences 'WebUI\LocalHostAuth' true
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Preferences 'WebUI\AuthSubnetWhitelistEnabled' false
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\Interface' ${interface}
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceName' ${interface}
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceAddress' ""
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
+        install -Dm600 ${config.sops.templates.qbittorrent-config.path} ${lib.escapeShellArg "${profile}/qBittorrent.conf"}
+        install -Dm600 ${./qbittorrent/categories.json} ${lib.escapeShellArg "${profile}/categories.json"}
+        install -Dm600 ${./qbittorrent/watched_folders.json} ${lib.escapeShellArg "${profile}/watched_folders.json"}
+        install -Dm600 ${./qbittorrent/feeds.json} ${lib.escapeShellArg "${profile}/rss/feeds.json"}
       '';
       serviceConfig = {
         UMask = lib.mkForce "0002";
