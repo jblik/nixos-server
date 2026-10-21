@@ -21,9 +21,10 @@ def resolve(value, secrets):
     return value
 
 
-def rows(connection, table, columns):
+def rows(connection, table, columns, where=None):
+    condition = f" WHERE {where}" if where else ""
     return [dict(row) for row in connection.execute(
-        f"SELECT {', '.join(map(quote, columns))} FROM {quote(table)}"
+        f"SELECT {', '.join(map(quote, columns))} FROM {quote(table)}{condition}"
     )]
 
 
@@ -35,7 +36,11 @@ def difference(connection, snapshot):
     changes = {}
     for table, spec in snapshot["tables"].items():
         desired = {identity(row, spec["key"]): row for row in spec["rows"]}
-        actual = {identity(row, spec["key"]): row for row in rows(connection, table, spec["columns"])}
+        actual = {identity(row, spec["key"]): row for row in rows(
+            connection, table, spec["columns"], spec.get("where")
+        )}
+        if not spec.get("prune", True):
+            actual = {key: row for key, row in actual.items() if key in desired}
         if len(desired) != len(spec["rows"]):
             raise ValueError(f"Duplicate declared keys in {table}")
         if desired != actual:
@@ -81,10 +86,11 @@ def verify_deletions(connection, snapshot, changes):
                         raise ValueError(f"Removing a setting in {parent} would affect retained rows in {child}")
 
 
-def upsert(connection, table, row, keys):
-    columns = list(row)
-    values = [row[column] for column in columns]
-    updates = [column for column in columns if column not in keys]
+def upsert(connection, table, row, keys, insert_defaults=None):
+    inserted = {**(insert_defaults or {}), **row}
+    columns = list(inserted)
+    values = [inserted[column] for column in columns]
+    updates = [column for column in row if column not in keys]
     conflict = "DO UPDATE SET " + ", ".join(
         f"{quote(column)} = excluded.{quote(column)}" for column in updates
     ) if updates else "DO NOTHING"
@@ -140,7 +146,7 @@ def reconcile(snapshot, database, check=False):
         for table, change in changes.items():
             keys = snapshot["tables"][table]["key"]
             for row in change["upsert"]:
-                upsert(connection, table, row, keys)
+                upsert(connection, table, row, keys, snapshot["tables"][table].get("insert_defaults"))
         for table, change in reversed(list(changes.items())):
             keys = snapshot["tables"][table]["key"]
             condition = " AND ".join(f"{quote(key)} = ?" for key in keys)
