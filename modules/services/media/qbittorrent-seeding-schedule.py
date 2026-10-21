@@ -12,7 +12,8 @@ def main():
     profile.read(os.environ["QBITTORRENT_PROFILE"])
     session = requests.Session()
     session.trust_env = False
-    session.headers["X-API-Key"] = profile["Preferences"][r"WebUI\APIKey"]
+    api_key = profile["Preferences"][r"WebUI\APIKey"]
+    session.headers["Authorization"] = f"Bearer {api_key}"
     url = os.environ["QBITTORRENT_URL"] + "/api/v2/torrents/"
     state = Path(os.environ["STATE_DIRECTORY"]) / "stopped.json"
     stopped = set(json.loads(state.read_text())) if state.exists() else set()
