@@ -36,6 +36,19 @@
     media = {
       enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media)";
 
+      qbittorrent.seedingSchedule = {
+        start = lib.mkOption {
+          type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
+          default = "01:30";
+          description = "Start of the daily seeding window, as HH:MM in the server timezone (inclusive).";
+        };
+        end = lib.mkOption {
+          type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
+          default = "05:00";
+          description = "End of the daily seeding window, as HH:MM in the server timezone (exclusive). An earlier end crosses midnight; equal times disable seeding.";
+        };
+      };
+
       plex = {
         port = lib.mkOption {
           type = lib.types.port;

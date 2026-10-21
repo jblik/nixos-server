@@ -32,6 +32,10 @@ in
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
+    media.qbittorrent.seedingSchedule = {
+      start = "01:30";
+      end = "05:00";
+    };
     forgejo.enable = true;
     immich.enable = true;
     home-assistant.enable = true;

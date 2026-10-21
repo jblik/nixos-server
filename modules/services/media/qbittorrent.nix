@@ -120,6 +120,8 @@ in
       environment = {
         QBITTORRENT_PROFILE = profile;
         QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
+        SEEDING_SCHEDULE_START = config.host.media.qbittorrent.seedingSchedule.start;
+        SEEDING_SCHEDULE_END = config.host.media.qbittorrent.seedingSchedule.end;
         TZ = config.time.timeZone;
       };
       serviceConfig = {

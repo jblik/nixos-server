@@ -22,7 +22,12 @@ def main():
     torrents = {torrent["hash"]: torrent for torrent in response.json()}
     stopped.intersection_update(torrents)
     now = datetime.now().time()
-    nighttime = time(1, 30) <= now < time(5)
+    start = time.fromisoformat(os.environ["SEEDING_SCHEDULE_START"])
+    end = time.fromisoformat(os.environ["SEEDING_SCHEDULE_END"])
+    if start <= end:
+        nighttime = start <= now < end
+    else:
+        nighttime = now >= start or now < end
 
     if nighttime:
         hashes = [

@@ -96,14 +96,7 @@ qBittorrent seeds completed torrents only from **01:30 to 05:00**, in the server
 stops completed torrents outside that window (including newly completed downloads),
 and resumes only torrents it stopped. Torrents already stopped manually or by seeding
 limits stay stopped; ratio and total seeding-time limits are checked before resuming.
-The schedule is in `modules/services/media/qbittorrent-seeding-schedule.py`.
-Downloads continue throughout the day, so downloads, imports, and other media services
-can still wake the HDDs. Keep Sonarr/Radarr completed-download removal and Cleanuparr
-cleanup rules disabled for torrents you want to retain during these daytime stops.
-The scheduler uses an API key generated in qBittorrent's private profile at startup;
-no credentials need to be added to this repository. After deploying, check it with
-`systemctl status qbittorrent-seeding-schedule.timer` and
-`journalctl -u qbittorrent-seeding-schedule.service`.
+Configure the window in `hosts/nixos-server/default.nix`
 
 ## Services
 
