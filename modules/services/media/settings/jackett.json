@@ -1,0 +1,375 @@
+{
+  "files": {
+    "ServerConfig.json": {
+      "Port": 9117,
+      "LocalBindAddress": "127.0.0.1",
+      "AllowExternal": true,
+      "AllowCORS": false,
+      "APIKey": {
+        "__sops": "ServerConfig.json/APIKey"
+      },
+      "AdminPassword": {
+        "__sops": "ServerConfig.json/AdminPassword"
+      },
+      "InstanceId": "jdibpkb53711zztcblhhe1ya47qvqeajoyrumi78vlctdcwd0xutoefc7ebhxr6m",
+      "BlackholeDir": "",
+      "UpdateDisabled": false,
+      "UpdatePrerelease": false,
+      "BasePathOverride": "",
+      "BaseUrlOverride": "",
+      "CacheEnabled": true,
+      "CacheTtl": 2100,
+      "CacheMaxResultsPerIndexer": 1000,
+      "FlareSolverrUrl": "http://127.0.0.1:8191",
+      "FlareSolverrMaxTimeout": 55000,
+      "OmdbApiKey": {
+        "__sops": "ServerConfig.json/OmdbApiKey"
+      },
+      "OmdbApiUrl": "",
+      "ProxyType": -1,
+      "ProxyUrl": "",
+      "ProxyPort": null,
+      "ProxyUsername": {
+        "__sops": "ServerConfig.json/ProxyUsername"
+      },
+      "ProxyPassword": {
+        "__sops": "ServerConfig.json/ProxyPassword"
+      },
+      "ProxyIsAnonymous": true
+    },
+    "Indexers/therarbg.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://therarbg.to/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/therarbg.json/cookieheader"
+        }
+      },
+      {
+        "id": "sortrequestedfromsite",
+        "type": "inputselect",
+        "name": "Sort requested from site",
+        "value": "-a",
+        "options": {
+          "-a": "created desc",
+          "a": "created asc",
+          "-se": "seeders desc",
+          "se": "seeders asc",
+          "-s": "size desc",
+          "s": "size asc"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/eztv.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://eztvx.to/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/eztv.json/cookieheader"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/thepiratebay.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://thepiratebay.org/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/thepiratebay.json/cookieheader"
+        }
+      },
+      {
+        "id": "filterbyuploader",
+        "type": "inputstring",
+        "name": "Filter by Uploader",
+        "value": {
+          "__sops": "Indexers/thepiratebay.json/filterbyuploader"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/limetorrents.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://www.limetorrents.fun/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/limetorrents.json/cookieheader"
+        }
+      },
+      {
+        "id": "downloadlink",
+        "type": "inputselect",
+        "name": "Download link",
+        "value": "magnet:",
+        "options": {
+          "http://itorrents.org/": "iTorrents.org",
+          "magnet:": "magnet"
+        }
+      },
+      {
+        "id": "downloadlink(fallback)",
+        "type": "inputselect",
+        "name": "Download link (fallback)",
+        "value": "http://itorrents.org/",
+        "options": {
+          "http://itorrents.org/": "iTorrents.org",
+          "magnet:": "magnet"
+        }
+      },
+      {
+        "id": "sortrequestedfromsite",
+        "type": "inputselect",
+        "name": "Sort requested from site",
+        "value": "date",
+        "options": {
+          "date": "created",
+          "seeds": "seeders",
+          "size": "size"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/1337x.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://1337x.to/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/1337x.json/cookieheader"
+        }
+      },
+      {
+        "id": "filterbyuploader",
+        "type": "inputstring",
+        "name": "Filter by Uploader",
+        "value": {
+          "__sops": "Indexers/1337x.json/filterbyuploader"
+        }
+      },
+      {
+        "id": "primarydownloadlink",
+        "type": "inputselect",
+        "name": "Primary Download link",
+        "value": "magnet:",
+        "options": {
+          "//itorrents.": "iTorrents",
+          "magnet:": "magnet"
+        }
+      },
+      {
+        "id": "fallbackdownloadlink",
+        "type": "inputselect",
+        "name": "Fallback Download link",
+        "value": "//itorrents.",
+        "options": {
+          "//itorrents.": "iTorrents",
+          "magnet:": "magnet"
+        }
+      },
+      {
+        "id": "disablesorting-1337xpreventssortingsearchesduringhighserverload,whichbreakstheindexerwhenperformingakeywordsearch-disableifyougetzeroresults",
+        "type": "inputbool",
+        "name": "Disable sorting - 1337x prevents sorting searches during high server load, which breaks the indexer when performing a keyword search - disable if you get zero results",
+        "value": false
+      },
+      {
+        "id": "sortrequestedfromsite",
+        "type": "inputselect",
+        "name": "Sort requested from site",
+        "value": "time",
+        "options": {
+          "time": "created",
+          "seeders": "seeders",
+          "size": "size"
+        }
+      },
+      {
+        "id": "orderrequestedfromsite",
+        "type": "inputselect",
+        "name": "Order requested from site",
+        "value": "desc",
+        "options": {
+          "desc": "desc",
+          "asc": "asc"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/kickasstorrents-ws.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://kickass.ws/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/kickasstorrents-ws.json/cookieheader"
+        }
+      },
+      {
+        "id": "sortrequestedfromsite",
+        "type": "inputselect",
+        "name": "Sort requested from site",
+        "value": "time_add",
+        "options": {
+          "time_add": "created",
+          "seeders": "seeders",
+          "size": "size"
+        }
+      },
+      {
+        "id": "orderrequestedfromsite",
+        "type": "inputselect",
+        "name": "Order requested from site",
+        "value": "desc",
+        "options": {
+          "desc": "desc",
+          "asc": "asc"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/kickasstorrents-to.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://kickass.torrentbay.st/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/kickasstorrents-to.json/cookieheader"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ],
+    "Indexers/ebookbay.json": [
+      {
+        "id": "sitelink",
+        "type": "inputstring",
+        "name": "Site Link",
+        "value": "https://ebb.la/"
+      },
+      {
+        "id": "cookieheader",
+        "type": "hiddendata",
+        "name": "CookieHeader",
+        "value": {
+          "__sops": "Indexers/ebookbay.json/cookieheader"
+        }
+      },
+      {
+        "id": "tags",
+        "type": "inputtags",
+        "name": "Tags",
+        "value": ""
+      }
+    ]
+  },
+  "managed_globs": [
+    "Indexers/*.json"
+  ],
+  "ignored_field_ids": {
+    "Indexers/therarbg.json": [
+      "lasterror"
+    ],
+    "Indexers/eztv.json": [
+      "lasterror"
+    ],
+    "Indexers/thepiratebay.json": [
+      "lasterror"
+    ],
+    "Indexers/limetorrents.json": [
+      "lasterror"
+    ],
+    "Indexers/1337x.json": [
+      "lasterror"
+    ],
+    "Indexers/kickasstorrents-ws.json": [
+      "lasterror"
+    ],
+    "Indexers/kickasstorrents-to.json": [
+      "lasterror"
+    ],
+    "Indexers/ebookbay.json": [
+      "lasterror"
+    ]
+  }
+}

@@ -1,0 +1,531 @@
+{
+  "files": {
+    "config/config.yaml": {
+      "addic7ed": {
+        "cookies": {
+          "__sops": "config/addic7ed/cookies"
+        },
+        "password": {
+          "__sops": "config/addic7ed/password"
+        },
+        "user_agent": "",
+        "username": {
+          "__sops": "config/addic7ed/username"
+        },
+        "vip": false
+      },
+      "analytics": {
+        "enabled": true
+      },
+      "anidb": {
+        "api_client": "",
+        "api_client_ver": 1
+      },
+      "animetosho": {
+        "anidb_api_client": "",
+        "anidb_api_client_ver": 1,
+        "search_threshold": 6
+      },
+      "anticaptcha": {
+        "anti_captcha_key": {
+          "__sops": "config/anticaptcha/anti_captcha_key"
+        }
+      },
+      "assrt": {
+        "token": {
+          "__sops": "config/assrt/token"
+        }
+      },
+      "auth": {
+        "apikey": {
+          "__sops": "config/auth/apikey"
+        },
+        "password": {
+          "__sops": "config/auth/password"
+        },
+        "type": null,
+        "username": {
+          "__sops": "config/auth/username"
+        }
+      },
+      "avistaz": {
+        "cookies": {
+          "__sops": "config/avistaz/cookies"
+        },
+        "user_agent": ""
+      },
+      "backup": {
+        "day": 6,
+        "folder": "/config/backup",
+        "frequency": "Weekly",
+        "hour": 3,
+        "retention": 31
+      },
+      "betaseries": {
+        "token": {
+          "__sops": "config/betaseries/token"
+        }
+      },
+      "captchaai": {
+        "captchaai_key": {
+          "__sops": "config/captchaai/captchaai_key"
+        }
+      },
+      "cinemaz": {
+        "cookies": {
+          "__sops": "config/cinemaz/cookies"
+        },
+        "user_agent": ""
+      },
+      "cors": {
+        "enabled": false
+      },
+      "deathbycaptcha": {
+        "password": {
+          "__sops": "config/deathbycaptcha/password"
+        },
+        "username": {
+          "__sops": "config/deathbycaptcha/username"
+        }
+      },
+      "embeddedsubtitles": {
+        "fallback_lang": "en",
+        "hi_fallback": false,
+        "included_codecs": [],
+        "timeout": 600,
+        "unknown_as_fallback": false
+      },
+      "general": {
+        "adaptive_searching": true,
+        "adaptive_searching_delay": "3w",
+        "adaptive_searching_delta": "1w",
+        "anti_captcha_provider": null,
+        "auto_update": true,
+        "base_url": "",
+        "branch": "master",
+        "chmod": "0640",
+        "chmod_enabled": false,
+        "concurrent_jobs": 4,
+        "days_to_upgrade_subs": 30,
+        "debug": false,
+        "default_und_audio_lang": "",
+        "default_und_embedded_subtitles_lang": "",
+        "disable_all_providers_ssl_verify": false,
+        "dont_notify_manual_actions": false,
+        "embedded_subs_show_desired": true,
+        "embedded_subtitles_parser": "ffprobe",
+        "enable_strm_support": false,
+        "enabled_integrations": [],
+        "enabled_providers": [
+          "opensubtitlescom",
+          "supersubtitles",
+          "yifysubtitles"
+        ],
+        "external_webhook_password": {
+          "__sops": "config/general/external_webhook_password"
+        },
+        "external_webhook_url": "",
+        "external_webhook_username": {
+          "__sops": "config/general/external_webhook_username"
+        },
+        "flask_secret_key": {
+          "__sops": "config/general/flask_secret_key"
+        },
+        "hi_extension": "hi",
+        "hostname": "bazarr.internal",
+        "ignore_ass_subs": false,
+        "ignore_pgs_subs": false,
+        "ignore_vobsub_subs": false,
+        "instance_name": "Bazarr",
+        "ip": "*",
+        "language_equals": [],
+        "minimum_score": 90,
+        "minimum_score_movie": 70,
+        "movie_default_enabled": true,
+        "movie_default_profile": 3,
+        "movie_tag_enabled": false,
+        "multithreading": true,
+        "notify_if_nothing_is_missing_for_signalr_event": false,
+        "page_size": 25,
+        "parse_embedded_audio_track": false,
+        "path_mappings": [],
+        "path_mappings_movie": [],
+        "port": 6767,
+        "postprocessing_cmd": "",
+        "postprocessing_threshold": 90,
+        "postprocessing_threshold_movie": 70,
+        "remove_profile_tags": [],
+        "serie_default_enabled": true,
+        "serie_default_profile": 3,
+        "serie_tag_enabled": false,
+        "show_live_badge": true,
+        "single_language": false,
+        "skip_hashing": false,
+        "subfolder": "current",
+        "subfolder_custom": "",
+        "subzero_mods": "remove_HI,common,remove_HI",
+        "theme": "auto",
+        "upgrade_frequency": 12,
+        "upgrade_manual": true,
+        "upgrade_subs": true,
+        "use_embedded_subs": false,
+        "use_external_webhook": false,
+        "use_jellyfin": false,
+        "use_plex": true,
+        "use_postprocessing": false,
+        "use_postprocessing_threshold": false,
+        "use_postprocessing_threshold_movie": false,
+        "use_radarr": true,
+        "use_scenename": true,
+        "use_sonarr": true,
+        "use_whisper_fallback": false,
+        "use_whisper_fallback_series": false,
+        "utf8_encode": true,
+        "wanted_search_frequency": 6,
+        "wanted_search_frequency_movie": 6
+      },
+      "hdbits": {
+        "passkey": {
+          "__sops": "config/hdbits/passkey"
+        },
+        "username": {
+          "__sops": "config/hdbits/username"
+        }
+      },
+      "jellyfin": {
+        "apikey": {
+          "__sops": "config/jellyfin/apikey"
+        },
+        "movie_library": [],
+        "movie_library_ids": [],
+        "refresh_method": "immediate",
+        "series_library": [],
+        "series_library_ids": [],
+        "update_movie_library": false,
+        "update_series_library": false,
+        "url": ""
+      },
+      "jimaku": {
+        "api_key": {
+          "__sops": "config/jimaku/api_key"
+        },
+        "enable_ai_subs": false,
+        "enable_archives_download": false,
+        "enable_name_search_fallback": true
+      },
+      "karagarga": {
+        "f_password": {
+          "__sops": "config/karagarga/f_password"
+        },
+        "f_username": {
+          "__sops": "config/karagarga/f_username"
+        },
+        "password": {
+          "__sops": "config/karagarga/password"
+        },
+        "username": {
+          "__sops": "config/karagarga/username"
+        }
+      },
+      "ktuvit": {
+        "email": "",
+        "hashed_password": {
+          "__sops": "config/ktuvit/hashed_password"
+        }
+      },
+      "legendasdivx": {
+        "password": {
+          "__sops": "config/legendasdivx/password"
+        },
+        "skip_wrong_fps": false,
+        "username": {
+          "__sops": "config/legendasdivx/username"
+        }
+      },
+      "legendasnet": {
+        "password": {
+          "__sops": "config/legendasnet/password"
+        },
+        "username": {
+          "__sops": "config/legendasnet/username"
+        }
+      },
+      "log": {
+        "exclude_filter": "",
+        "ignore_case": false,
+        "include_filter": "",
+        "use_regex": false
+      },
+      "napiprojekt": {
+        "hash_only": false,
+        "only_authors": false,
+        "only_real_names": false
+      },
+      "napisy24": {
+        "password": {
+          "__sops": "config/napisy24/password"
+        },
+        "username": {
+          "__sops": "config/napisy24/username"
+        }
+      },
+      "opensubtitles": {
+        "password": {
+          "__sops": "config/opensubtitles/password"
+        },
+        "skip_wrong_fps": false,
+        "ssl": false,
+        "timeout": 15,
+        "use_tag_search": false,
+        "username": {
+          "__sops": "config/opensubtitles/username"
+        },
+        "vip": false
+      },
+      "opensubtitlescom": {
+        "include_ai_translated": false,
+        "include_machine_translated": false,
+        "password": {
+          "__sops": "config/opensubtitlescom/password"
+        },
+        "use_hash": true,
+        "username": {
+          "__sops": "config/opensubtitlescom/username"
+        }
+      },
+      "pipocas": {
+        "password": {
+          "__sops": "config/pipocas/password"
+        },
+        "username": {
+          "__sops": "config/pipocas/username"
+        }
+      },
+      "plex": {
+        "apikey": {
+          "__sops": "config/plex/apikey"
+        },
+        "auth_method": "oauth",
+        "client_identifier": "b0d147ec-cdf2-4067-84bf-cab27ab1d71d",
+        "disable_auto_migration": false,
+        "email": "jason@steenblik.org",
+        "encryption_key": {
+          "__sops": "config/plex/encryption_key"
+        },
+        "ip": "",
+        "migration_attempted": false,
+        "migration_successful": false,
+        "migration_timestamp": "",
+        "movie_library": [],
+        "movie_library_ids": [],
+        "port": 32400,
+        "series_library": [],
+        "series_library_ids": [],
+        "server_connections": [
+          "https://172-18-0-7.4a881d2e8fec48b1bccd2cf01b45f651.plex.direct:32400",
+          "https://178-82-56-29.4a881d2e8fec48b1bccd2cf01b45f651.plex.direct:32400",
+          "https://172-104-235-55.4a881d2e8fec48b1bccd2cf01b45f651.plex.direct:8443"
+        ],
+        "server_local": false,
+        "server_machine_id": "b8a9aec92f67bdc60adaa67928e895664a2bfb21",
+        "server_name": "JungleJim",
+        "server_url": "https://178-82-56-29.4a881d2e8fec48b1bccd2cf01b45f651.plex.direct:32400",
+        "set_episode_added": false,
+        "set_movie_added": false,
+        "ssl": false,
+        "token": {
+          "__sops": "config/plex/token"
+        },
+        "update_movie_library": true,
+        "update_series_library": true,
+        "user_id": 14819035,
+        "username": {
+          "__sops": "config/plex/username"
+        }
+      },
+      "postgresql": {
+        "database": "",
+        "enabled": false,
+        "host": "localhost",
+        "password": {
+          "__sops": "config/postgresql/password"
+        },
+        "port": 5432,
+        "url": "",
+        "username": {
+          "__sops": "config/postgresql/username"
+        }
+      },
+      "proxy": {
+        "exclude": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "password": {
+          "__sops": "config/proxy/password"
+        },
+        "port": "",
+        "type": null,
+        "url": "",
+        "username": {
+          "__sops": "config/proxy/username"
+        }
+      },
+      "radarr": {
+        "apikey": {
+          "__sops": "config/radarr/apikey"
+        },
+        "base_url": "",
+        "defer_search_signalr": false,
+        "excluded_tags": [],
+        "full_update": "Daily",
+        "full_update_day": 6,
+        "full_update_hour": 4,
+        "http_timeout": 60,
+        "ip": "127.0.0.1",
+        "movies_sync": 60,
+        "movies_sync_on_live": true,
+        "only_monitored": true,
+        "port": 7878,
+        "ssl": false,
+        "sync_only_monitored_movies": false,
+        "use_ffprobe_cache": true
+      },
+      "sonarr": {
+        "apikey": {
+          "__sops": "config/sonarr/apikey"
+        },
+        "base_url": "",
+        "defer_search_signalr": false,
+        "exclude_season_zero": false,
+        "excluded_series_types": [],
+        "excluded_tags": [],
+        "full_update": "Daily",
+        "full_update_day": 6,
+        "full_update_hour": 4,
+        "http_timeout": 60,
+        "ip": "127.0.0.1",
+        "only_monitored": true,
+        "port": 8989,
+        "series_sync": 60,
+        "series_sync_on_live": true,
+        "ssl": false,
+        "sync_only_monitored_episodes": false,
+        "sync_only_monitored_series": false,
+        "use_ffprobe_cache": true
+      },
+      "subdl": {
+        "ai_translate": false,
+        "api_key": {
+          "__sops": "config/subdl/api_key"
+        },
+        "include_ai_translated": false
+      },
+      "subf2m": {
+        "user_agent": "",
+        "verify_ssl": true
+      },
+      "subsarr": {
+        "base_url": ""
+      },
+      "subsdump": {
+        "api_key": {
+          "__sops": "config/subsdump/api_key"
+        },
+        "base_url": ""
+      },
+      "subsource": {
+        "apikey": {
+          "__sops": "config/subsource/apikey"
+        }
+      },
+      "subsro": {
+        "api_key": {
+          "__sops": "config/subsro/api_key"
+        }
+      },
+      "subsync": {
+        "auto_use_original_language": false,
+        "checker": {
+          "blacklisted_languages": [],
+          "blacklisted_providers": []
+        },
+        "debug": false,
+        "force_audio": false,
+        "gss": true,
+        "max_offset_seconds": 60,
+        "no_fix_framerate": true,
+        "quality_max_framerate_deviation": 0.1,
+        "quality_max_offset_seconds": 30,
+        "quality_min_score": 0.0,
+        "subsync_movie_threshold": 86,
+        "subsync_threshold": 96,
+        "use_original_language": false,
+        "use_subsync": true,
+        "use_subsync_movie_threshold": true,
+        "use_subsync_threshold": true
+      },
+      "subtitlecat": {
+        "include_machine_translated": false
+      },
+      "subx": {
+        "api_key": {
+          "__sops": "config/subx/api_key"
+        }
+      },
+      "titlovi": {
+        "password": {
+          "__sops": "config/titlovi/password"
+        },
+        "username": {
+          "__sops": "config/titlovi/username"
+        }
+      },
+      "titulky": {
+        "approved_only": false,
+        "password": {
+          "__sops": "config/titulky/password"
+        },
+        "skip_wrong_fps": false,
+        "username": {
+          "__sops": "config/titulky/username"
+        }
+      },
+      "translator": {
+        "default_score": 50,
+        "gemini_batch_size": 300,
+        "gemini_keys": {
+          "__sops": "config/translator/gemini_keys"
+        },
+        "gemini_model": "gemini-2.0-flash",
+        "lingarr_token": {
+          "__sops": "config/translator/lingarr_token"
+        },
+        "lingarr_url": "http://lingarr:9876",
+        "translator_info": true,
+        "translator_type": "google_translate"
+      },
+      "turkcealtyaziorg": {
+        "cookies": {
+          "__sops": "config/turkcealtyaziorg/cookies"
+        },
+        "user_agent": ""
+      },
+      "whisperai": {
+        "endpoint": "http://127.0.0.1:9000",
+        "loglevel": "INFO",
+        "pass_video_name": false,
+        "response": 5,
+        "timeout": 3600
+      },
+      "xsubs": {
+        "password": {
+          "__sops": "config/xsubs/password"
+        },
+        "username": {
+          "__sops": "config/xsubs/username"
+        }
+      }
+    }
+  }
+}

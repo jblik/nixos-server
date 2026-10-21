@@ -1,0 +1,2113 @@
+{
+  "schema": [
+    "CREATE TABLE table_announcements (\n\tid INTEGER NOT NULL, \n\ttimestamp DATETIME NOT NULL, \n\thash TEXT, \n\ttext TEXT, \n\tPRIMARY KEY (id)\n)",
+    "CREATE TABLE table_languages_profiles (\n\t\"profileId\" INTEGER NOT NULL, \n\tcutoff INTEGER, \n\t\"originalFormat\" INTEGER, \n\titems TEXT NOT NULL, \n\tname TEXT NOT NULL, \n\t\"mustContain\" TEXT, \n\t\"mustNotContain\" TEXT, \n\ttag TEXT, \n\tPRIMARY KEY (\"profileId\")\n)",
+    "CREATE TABLE table_settings_languages (\n\tcode3 TEXT NOT NULL, \n\tcode2 TEXT, \n\tcode3b TEXT, \n\tenabled INTEGER, \n\tname TEXT NOT NULL, \n\tPRIMARY KEY (code3)\n)",
+    "CREATE TABLE alembic_version (\n\tversion_num VARCHAR(32) NOT NULL, \n\tCONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)\n)",
+    "CREATE TABLE \"system\" (\n\tid INTEGER NOT NULL, \n\tconfigured TEXT, \n\tupdated TEXT, \n\tPRIMARY KEY (id)\n)",
+    "CREATE TABLE \"table_settings_notifier\" (\n\tname TEXT NOT NULL, \n\tenabled INTEGER, \n\turl TEXT, \n\tPRIMARY KEY (name)\n)",
+    "CREATE TABLE \"table_shows\" (\n\t\"tvdbId\" INTEGER, \n\t\"alternativeTitles\" TEXT, \n\taudio_language TEXT, \n\tcreated_at_timestamp DATETIME, \n\tended TEXT, \n\tfanart TEXT, \n\t\"imdbId\" TEXT, \n\t\"lastAired\" TEXT, \n\tmonitored TEXT, \n\toverview TEXT, \n\tpath TEXT NOT NULL, \n\tposter TEXT, \n\t\"profileId\" INTEGER, \n\t\"seriesType\" TEXT, \n\t\"sonarrSeriesId\" INTEGER NOT NULL, \n\t\"sortTitle\" TEXT, \n\ttags TEXT, \n\ttitle TEXT NOT NULL, \n\tupdated_at_timestamp DATETIME, \n\tyear TEXT, \"originalLanguage\" TEXT, \n\tCONSTRAINT pk_table_shows PRIMARY KEY (\"sonarrSeriesId\"), \n\tCONSTRAINT \"fk_series_profileId_languages_profiles\" FOREIGN KEY(\"profileId\") REFERENCES table_languages_profiles (\"profileId\") ON DELETE SET NULL, \n\tCONSTRAINT unique_table_shows_path UNIQUE (path), \n\tFOREIGN KEY(\"profileId\") REFERENCES table_languages_profiles (\"profileId\") ON DELETE SET NULL, \n\tUNIQUE (path)\n)",
+    "CREATE TABLE \"table_episodes\" (\n\taudio_codec TEXT, \n\taudio_language TEXT, \n\tcreated_at_timestamp DATETIME, \n\tepisode INTEGER NOT NULL, \n\tepisode_file_id INTEGER, \n\t\"failedAttempts\" TEXT, \n\tffprobe_cache BLOB, \n\tfile_size BIGINT DEFAULT '0', \n\tformat TEXT, \n\tmissing_subtitles TEXT, \n\tmonitored TEXT, \n\tpath TEXT NOT NULL, \n\tresolution TEXT, \n\t\"sceneName\" TEXT, \n\tseason INTEGER NOT NULL, \n\t\"sonarrEpisodeId\" INTEGER NOT NULL, \n\t\"sonarrSeriesId\" INTEGER, \n\ttitle TEXT NOT NULL, \n\tupdated_at_timestamp DATETIME, \n\tvideo_codec TEXT, \"absoluteEpisode\" INTEGER, \"tvdbId\" INTEGER, \n\tCONSTRAINT pk_table_episodes PRIMARY KEY (\"sonarrEpisodeId\"), \n\tCONSTRAINT \"fk_sonarrSeriesId_episodes\" FOREIGN KEY(\"sonarrSeriesId\") REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"sonarrSeriesId\") REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"table_history\" (\n\tid INTEGER NOT NULL, \n\taction INTEGER NOT NULL, \n\tdescription TEXT NOT NULL, \n\tlanguage TEXT, \n\tprovider TEXT, \n\tscore INTEGER, \n\t\"sonarrEpisodeId\" INTEGER, \n\t\"sonarrSeriesId\" INTEGER, \n\tsubs_id TEXT, \n\tsubtitles_path TEXT, \n\ttimestamp DATETIME NOT NULL, \n\tvideo_path TEXT, \n\tmatched TEXT, \n\tnot_matched TEXT, \n\t\"upgradedFromId\" INTEGER, score_out_of INTEGER, \n\tPRIMARY KEY (id), \n\tCONSTRAINT \"fk_sonarrEpisodeId_history\" FOREIGN KEY(\"sonarrEpisodeId\") REFERENCES table_episodes (\"sonarrEpisodeId\") ON DELETE CASCADE, \n\tCONSTRAINT \"fk_sonarrSeriesId_history\" FOREIGN KEY(\"sonarrSeriesId\") REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"sonarrEpisodeId\") REFERENCES table_episodes (\"sonarrEpisodeId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"sonarrSeriesId\") REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"upgradedFromId\") REFERENCES table_history (id)\n)",
+    "CREATE TABLE \"table_blacklist\" (\n\tid INTEGER NOT NULL, \n\tlanguage TEXT, \n\tprovider TEXT, \n\tsonarr_episode_id INTEGER, \n\tsonarr_series_id INTEGER, \n\tsubs_id TEXT, \n\ttimestamp DATETIME, \n\tPRIMARY KEY (id), \n\tCONSTRAINT \"fk_sonarrEpisodeId_blacklist\" FOREIGN KEY(sonarr_episode_id) REFERENCES table_episodes (\"sonarrEpisodeId\") ON DELETE CASCADE, \n\tCONSTRAINT \"fk_sonarrSeriesId_blacklist\" FOREIGN KEY(sonarr_series_id) REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE, \n\tFOREIGN KEY(sonarr_episode_id) REFERENCES table_episodes (\"sonarrEpisodeId\") ON DELETE CASCADE, \n\tFOREIGN KEY(sonarr_series_id) REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"table_shows_rootfolder\" (\n\taccessible INTEGER, \n\terror TEXT, \n\tid INTEGER NOT NULL, \n\tpath TEXT, \n\tCONSTRAINT pk_table_shows_rootfolder PRIMARY KEY (id)\n)",
+    "CREATE TABLE \"table_movies\" (\n\t\"alternativeTitles\" TEXT, \n\taudio_codec TEXT, \n\taudio_language TEXT, \n\tcreated_at_timestamp DATETIME, \n\t\"failedAttempts\" TEXT, \n\tfanart TEXT, \n\tffprobe_cache BLOB, \n\tfile_size BIGINT DEFAULT '0', \n\tformat TEXT, \n\t\"imdbId\" TEXT, \n\tmissing_subtitles TEXT, \n\tmonitored TEXT, \n\tmovie_file_id INTEGER, \n\toverview TEXT, \n\tpath TEXT NOT NULL, \n\tposter TEXT, \n\t\"profileId\" INTEGER, \n\t\"radarrId\" INTEGER NOT NULL, \n\tresolution TEXT, \n\t\"sceneName\" TEXT, \n\t\"sortTitle\" TEXT, \n\ttags TEXT, \n\ttitle TEXT NOT NULL, \n\t\"tmdbId\" TEXT NOT NULL, \n\tupdated_at_timestamp DATETIME, \n\tvideo_codec TEXT, \n\tyear TEXT, \"originalLanguage\" TEXT, \n\tCONSTRAINT pk_table_movies PRIMARY KEY (\"radarrId\"), \n\tCONSTRAINT \"fk_movies_profileId_languages_profiles\" FOREIGN KEY(\"profileId\") REFERENCES table_languages_profiles (\"profileId\") ON DELETE SET NULL, \n\tCONSTRAINT unique_table_movies_path UNIQUE (path), \n\tCONSTRAINT \"unique_table_movies_tmdbId\" UNIQUE (\"tmdbId\"), \n\tFOREIGN KEY(\"profileId\") REFERENCES table_languages_profiles (\"profileId\") ON DELETE SET NULL, \n\tUNIQUE (path), \n\tUNIQUE (\"tmdbId\")\n)",
+    "CREATE TABLE \"table_history_movie\" (\n\tid INTEGER NOT NULL, \n\taction INTEGER NOT NULL, \n\tdescription TEXT NOT NULL, \n\tlanguage TEXT, \n\tprovider TEXT, \n\t\"radarrId\" INTEGER, \n\tscore INTEGER, \n\tsubs_id TEXT, \n\tsubtitles_path TEXT, \n\ttimestamp DATETIME NOT NULL, \n\tvideo_path TEXT, \n\tmatched TEXT, \n\tnot_matched TEXT, \n\t\"upgradedFromId\" INTEGER, score_out_of INTEGER, \n\tPRIMARY KEY (id), \n\tCONSTRAINT \"fk_radarrId_history_movie\" FOREIGN KEY(\"radarrId\") REFERENCES table_movies (\"radarrId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"upgradedFromId\") REFERENCES table_history_movie (id), \n\tFOREIGN KEY(\"radarrId\") REFERENCES table_movies (\"radarrId\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"table_blacklist_movie\" (\n\tid INTEGER NOT NULL, \n\tlanguage TEXT, \n\tprovider TEXT, \n\tradarr_id INTEGER, \n\tsubs_id TEXT, \n\ttimestamp DATETIME, \n\tPRIMARY KEY (id), \n\tCONSTRAINT \"fk_radarrId_blacklist_movie\" FOREIGN KEY(radarr_id) REFERENCES table_movies (\"radarrId\") ON DELETE CASCADE, \n\tFOREIGN KEY(radarr_id) REFERENCES table_movies (\"radarrId\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"table_movies_rootfolder\" (\n\taccessible INTEGER, \n\terror TEXT, \n\tid INTEGER NOT NULL, \n\tpath TEXT, \n\tCONSTRAINT pk_table_movies_rootfolder PRIMARY KEY (id)\n)",
+    "CREATE TABLE table_episodes_subtitles (\n\tid INTEGER NOT NULL, \n\tlanguage TEXT NOT NULL, \n\thi BOOLEAN NOT NULL, \n\tforced BOOLEAN NOT NULL, \n\tpath TEXT, \n\tsize BIGINT, \n\tembedded_track_id INTEGER, \n\t\"sonarrEpisodeId\" INTEGER NOT NULL, \n\t\"sonarrSeriesId\" INTEGER NOT NULL, \n\tPRIMARY KEY (id), \n\tCONSTRAINT uc_external_episodes_subtitles UNIQUE (path, \"sonarrSeriesId\", \"sonarrEpisodeId\", language, forced, hi), \n\tCONSTRAINT uc_embedded_episodes_subtitles UNIQUE (embedded_track_id, \"sonarrSeriesId\", \"sonarrEpisodeId\", language, forced, hi), \n\tFOREIGN KEY(\"sonarrEpisodeId\") REFERENCES table_episodes (\"sonarrEpisodeId\") ON DELETE CASCADE, \n\tFOREIGN KEY(\"sonarrSeriesId\") REFERENCES table_shows (\"sonarrSeriesId\") ON DELETE CASCADE\n)",
+    "CREATE TABLE table_movies_subtitles (\n\tid INTEGER NOT NULL, \n\tlanguage TEXT NOT NULL, \n\thi BOOLEAN NOT NULL, \n\tforced BOOLEAN NOT NULL, \n\tpath TEXT, \n\tsize BIGINT, \n\tembedded_track_id INTEGER, \n\t\"radarrId\" INTEGER NOT NULL, \n\tPRIMARY KEY (id), \n\tCONSTRAINT uc_external_movies_subtitles UNIQUE (path, \"radarrId\", language, forced, hi), \n\tCONSTRAINT uc_embedded_movies_subtitles UNIQUE (embedded_track_id, \"radarrId\", language, forced, hi), \n\tFOREIGN KEY(\"radarrId\") REFERENCES table_movies (\"radarrId\") ON DELETE CASCADE\n)",
+    "CREATE INDEX ix_episodes_missing_subtitles ON table_episodes (missing_subtitles)",
+    "CREATE INDEX ix_episodes_series_id ON table_episodes (\"sonarrSeriesId\")",
+    "CREATE INDEX ix_episodes_monitored_series ON table_episodes (monitored, \"sonarrSeriesId\")",
+    "CREATE INDEX ix_episodes_season_episode ON table_episodes (season, episode)",
+    "CREATE INDEX ix_episodes_episode_file_id ON table_episodes (episode_file_id)",
+    "CREATE INDEX ix_episodes_path ON table_episodes (path)",
+    "CREATE INDEX ix_shows_sort_title ON table_shows (\"sortTitle\")",
+    "CREATE INDEX ix_shows_monitored ON table_shows (monitored)",
+    "CREATE INDEX ix_shows_tags ON table_shows (tags)",
+    "CREATE INDEX ix_shows_profile_id ON table_shows (\"profileId\")",
+    "CREATE INDEX ix_shows_series_type ON table_shows (\"seriesType\")",
+    "CREATE INDEX ix_movies_missing_subtitles ON table_movies (missing_subtitles)",
+    "CREATE INDEX ix_movies_sort_title ON table_movies (\"sortTitle\")",
+    "CREATE INDEX ix_movies_monitored ON table_movies (monitored)",
+    "CREATE INDEX ix_movies_tags ON table_movies (tags)",
+    "CREATE INDEX ix_movies_profile_id ON table_movies (\"profileId\")",
+    "CREATE INDEX ix_history_timestamp ON table_history (timestamp)",
+    "CREATE INDEX ix_history_episode_id ON table_history (\"sonarrEpisodeId\")",
+    "CREATE INDEX ix_history_series_id ON table_history (\"sonarrSeriesId\")",
+    "CREATE INDEX ix_history_video_path_language ON table_history (video_path, language)",
+    "CREATE INDEX ix_history_action_timestamp ON table_history (action, timestamp)",
+    "CREATE INDEX ix_history_upgraded_from_id ON table_history (\"upgradedFromId\")",
+    "CREATE INDEX ix_history_subs_id ON table_history (subs_id)",
+    "CREATE INDEX ix_history_movie_timestamp ON table_history_movie (timestamp)",
+    "CREATE INDEX ix_history_movie_radarr_id ON table_history_movie (\"radarrId\")",
+    "CREATE INDEX ix_history_movie_video_path_language ON table_history_movie (video_path, language)",
+    "CREATE INDEX ix_history_movie_action_timestamp ON table_history_movie (action, timestamp)",
+    "CREATE INDEX ix_history_movie_upgraded_from_id ON table_history_movie (\"upgradedFromId\")",
+    "CREATE INDEX ix_history_movie_subs_id ON table_history_movie (subs_id)",
+    "CREATE INDEX ix_blacklist_episode_id ON table_blacklist (sonarr_episode_id)",
+    "CREATE INDEX ix_blacklist_series_id ON table_blacklist (sonarr_series_id)",
+    "CREATE INDEX ix_blacklist_provider_subs_id ON table_blacklist (provider, subs_id)",
+    "CREATE INDEX ix_blacklist_timestamp ON table_blacklist (timestamp)",
+    "CREATE INDEX ix_blacklist_movie_radarr_id ON table_blacklist_movie (radarr_id)",
+    "CREATE INDEX ix_blacklist_movie_provider_subs_id ON table_blacklist_movie (provider, subs_id)",
+    "CREATE INDEX ix_blacklist_movie_timestamp ON table_blacklist_movie (timestamp)",
+    "CREATE INDEX idx_episodes_subtitles_sonarr_episode_id ON table_episodes_subtitles (\"sonarrEpisodeId\")",
+    "CREATE INDEX idx_episodes_subtitles_sonarr_series_id ON table_episodes_subtitles (\"sonarrSeriesId\")",
+    "CREATE INDEX idx_episodes_subtitles_path ON table_episodes_subtitles (path)",
+    "CREATE INDEX idx_episodes_subtitles_embedded_track_id ON table_episodes_subtitles (embedded_track_id)",
+    "CREATE INDEX idx_episodes_subtitles_composite ON table_episodes_subtitles (\"sonarrEpisodeId\", path, embedded_track_id)",
+    "CREATE INDEX idx_movies_subtitles_radarr_id ON table_movies_subtitles (\"radarrId\")",
+    "CREATE INDEX idx_movies_subtitles_path ON table_movies_subtitles (path)",
+    "CREATE INDEX idx_movies_subtitles_embedded_track_id ON table_movies_subtitles (embedded_track_id)",
+    "CREATE INDEX idx_movies_subtitles_composite ON table_movies_subtitles (\"radarrId\", path, embedded_track_id)",
+    "CREATE INDEX ix_episodes_subtitles_sonarr_episode_id ON table_episodes_subtitles (\"sonarrEpisodeId\")",
+    "CREATE INDEX ix_episodes_subtitles_sonarr_series_id ON table_episodes_subtitles (\"sonarrSeriesId\")",
+    "CREATE INDEX ix_episodes_subtitles_path ON table_episodes_subtitles (path)",
+    "CREATE INDEX ix_episodes_subtitles_embedded_track_id ON table_episodes_subtitles (embedded_track_id)",
+    "CREATE INDEX ix_episodes_subtitles_language_hi_forced ON table_episodes_subtitles (language, hi, forced)",
+    "CREATE INDEX ix_episodes_subtitles_episode_path_track ON table_episodes_subtitles (\"sonarrEpisodeId\", path, embedded_track_id)",
+    "CREATE INDEX ix_movies_subtitles_radarr_id ON table_movies_subtitles (\"radarrId\")",
+    "CREATE INDEX ix_movies_subtitles_path ON table_movies_subtitles (path)",
+    "CREATE INDEX ix_movies_subtitles_embedded_track_id ON table_movies_subtitles (embedded_track_id)",
+    "CREATE INDEX ix_movies_subtitles_language_hi_forced ON table_movies_subtitles (language, hi, forced)",
+    "CREATE INDEX ix_movies_subtitles_movie_path_track ON table_movies_subtitles (\"radarrId\", path, embedded_track_id)"
+  ],
+  "migrations": {
+    "alembic_version": [
+      {
+        "version_num": "537e9b4d10e3"
+      }
+    ]
+  },
+  "tables": {
+    "table_languages_profiles": {
+      "key": [
+        "profileId"
+      ],
+      "columns": [
+        "profileId",
+        "cutoff",
+        "originalFormat",
+        "items",
+        "name",
+        "mustContain",
+        "mustNotContain",
+        "tag"
+      ],
+      "rows": [
+        {
+          "profileId": 1,
+          "cutoff": null,
+          "originalFormat": 0,
+          "items": "[{\"id\": 1, \"language\": \"en\", \"audio_exclude\": \"False\", \"hi\": \"False\", \"forced\": \"False\", \"audio_only_include\": \"False\"}]",
+          "name": "English Profile",
+          "mustContain": "[]",
+          "mustNotContain": "[]",
+          "tag": null
+        },
+        {
+          "profileId": 2,
+          "cutoff": null,
+          "originalFormat": 0,
+          "items": "[{\"id\": 1, \"language\": \"de\", \"audio_exclude\": \"False\", \"audio_only_include\": \"False\", \"hi\": \"False\", \"forced\": \"False\"}, {\"id\": 2, \"language\": \"en\", \"audio_exclude\": \"False\", \"audio_only_include\": \"False\", \"hi\": \"False\", \"forced\": \"False\"}]",
+          "name": "Eng Ger",
+          "mustContain": "[]",
+          "mustNotContain": "[]",
+          "tag": null
+        },
+        {
+          "profileId": 3,
+          "cutoff": null,
+          "originalFormat": 0,
+          "items": "[{\"id\": 1, \"language\": \"en\", \"audio_exclude\": \"False\", \"audio_only_include\": \"False\", \"hi\": \"False\", \"forced\": \"False\"}, {\"id\": 2, \"language\": \"de\", \"audio_exclude\": \"False\", \"audio_only_include\": \"True\", \"hi\": \"False\", \"forced\": \"False\"}, {\"id\": 3, \"language\": \"fr\", \"audio_exclude\": \"False\", \"audio_only_include\": \"True\", \"hi\": \"False\", \"forced\": \"False\"}, {\"id\": 4, \"language\": \"ko\", \"audio_exclude\": \"False\", \"audio_only_include\": \"True\", \"hi\": \"False\", \"forced\": \"False\"}]",
+          "name": "All when match",
+          "mustContain": "[]",
+          "mustNotContain": "[]",
+          "tag": null
+        }
+      ]
+    },
+    "table_settings_languages": {
+      "key": [
+        "code3"
+      ],
+      "columns": [
+        "code3",
+        "code2",
+        "code3b",
+        "enabled",
+        "name"
+      ],
+      "rows": [
+        {
+          "code3": "aar",
+          "code2": "aa",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Afar"
+        },
+        {
+          "code3": "abk",
+          "code2": "ab",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Abkhazian"
+        },
+        {
+          "code3": "afr",
+          "code2": "af",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Afrikaans"
+        },
+        {
+          "code3": "aka",
+          "code2": "ak",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Akan"
+        },
+        {
+          "code3": "amh",
+          "code2": "am",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Amharic"
+        },
+        {
+          "code3": "ara",
+          "code2": "ar",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Arabic"
+        },
+        {
+          "code3": "arg",
+          "code2": "an",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Aragonese"
+        },
+        {
+          "code3": "asm",
+          "code2": "as",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Assamese"
+        },
+        {
+          "code3": "ava",
+          "code2": "av",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Avaric"
+        },
+        {
+          "code3": "ave",
+          "code2": "ae",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Avestan"
+        },
+        {
+          "code3": "aym",
+          "code2": "ay",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Aymara"
+        },
+        {
+          "code3": "aze",
+          "code2": "az",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Azerbaijani"
+        },
+        {
+          "code3": "bak",
+          "code2": "ba",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bashkir"
+        },
+        {
+          "code3": "bam",
+          "code2": "bm",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bambara"
+        },
+        {
+          "code3": "bel",
+          "code2": "be",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Belarusian"
+        },
+        {
+          "code3": "ben",
+          "code2": "bn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bengali"
+        },
+        {
+          "code3": "bis",
+          "code2": "bi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bislama"
+        },
+        {
+          "code3": "bod",
+          "code2": "bo",
+          "code3b": "tib",
+          "enabled": 0,
+          "name": "Tibetan"
+        },
+        {
+          "code3": "bos",
+          "code2": "bs",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bosnian"
+        },
+        {
+          "code3": "bre",
+          "code2": "br",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Breton"
+        },
+        {
+          "code3": "bul",
+          "code2": "bg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Bulgarian"
+        },
+        {
+          "code3": "cat",
+          "code2": "ca",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Catalan"
+        },
+        {
+          "code3": "ces",
+          "code2": "cs",
+          "code3b": "cze",
+          "enabled": 0,
+          "name": "Czech"
+        },
+        {
+          "code3": "cha",
+          "code2": "ch",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Chamorro"
+        },
+        {
+          "code3": "che",
+          "code2": "ce",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Chechen"
+        },
+        {
+          "code3": "chu",
+          "code2": "cu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Church Slavic"
+        },
+        {
+          "code3": "chv",
+          "code2": "cv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Chuvash"
+        },
+        {
+          "code3": "cor",
+          "code2": "kw",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Cornish"
+        },
+        {
+          "code3": "cos",
+          "code2": "co",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Corsican"
+        },
+        {
+          "code3": "cre",
+          "code2": "cr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Cree"
+        },
+        {
+          "code3": "cym",
+          "code2": "cy",
+          "code3b": "wel",
+          "enabled": 0,
+          "name": "Welsh"
+        },
+        {
+          "code3": "dan",
+          "code2": "da",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Danish"
+        },
+        {
+          "code3": "deu",
+          "code2": "de",
+          "code3b": "ger",
+          "enabled": 1,
+          "name": "German"
+        },
+        {
+          "code3": "div",
+          "code2": "dv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Dhivehi"
+        },
+        {
+          "code3": "dzo",
+          "code2": "dz",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Dzongkha"
+        },
+        {
+          "code3": "ell",
+          "code2": "el",
+          "code3b": "gre",
+          "enabled": 0,
+          "name": "Greek"
+        },
+        {
+          "code3": "eng",
+          "code2": "en",
+          "code3b": null,
+          "enabled": 1,
+          "name": "English"
+        },
+        {
+          "code3": "epo",
+          "code2": "eo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Esperanto"
+        },
+        {
+          "code3": "est",
+          "code2": "et",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Estonian"
+        },
+        {
+          "code3": "eus",
+          "code2": "eu",
+          "code3b": "baq",
+          "enabled": 0,
+          "name": "Basque"
+        },
+        {
+          "code3": "ewe",
+          "code2": "ee",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ewe"
+        },
+        {
+          "code3": "fao",
+          "code2": "fo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Faroese"
+        },
+        {
+          "code3": "fas",
+          "code2": "fa",
+          "code3b": "per",
+          "enabled": 0,
+          "name": "Persian"
+        },
+        {
+          "code3": "fij",
+          "code2": "fj",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Fijian"
+        },
+        {
+          "code3": "fin",
+          "code2": "fi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Finnish"
+        },
+        {
+          "code3": "fra",
+          "code2": "fr",
+          "code3b": "fre",
+          "enabled": 1,
+          "name": "French"
+        },
+        {
+          "code3": "fry",
+          "code2": "fy",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Western Frisian"
+        },
+        {
+          "code3": "ful",
+          "code2": "ff",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Fulah"
+        },
+        {
+          "code3": "gla",
+          "code2": "gd",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Scottish Gaelic"
+        },
+        {
+          "code3": "gle",
+          "code2": "ga",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Irish"
+        },
+        {
+          "code3": "glg",
+          "code2": "gl",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Galician"
+        },
+        {
+          "code3": "glv",
+          "code2": "gv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Manx"
+        },
+        {
+          "code3": "grn",
+          "code2": "gn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Guarani"
+        },
+        {
+          "code3": "guj",
+          "code2": "gu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Gujarati"
+        },
+        {
+          "code3": "hat",
+          "code2": "ht",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Haitian"
+        },
+        {
+          "code3": "hau",
+          "code2": "ha",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Hausa"
+        },
+        {
+          "code3": "hbs",
+          "code2": "sh",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Serbo-Croatian"
+        },
+        {
+          "code3": "heb",
+          "code2": "he",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Hebrew"
+        },
+        {
+          "code3": "her",
+          "code2": "hz",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Herero"
+        },
+        {
+          "code3": "hin",
+          "code2": "hi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Hindi"
+        },
+        {
+          "code3": "hmo",
+          "code2": "ho",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Hiri Motu"
+        },
+        {
+          "code3": "hrv",
+          "code2": "hr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Croatian"
+        },
+        {
+          "code3": "hun",
+          "code2": "hu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Hungarian"
+        },
+        {
+          "code3": "hye",
+          "code2": "hy",
+          "code3b": "arm",
+          "enabled": 0,
+          "name": "Armenian"
+        },
+        {
+          "code3": "ibo",
+          "code2": "ig",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Igbo"
+        },
+        {
+          "code3": "ido",
+          "code2": "io",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ido"
+        },
+        {
+          "code3": "iii",
+          "code2": "ii",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sichuan Yi"
+        },
+        {
+          "code3": "iku",
+          "code2": "iu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Inuktitut"
+        },
+        {
+          "code3": "ile",
+          "code2": "ie",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Interlingue"
+        },
+        {
+          "code3": "ina",
+          "code2": "ia",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Interlingua (International Auxiliary Language Association)"
+        },
+        {
+          "code3": "ind",
+          "code2": "id",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Indonesian"
+        },
+        {
+          "code3": "ipk",
+          "code2": "ik",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Inupiaq"
+        },
+        {
+          "code3": "isl",
+          "code2": "is",
+          "code3b": "ice",
+          "enabled": 0,
+          "name": "Icelandic"
+        },
+        {
+          "code3": "ita",
+          "code2": "it",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Italian"
+        },
+        {
+          "code3": "jav",
+          "code2": "jv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Javanese"
+        },
+        {
+          "code3": "jpn",
+          "code2": "ja",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Japanese"
+        },
+        {
+          "code3": "kal",
+          "code2": "kl",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kalaallisut"
+        },
+        {
+          "code3": "kan",
+          "code2": "kn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kannada"
+        },
+        {
+          "code3": "kas",
+          "code2": "ks",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kashmiri"
+        },
+        {
+          "code3": "kat",
+          "code2": "ka",
+          "code3b": "geo",
+          "enabled": 0,
+          "name": "Georgian"
+        },
+        {
+          "code3": "kau",
+          "code2": "kr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kanuri"
+        },
+        {
+          "code3": "kaz",
+          "code2": "kk",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kazakh"
+        },
+        {
+          "code3": "khm",
+          "code2": "km",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Khmer"
+        },
+        {
+          "code3": "kik",
+          "code2": "ki",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kikuyu"
+        },
+        {
+          "code3": "kin",
+          "code2": "rw",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kinyarwanda"
+        },
+        {
+          "code3": "kir",
+          "code2": "ky",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kirghiz"
+        },
+        {
+          "code3": "kom",
+          "code2": "kv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Komi"
+        },
+        {
+          "code3": "kon",
+          "code2": "kg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kongo"
+        },
+        {
+          "code3": "kor",
+          "code2": "ko",
+          "code3b": null,
+          "enabled": 1,
+          "name": "Korean"
+        },
+        {
+          "code3": "kua",
+          "code2": "kj",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kuanyama"
+        },
+        {
+          "code3": "kur",
+          "code2": "ku",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Kurdish"
+        },
+        {
+          "code3": "lao",
+          "code2": "lo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Lao"
+        },
+        {
+          "code3": "lat",
+          "code2": "la",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Latin"
+        },
+        {
+          "code3": "lav",
+          "code2": "lv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Latvian"
+        },
+        {
+          "code3": "lim",
+          "code2": "li",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Limburgan"
+        },
+        {
+          "code3": "lin",
+          "code2": "ln",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Lingala"
+        },
+        {
+          "code3": "lit",
+          "code2": "lt",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Lithuanian"
+        },
+        {
+          "code3": "ltz",
+          "code2": "lb",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Luxembourgish"
+        },
+        {
+          "code3": "lub",
+          "code2": "lu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Luba-Katanga"
+        },
+        {
+          "code3": "lug",
+          "code2": "lg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ganda"
+        },
+        {
+          "code3": "mah",
+          "code2": "mh",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Marshallese"
+        },
+        {
+          "code3": "mal",
+          "code2": "ml",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Malayalam"
+        },
+        {
+          "code3": "mar",
+          "code2": "mr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Marathi"
+        },
+        {
+          "code3": "mkd",
+          "code2": "mk",
+          "code3b": "mac",
+          "enabled": 0,
+          "name": "Macedonian"
+        },
+        {
+          "code3": "mlg",
+          "code2": "mg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Malagasy"
+        },
+        {
+          "code3": "mlt",
+          "code2": "mt",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Maltese"
+        },
+        {
+          "code3": "mon",
+          "code2": "mn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Mongolian"
+        },
+        {
+          "code3": "mri",
+          "code2": "mi",
+          "code3b": "mao",
+          "enabled": 0,
+          "name": "Maori"
+        },
+        {
+          "code3": "msa",
+          "code2": "ms",
+          "code3b": "may",
+          "enabled": 0,
+          "name": "Malay (macrolanguage)"
+        },
+        {
+          "code3": "mya",
+          "code2": "my",
+          "code3b": "bur",
+          "enabled": 0,
+          "name": "Burmese"
+        },
+        {
+          "code3": "nau",
+          "code2": "na",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Nauru"
+        },
+        {
+          "code3": "nav",
+          "code2": "nv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Navajo"
+        },
+        {
+          "code3": "nbl",
+          "code2": "nr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "South Ndebele"
+        },
+        {
+          "code3": "nde",
+          "code2": "nd",
+          "code3b": null,
+          "enabled": 0,
+          "name": "North Ndebele"
+        },
+        {
+          "code3": "ndo",
+          "code2": "ng",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ndonga"
+        },
+        {
+          "code3": "nep",
+          "code2": "ne",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Nepali (macrolanguage)"
+        },
+        {
+          "code3": "nld",
+          "code2": "nl",
+          "code3b": "dut",
+          "enabled": 0,
+          "name": "Dutch"
+        },
+        {
+          "code3": "nno",
+          "code2": "nn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Norwegian Nynorsk"
+        },
+        {
+          "code3": "nob",
+          "code2": "nb",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Norwegian Bokmål"
+        },
+        {
+          "code3": "nor",
+          "code2": "no",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Norwegian"
+        },
+        {
+          "code3": "nya",
+          "code2": "ny",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Nyanja"
+        },
+        {
+          "code3": "oci",
+          "code2": "oc",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Occitan (post 1500)"
+        },
+        {
+          "code3": "oji",
+          "code2": "oj",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ojibwa"
+        },
+        {
+          "code3": "ori",
+          "code2": "or",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Oriya (macrolanguage)"
+        },
+        {
+          "code3": "orm",
+          "code2": "om",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Oromo"
+        },
+        {
+          "code3": "oss",
+          "code2": "os",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ossetian"
+        },
+        {
+          "code3": "pan",
+          "code2": "pa",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Panjabi"
+        },
+        {
+          "code3": "pli",
+          "code2": "pi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Pali"
+        },
+        {
+          "code3": "pol",
+          "code2": "pl",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Polish"
+        },
+        {
+          "code3": "por",
+          "code2": "pt",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Portuguese"
+        },
+        {
+          "code3": "pus",
+          "code2": "ps",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Pushto"
+        },
+        {
+          "code3": "que",
+          "code2": "qu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Quechua"
+        },
+        {
+          "code3": "roh",
+          "code2": "rm",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Romansh"
+        },
+        {
+          "code3": "ron",
+          "code2": "ro",
+          "code3b": "rum",
+          "enabled": 0,
+          "name": "Romanian"
+        },
+        {
+          "code3": "run",
+          "code2": "rn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Rundi"
+        },
+        {
+          "code3": "rus",
+          "code2": "ru",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Russian"
+        },
+        {
+          "code3": "sag",
+          "code2": "sg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sango"
+        },
+        {
+          "code3": "san",
+          "code2": "sa",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sanskrit"
+        },
+        {
+          "code3": "sin",
+          "code2": "si",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sinhala"
+        },
+        {
+          "code3": "slk",
+          "code2": "sk",
+          "code3b": "slo",
+          "enabled": 0,
+          "name": "Slovak"
+        },
+        {
+          "code3": "slv",
+          "code2": "sl",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Slovenian"
+        },
+        {
+          "code3": "sme",
+          "code2": "se",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Northern Sami"
+        },
+        {
+          "code3": "smo",
+          "code2": "sm",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Samoan"
+        },
+        {
+          "code3": "sna",
+          "code2": "sn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Shona"
+        },
+        {
+          "code3": "snd",
+          "code2": "sd",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sindhi"
+        },
+        {
+          "code3": "som",
+          "code2": "so",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Somali"
+        },
+        {
+          "code3": "sot",
+          "code2": "st",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Southern Sotho"
+        },
+        {
+          "code3": "spa",
+          "code2": "es",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Spanish"
+        },
+        {
+          "code3": "sqi",
+          "code2": "sq",
+          "code3b": "alb",
+          "enabled": 0,
+          "name": "Albanian"
+        },
+        {
+          "code3": "srd",
+          "code2": "sc",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sardinian"
+        },
+        {
+          "code3": "srp",
+          "code2": "sr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Serbian"
+        },
+        {
+          "code3": "ssw",
+          "code2": "ss",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Swati"
+        },
+        {
+          "code3": "sun",
+          "code2": "su",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Sundanese"
+        },
+        {
+          "code3": "swa",
+          "code2": "sw",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Swahili (macrolanguage)"
+        },
+        {
+          "code3": "swe",
+          "code2": "sv",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Swedish"
+        },
+        {
+          "code3": "tah",
+          "code2": "ty",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tahitian"
+        },
+        {
+          "code3": "tam",
+          "code2": "ta",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tamil"
+        },
+        {
+          "code3": "tat",
+          "code2": "tt",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tatar"
+        },
+        {
+          "code3": "tel",
+          "code2": "te",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Telugu"
+        },
+        {
+          "code3": "tgk",
+          "code2": "tg",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tajik"
+        },
+        {
+          "code3": "tgl",
+          "code2": "tl",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tagalog"
+        },
+        {
+          "code3": "tha",
+          "code2": "th",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Thai"
+        },
+        {
+          "code3": "tir",
+          "code2": "ti",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tigrinya"
+        },
+        {
+          "code3": "ton",
+          "code2": "to",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tonga (Tonga Islands)"
+        },
+        {
+          "code3": "tsn",
+          "code2": "tn",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tswana"
+        },
+        {
+          "code3": "tso",
+          "code2": "ts",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Tsonga"
+        },
+        {
+          "code3": "tuk",
+          "code2": "tk",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Turkmen"
+        },
+        {
+          "code3": "tur",
+          "code2": "tr",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Turkish"
+        },
+        {
+          "code3": "twi",
+          "code2": "tw",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Twi"
+        },
+        {
+          "code3": "uig",
+          "code2": "ug",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Uighur"
+        },
+        {
+          "code3": "ukr",
+          "code2": "uk",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Ukrainian"
+        },
+        {
+          "code3": "urd",
+          "code2": "ur",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Urdu"
+        },
+        {
+          "code3": "uzb",
+          "code2": "uz",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Uzbek"
+        },
+        {
+          "code3": "ven",
+          "code2": "ve",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Venda"
+        },
+        {
+          "code3": "vie",
+          "code2": "vi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Vietnamese"
+        },
+        {
+          "code3": "vol",
+          "code2": "vo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Volapük"
+        },
+        {
+          "code3": "wln",
+          "code2": "wa",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Walloon"
+        },
+        {
+          "code3": "wol",
+          "code2": "wo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Wolof"
+        },
+        {
+          "code3": "xho",
+          "code2": "xh",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Xhosa"
+        },
+        {
+          "code3": "yid",
+          "code2": "yi",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Yiddish"
+        },
+        {
+          "code3": "yor",
+          "code2": "yo",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Yoruba"
+        },
+        {
+          "code3": "zha",
+          "code2": "za",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Zhuang"
+        },
+        {
+          "code3": "zho",
+          "code2": "zh",
+          "code3b": "chi",
+          "enabled": 0,
+          "name": "Chinese Simplified"
+        },
+        {
+          "code3": "zul",
+          "code2": "zu",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Zulu"
+        },
+        {
+          "code3": "pob",
+          "code2": "pb",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Portuguese (Brazil)"
+        },
+        {
+          "code3": "zht",
+          "code2": "zt",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Chinese Traditional"
+        },
+        {
+          "code3": "spl",
+          "code2": "ea",
+          "code3b": null,
+          "enabled": 0,
+          "name": "Spanish (Latino)"
+        }
+      ]
+    },
+    "table_settings_notifier": {
+      "key": [
+        "name"
+      ],
+      "columns": [
+        "name",
+        "enabled",
+        "url"
+      ],
+      "rows": [
+        {
+          "name": "Africas Talking",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Apprise API",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Aprs",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Bark",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "BulkSMS",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "BulkVS",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Burst SMS",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "ClickSend",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Form",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "JSON",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "XML",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "D7 Networks",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Dapnet",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "DingTalk",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Discord",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "E-Mail",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Emby",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Enigma2",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Flock",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Google Chat",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Gotify",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Guilded",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "HomeAssistant",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "httpSMS",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "IFTTT",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Join",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Kavenegar",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Kumulos",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "LaMetric",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Line",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Mailgun",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Mastodon",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Matrix",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Mattermost",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "MessageBird",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Misskey",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "MSG91",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Nextcloud",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Notica",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Notifiarr",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Notifico",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "ntfy",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Office 365",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "OneSignal",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Opsgenie",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pager Duty",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "PagerTree",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Parse Platform",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Plivo",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "PopcornNotify",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Prowl",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushbullet",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "PushDeer",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushed",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushjet",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "PushMe",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushover",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushsafer",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushy",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Reddit",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Revolt",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Rocket.Chat",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Remote Syslog",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Ryver",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SendGrid",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "ServerChan",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "AWS Simple Email Service (SES)",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "seven",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Signal API",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Sinch",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Slack",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SMS Eagle",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SMS Manager",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SMTP2Go",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "AWS Simple Notification Service (SNS)",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SparkPost",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Streamlabs",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Synology Chat",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Syslog",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Techulus Push",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Telegram",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Threema Gateway",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Twilio",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Twist",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Twitter",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "VoIPms",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Vonage",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Cisco Webex Teams",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "WeCom Bot",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "WhatsApp",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Power Automate / Workflows (for MSTeams)",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "WxPusher",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Kodi/XBMC",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Zulip",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "BlueSky",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Brevo",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Amazon Chime",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Dot.",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Evolution API",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Exotel",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Fluxer",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "GroupMe",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "HumHub",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "IRC",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Jellyfin",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Jira",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "NotificationAPI",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Octopush",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Postmark",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Resend",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "RingCentral",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SendPulse",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SIGNL4",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "WeChat (WeCom)",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Zoom",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "QQ Push",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Splunk On-Call",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "SpugPush",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Spike.sh",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Viber",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Société Française du Radiotéléphone",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Free-Mobile",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Chanify",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "46elks",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Pushplus",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Feishu",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Clickatell",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Nextcloud Talk",
+          "enabled": 0,
+          "url": null
+        },
+        {
+          "name": "Lark (Feishu)",
+          "enabled": 0,
+          "url": null
+        }
+      ]
+    }
+  }
+}
