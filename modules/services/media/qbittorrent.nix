@@ -103,10 +103,21 @@ in
         ./qbittorrent/feeds.json
       ];
       preStart = ''
-        install -Dm600 ${config.sops.templates.qbittorrent-config.path} ${lib.escapeShellArg "${profile}/qBittorrent.conf"}
-        install -Dm600 ${./qbittorrent/categories.json} ${lib.escapeShellArg "${profile}/categories.json"}
-        install -Dm600 ${./qbittorrent/watched_folders.json} ${lib.escapeShellArg "${profile}/watched_folders.json"}
-        install -Dm600 ${./qbittorrent/feeds.json} ${lib.escapeShellArg "${profile}/rss/feeds.json"}
+        backupDir=""
+        install_config() {
+          target=${lib.escapeShellArg profile}/"$2"
+          if [ -e "$target" ] && ! cmp -s "$1" "$target"; then
+            if [ -z "$backupDir" ]; then
+              backupDir=$(mktemp -d ${lib.escapeShellArg "${profile}/declarative-backup.XXXXXXXX"})
+            fi
+            install -Dm600 "$target" "$backupDir/$2"
+          fi
+          install -Dm600 "$1" "$target"
+        }
+        install_config ${config.sops.templates.qbittorrent-config.path} qBittorrent.conf
+        install_config ${./qbittorrent/categories.json} categories.json
+        install_config ${./qbittorrent/watched_folders.json} watched_folders.json
+        install_config ${./qbittorrent/feeds.json} rss/feeds.json
       '';
       serviceConfig = {
         UMask = lib.mkForce "0002";
