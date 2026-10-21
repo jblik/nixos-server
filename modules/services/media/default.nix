@@ -33,9 +33,16 @@ let
 in
 {
   imports = [
-    ./arr.nix
+    ./sonarr.nix
+    ./radarr.nix
+    ./bazarr.nix
+    ./jackett.nix
+    ./flaresolverr.nix
     ./qbittorrent.nix
     ./containers.nix
+    ./cleanuparr.nix
+    ./pulsarr.nix
+    ./maintainerr.nix
     ./media-preview-generator.nix
     ./plex.nix
     ./tdarr.nix

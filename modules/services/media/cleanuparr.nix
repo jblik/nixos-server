@@ -13,7 +13,7 @@
     };
 
     virtualisation.oci-containers.containers.cleanuparr = {
-      image = "ghcr.io/cleanuparr/cleanuparr:latest";
+      image = "ghcr.io/cleanuparr/cleanuparr:2.10.8";
       environment = {
         PUID = "99";
         PGID = "100";

@@ -93,6 +93,9 @@ HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on por
 
 ## Services
 
+Media application settings and encrypted credentials are documented in
+[modules/services/media/README.md](modules/services/media/README.md).
+
 | Service                                    | Port                       | Runs as                                         |
 |--------------------------------------------|----------------------------|-------------------------------------------------|
 | Plex                                       | 32400                      | native                                          |
