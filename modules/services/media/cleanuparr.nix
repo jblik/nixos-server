@@ -1,0 +1,61 @@
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  settings = builtins.fromJSON (builtins.readFile ./cleanuparr-settings.json);
+  secretNames = map (value: value.__sops) (
+    lib.collect (value: builtins.isAttrs value && value ? __sops) settings
+  );
+in
+{
+  config = lib.mkIf config.host.media.enable {
+    sops.secrets = lib.genAttrs secretNames (_: {
+      sopsFile = ../../../secrets/media-cleanuparr.yaml;
+      restartUnits = [ "podman-cleanuparr.service" ];
+    });
+    sops.templates.cleanuparr-settings = {
+      content = builtins.toJSON (lib.genAttrs secretNames (name: config.sops.placeholder.${name}));
+      mode = "0400";
+    };
+
+    virtualisation.oci-containers.containers.cleanuparr = {
+      image = "ghcr.io/cleanuparr/cleanuparr:latest";
+      environment = {
+        PUID = "99";
+        PGID = "100";
+        UMASK = "002";
+        PORT = toString config.host.media.cleanuparr.port;
+        TZ = config.time.timeZone;
+      };
+      volumes = [
+        "/var/lib/cleanuparr:/config"
+        "${config.host.storage.bulkMount}/torrents:${config.host.storage.bulkMount}/torrents"
+        "${./cleanuparr-blocklist.txt}:/blocklist.txt:ro"
+      ];
+      extraOptions = [ "--network=host" ];
+    };
+
+    systemd.tmpfiles.rules = [ "d /var/lib/cleanuparr 0750 99 100 -" ];
+    systemd.services.podman-cleanuparr = {
+      unitConfig.RequiresMountsFor = [
+        "/var/lib/cleanuparr"
+        config.host.storage.bulkMount
+      ];
+      restartTriggers = [
+        ./cleanuparr-settings.json
+        ./settings/sqlite-settings.py
+      ];
+      preStart = ''
+        umask 0077
+        ${pkgs.python3}/bin/python3 ${./settings/sqlite-settings.py} \
+          ${./cleanuparr-settings.json} ${config.sops.templates.cleanuparr-settings.path} \
+          /var/lib/cleanuparr/cleanuparr.db
+        chown 99:100 /var/lib/cleanuparr/cleanuparr.db
+        chmod 0600 /var/lib/cleanuparr/cleanuparr.db
+      '';
+    };
+  };
+}

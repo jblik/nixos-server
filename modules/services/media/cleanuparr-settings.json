@@ -1,0 +1,1084 @@
+{
+  "schema": [
+    "CREATE TABLE \"__EFMigrationsHistory\" (\n    \"migration_id\" TEXT NOT NULL CONSTRAINT \"pk___ef_migrations_history\" PRIMARY KEY,\n    \"product_version\" TEXT NOT NULL\n)",
+    "CREATE TABLE \"__EFMigrationsLock\" (\r\n    \"Id\" INTEGER NOT NULL CONSTRAINT \"PK___EFMigrationsLock\" PRIMARY KEY,\r\n    \"Timestamp\" TEXT NOT NULL\r\n)",
+    "CREATE TABLE \"apprise_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_apprise_configs\" PRIMARY KEY,\n    \"key\" TEXT NOT NULL,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"tags\" TEXT NULL,\n    \"url\" TEXT NOT NULL, \"mode\" TEXT NOT NULL DEFAULT 'api', \"service_urls\" TEXT NULL,\n    CONSTRAINT \"fk_apprise_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"arr_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_arr_configs\" PRIMARY KEY,\n    \"type\" TEXT NOT NULL,\n    \"failed_import_max_strikes\" INTEGER NOT NULL\n)",
+    "CREATE TABLE \"arr_instances\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_arr_instances\" PRIMARY KEY,\n    \"enabled\" INTEGER NOT NULL,\n    \"arr_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"url\" TEXT NOT NULL,\n    \"api_key\" TEXT NOT NULL, \"version\" REAL NOT NULL DEFAULT 0, \"external_url\" TEXT NULL,\n    CONSTRAINT \"fk_arr_instances_arr_configs_arr_config_id\" FOREIGN KEY (\"arr_config_id\") REFERENCES \"arr_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"blacklist_sync_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_blacklist_sync_configs\" PRIMARY KEY,\n    \"enabled\" INTEGER NOT NULL,\n    \"cron_expression\" TEXT NOT NULL,\n    \"blacklist_path\" TEXT NULL\n)",
+    "CREATE TABLE \"blacklist_sync_history\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_blacklist_sync_history\" PRIMARY KEY,\n    \"hash\" TEXT NOT NULL,\n    \"download_client_id\" TEXT NOT NULL,\n    CONSTRAINT \"fk_blacklist_sync_history_download_clients_download_client_id\" FOREIGN KEY (\"download_client_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"content_blocker_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_content_blocker_configs\" PRIMARY KEY,\n    \"cron_expression\" TEXT NOT NULL,\n    \"delete_if_any_file_blocked\" INTEGER NOT NULL,\n    \"delete_private\" INTEGER NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"ignore_private\" INTEGER NOT NULL,\n    \"ignored_downloads\" TEXT NOT NULL,\n    \"lidarr_blocklist_path\" TEXT NULL,\n    \"lidarr_blocklist_type\" TEXT NOT NULL,\n    \"lidarr_enabled\" INTEGER NOT NULL,\n    \"process_no_content_id\" INTEGER NOT NULL,\n    \"radarr_blocklist_path\" TEXT NULL,\n    \"radarr_blocklist_type\" TEXT NOT NULL,\n    \"radarr_enabled\" INTEGER NOT NULL,\n    \"readarr_blocklist_path\" TEXT NULL,\n    \"readarr_blocklist_type\" TEXT NOT NULL,\n    \"readarr_enabled\" INTEGER NOT NULL,\n    \"sonarr_blocklist_path\" TEXT NULL,\n    \"sonarr_blocklist_type\" TEXT NOT NULL,\n    \"sonarr_enabled\" INTEGER NOT NULL,\n    \"use_advanced_scheduling\" INTEGER NOT NULL,\n    \"whisparr_blocklist_path\" TEXT NULL,\n    \"whisparr_blocklist_type\" TEXT NOT NULL,\n    \"whisparr_enabled\" INTEGER NOT NULL\n, \"sportarr_blocklist_path\" TEXT NULL, \"sportarr_blocklist_type\" TEXT NOT NULL DEFAULT '', \"sportarr_enabled\" INTEGER NOT NULL DEFAULT 0, \"lazy_librarian_blocklist_path\" TEXT NULL, \"lazy_librarian_blocklist_type\" TEXT NOT NULL DEFAULT '', \"lazy_librarian_enabled\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"dead_torrent_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_dead_torrent_configs\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"target_category\" TEXT NOT NULL,\n    \"use_tag\" INTEGER NOT NULL,\n    \"max_strikes\" INTEGER NOT NULL,\n    \"categories\" TEXT NOT NULL,\n    CONSTRAINT \"fk_dead_torrent_configs_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"deluge_seeding_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_deluge_seeding_rules\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"max_ratio\" REAL NOT NULL,\n    \"min_seed_time\" REAL NOT NULL,\n    \"max_seed_time\" REAL NOT NULL,\n    \"delete_source_files\" INTEGER NOT NULL, \"categories\" TEXT NOT NULL DEFAULT '[]', \"priority\" INTEGER NOT NULL DEFAULT 0, \"tracker_patterns\" TEXT NOT NULL DEFAULT '[]', \"min_seeders\" INTEGER NOT NULL DEFAULT 0, \"action\" TEXT NOT NULL DEFAULT 'delete',\n    CONSTRAINT \"fk_deluge_seeding_rules_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"discord_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_discord_configs\" PRIMARY KEY,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"webhook_url\" TEXT NOT NULL,\n    \"username\" TEXT NOT NULL,\n    \"avatar_url\" TEXT NOT NULL,\n    CONSTRAINT \"fk_discord_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"download_cleaner_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_download_cleaner_configs\" PRIMARY KEY,\n    \"cron_expression\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"ignored_downloads\" TEXT NOT NULL,\n    \"use_advanced_scheduling\" INTEGER NOT NULL\n)",
+    "CREATE TABLE \"download_clients\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_download_clients\" PRIMARY KEY,\n    \"enabled\" INTEGER NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"type_name\" TEXT NOT NULL,\n    \"type\" TEXT NOT NULL,\n    \"host\" TEXT NULL,\n    \"username\" TEXT NULL,\n    \"password\" TEXT NULL,\n    \"url_base\" TEXT NULL\n, \"external_url\" TEXT NULL, \"download_directory_source\" TEXT NULL, \"download_directory_target\" TEXT NULL)",
+    "CREATE TABLE \"general_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_general_configs\" PRIMARY KEY,\n    \"auth_disable_auth_for_local_addresses\" INTEGER NOT NULL,\n    \"auth_trust_forwarded_headers\" INTEGER NOT NULL,\n    \"auth_trusted_networks\" TEXT NOT NULL,\n    \"connectivity_check_enabled\" INTEGER NOT NULL,\n    \"connectivity_check_urls\" TEXT NOT NULL,\n    \"display_support_banner\" INTEGER NOT NULL,\n    \"dry_run\" INTEGER NOT NULL,\n    \"history_retention_days\" INTEGER NOT NULL,\n    \"http_certificate_validation\" TEXT NOT NULL,\n    \"http_max_retries\" INTEGER NOT NULL,\n    \"http_send_user_agent\" INTEGER NOT NULL,\n    \"http_timeout\" INTEGER NOT NULL,\n    \"ignored_downloads\" TEXT NOT NULL,\n    \"log_archive_enabled\" INTEGER NOT NULL,\n    \"log_archive_retained_count\" INTEGER NOT NULL,\n    \"log_archive_time_limit_hours\" INTEGER NOT NULL,\n    \"log_level\" TEXT NOT NULL,\n    \"log_retained_file_count\" INTEGER NOT NULL,\n    \"log_rolling_size_mb\" INTEGER NOT NULL,\n    \"log_time_limit_hours\" INTEGER NOT NULL,\n    \"status_check_enabled\" INTEGER NOT NULL,\n    \"strike_inactivity_window_hours\" INTEGER NOT NULL\n)",
+    "CREATE TABLE \"gotify_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_gotify_configs\" PRIMARY KEY,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"server_url\" TEXT NOT NULL,\n    \"application_token\" TEXT NOT NULL,\n    \"priority\" INTEGER NOT NULL,\n    CONSTRAINT \"fk_gotify_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"notifiarr_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_notifiarr_configs\" PRIMARY KEY,\n    \"api_key\" TEXT NOT NULL,\n    \"channel_id\" TEXT NOT NULL,\n    \"notification_config_id\" TEXT NOT NULL,\n    CONSTRAINT \"fk_notifiarr_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"notification_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_notification_configs\" PRIMARY KEY,\n    \"name\" TEXT NOT NULL,\n    \"type\" TEXT NOT NULL,\n    \"is_enabled\" INTEGER NOT NULL,\n    \"on_failed_import_strike\" INTEGER NOT NULL,\n    \"on_stalled_strike\" INTEGER NOT NULL,\n    \"on_slow_strike\" INTEGER NOT NULL,\n    \"on_queue_item_deleted\" INTEGER NOT NULL,\n    \"on_download_cleaned\" INTEGER NOT NULL,\n    \"on_category_changed\" INTEGER NOT NULL,\n    \"created_at\" TEXT NOT NULL,\n    \"updated_at\" TEXT NOT NULL\n, \"on_search_triggered\" INTEGER NOT NULL DEFAULT 0, \"on_search_item_grabbed\" INTEGER NOT NULL DEFAULT 0, \"on_download_stopped\" INTEGER NOT NULL DEFAULT 0, \"on_force_imported\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"ntfy_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_ntfy_configs\" PRIMARY KEY,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"server_url\" TEXT NOT NULL,\n    \"topics\" TEXT NOT NULL,\n    \"authentication_type\" TEXT NOT NULL,\n    \"username\" TEXT NULL,\n    \"password\" TEXT NULL,\n    \"access_token\" TEXT NULL,\n    \"priority\" TEXT NOT NULL,\n    \"tags\" TEXT NOT NULL,\n    CONSTRAINT \"fk_ntfy_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"orphaned_files_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_orphaned_files_configs\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"scan_directories\" TEXT NOT NULL,\n    \"orphaned_directory\" TEXT NOT NULL,\n    \"exclude_patterns\" TEXT NOT NULL,\n    \"min_file_age_hours\" INTEGER NOT NULL,\n    \"purge_after_hours\" INTEGER NULL,\n    CONSTRAINT \"fk_orphaned_files_configs_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"pushover_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_pushover_configs\" PRIMARY KEY,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"api_token\" TEXT NOT NULL,\n    \"user_key\" TEXT NOT NULL,\n    \"devices\" TEXT NOT NULL,\n    \"priority\" TEXT NOT NULL,\n    \"sound\" TEXT NULL,\n    \"retry\" INTEGER NULL,\n    \"expire\" INTEGER NULL,\n    \"tags\" TEXT NOT NULL,\n    CONSTRAINT \"fk_pushover_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"q_bit_seeding_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_q_bit_seeding_rules\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"max_ratio\" REAL NOT NULL,\n    \"min_seed_time\" REAL NOT NULL,\n    \"max_seed_time\" REAL NOT NULL,\n    \"delete_source_files\" INTEGER NOT NULL, \"categories\" TEXT NOT NULL DEFAULT '[]', \"priority\" INTEGER NOT NULL DEFAULT 0, \"tags_all\" TEXT NOT NULL DEFAULT '[]', \"tags_any\" TEXT NOT NULL DEFAULT '[]', \"tracker_patterns\" TEXT NOT NULL DEFAULT '[]', \"min_seeders\" INTEGER NOT NULL DEFAULT 0, \"max_inactive_days\" REAL NOT NULL DEFAULT -1.0, \"action\" TEXT NOT NULL DEFAULT 'delete',\n    CONSTRAINT \"fk_q_bit_seeding_rules_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"queue_cleaner_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_queue_cleaner_configs\" PRIMARY KEY,\n    \"cron_expression\" TEXT NOT NULL,\n    \"downloading_metadata_max_strikes\" INTEGER NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"failed_import_delete_private\" INTEGER NOT NULL,\n    \"failed_import_ignore_private\" INTEGER NOT NULL,\n    \"failed_import_max_strikes\" INTEGER NOT NULL,\n    \"failed_import_pattern_mode\" TEXT NOT NULL,\n    \"failed_import_patterns\" TEXT NOT NULL,\n    \"failed_import_skip_if_not_found_in_client\" INTEGER NOT NULL,\n    \"ignored_downloads\" TEXT NOT NULL,\n    \"use_advanced_scheduling\" INTEGER NOT NULL\n, \"process_no_content_id\" INTEGER NOT NULL DEFAULT 0, \"failed_import_change_category\" INTEGER NOT NULL DEFAULT 0, \"failed_import_force_import\" INTEGER NOT NULL DEFAULT 0, \"failed_import_force_import_max_tries\" INTEGER NOT NULL DEFAULT 3)",
+    "CREATE TABLE \"r_torrent_seeding_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_r_torrent_seeding_rules\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"max_ratio\" REAL NOT NULL,\n    \"min_seed_time\" REAL NOT NULL,\n    \"max_seed_time\" REAL NOT NULL,\n    \"delete_source_files\" INTEGER NOT NULL, \"categories\" TEXT NOT NULL DEFAULT '[]', \"priority\" INTEGER NOT NULL DEFAULT 0, \"tracker_patterns\" TEXT NOT NULL DEFAULT '[]', \"action\" TEXT NOT NULL DEFAULT 'delete',\n    CONSTRAINT \"fk_r_torrent_seeding_rules_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"seeker_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_seeker_configs\" PRIMARY KEY,\n    \"post_release_grace_hours\" INTEGER NOT NULL,\n    \"proactive_search_enabled\" INTEGER NOT NULL,\n    \"search_enabled\" INTEGER NOT NULL,\n    \"search_interval\" INTEGER NOT NULL,\n    \"selection_strategy\" TEXT NOT NULL,\n    \"use_round_robin\" INTEGER NOT NULL\n)",
+    "CREATE TABLE \"seeker_instance_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_seeker_instance_configs\" PRIMARY KEY,\n    \"arr_instance_id\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"skip_tags\" TEXT NOT NULL,\n    \"last_processed_at\" TEXT NULL,\n    \"current_cycle_id\" TEXT NOT NULL,\n    \"total_eligible_items\" INTEGER NOT NULL,\n    \"active_download_limit\" INTEGER NOT NULL,\n    \"min_cycle_time_days\" INTEGER NOT NULL, \"monitored_only\" INTEGER NOT NULL DEFAULT 1, \"use_cutoff\" INTEGER NOT NULL DEFAULT 0, \"use_custom_format_score\" INTEGER NOT NULL DEFAULT 0, \"ignore_struck_downloads\" INTEGER NOT NULL DEFAULT 0,\n    CONSTRAINT \"fk_seeker_instance_configs_arr_instances_arr_instance_id\" FOREIGN KEY (\"arr_instance_id\") REFERENCES \"arr_instances\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"slow_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_slow_rules\" PRIMARY KEY,\n    \"reset_strikes_on_progress\" INTEGER NOT NULL,\n    \"max_time_hours\" REAL NOT NULL,\n    \"min_speed\" TEXT NOT NULL,\n    \"ignore_above_size\" TEXT NULL,\n    \"queue_cleaner_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"max_strikes\" INTEGER NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"min_completion_percentage\" INTEGER NOT NULL,\n    \"max_completion_percentage\" INTEGER NOT NULL,\n    \"delete_private_torrents_from_client\" INTEGER NOT NULL, \"change_category\" INTEGER NOT NULL DEFAULT 0, \"ignore_while_alt_speed_active\" INTEGER NOT NULL DEFAULT 1,\n    CONSTRAINT \"fk_slow_rules_queue_cleaner_configs_queue_cleaner_config_id\" FOREIGN KEY (\"queue_cleaner_config_id\") REFERENCES \"queue_cleaner_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"stall_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_stall_rules\" PRIMARY KEY,\n    \"reset_strikes_on_progress\" INTEGER NOT NULL,\n    \"minimum_progress\" TEXT NULL,\n    \"queue_cleaner_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"max_strikes\" INTEGER NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"min_completion_percentage\" INTEGER NOT NULL,\n    \"max_completion_percentage\" INTEGER NOT NULL,\n    \"delete_private_torrents_from_client\" INTEGER NOT NULL, \"change_category\" INTEGER NOT NULL DEFAULT 0,\n    CONSTRAINT \"fk_stall_rules_queue_cleaner_configs_queue_cleaner_config_id\" FOREIGN KEY (\"queue_cleaner_config_id\") REFERENCES \"queue_cleaner_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"telegram_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_telegram_configs\" PRIMARY KEY,\n    \"notification_config_id\" TEXT NOT NULL,\n    \"bot_token\" TEXT NOT NULL,\n    \"chat_id\" TEXT NOT NULL,\n    \"topic_id\" TEXT NULL,\n    \"send_silently\" INTEGER NOT NULL,\n    CONSTRAINT \"fk_telegram_configs_notification_configs_notification_config_id\" FOREIGN KEY (\"notification_config_id\") REFERENCES \"notification_configs\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"transmission_seeding_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_transmission_seeding_rules\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"max_ratio\" REAL NOT NULL,\n    \"min_seed_time\" REAL NOT NULL,\n    \"max_seed_time\" REAL NOT NULL,\n    \"delete_source_files\" INTEGER NOT NULL, \"categories\" TEXT NOT NULL DEFAULT '[]', \"priority\" INTEGER NOT NULL DEFAULT 0, \"tags_all\" TEXT NOT NULL DEFAULT '[]', \"tags_any\" TEXT NOT NULL DEFAULT '[]', \"tracker_patterns\" TEXT NOT NULL DEFAULT '[]', \"min_seeders\" INTEGER NOT NULL DEFAULT 0, \"action\" TEXT NOT NULL DEFAULT 'delete',\n    CONSTRAINT \"fk_transmission_seeding_rules_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"u_torrent_seeding_rules\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_u_torrent_seeding_rules\" PRIMARY KEY,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"name\" TEXT NOT NULL,\n    \"privacy_type\" TEXT NOT NULL,\n    \"max_ratio\" REAL NOT NULL,\n    \"min_seed_time\" REAL NOT NULL,\n    \"max_seed_time\" REAL NOT NULL,\n    \"delete_source_files\" INTEGER NOT NULL, \"categories\" TEXT NOT NULL DEFAULT '[]', \"priority\" INTEGER NOT NULL DEFAULT 0, \"tracker_patterns\" TEXT NOT NULL DEFAULT '[]', \"min_seeders\" INTEGER NOT NULL DEFAULT 0, \"action\" TEXT NOT NULL DEFAULT 'delete',\n    CONSTRAINT \"fk_u_torrent_seeding_rules_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE TABLE \"unlinked_configs\" (\n    \"id\" TEXT NOT NULL CONSTRAINT \"pk_unlinked_configs\" PRIMARY KEY,\n    \"categories\" TEXT NOT NULL,\n    \"download_client_config_id\" TEXT NOT NULL,\n    \"enabled\" INTEGER NOT NULL,\n    \"ignored_root_dirs\" TEXT NOT NULL,\n    \"target_category\" TEXT NOT NULL,\n    \"use_tag\" INTEGER NOT NULL,\n    CONSTRAINT \"fk_unlinked_configs_download_clients_download_client_config_id\" FOREIGN KEY (\"download_client_config_id\") REFERENCES \"download_clients\" (\"id\") ON DELETE CASCADE\n)",
+    "CREATE UNIQUE INDEX \"ix_apprise_configs_notification_config_id\" ON \"apprise_configs\" (\"notification_config_id\")",
+    "CREATE INDEX \"ix_arr_instances_arr_config_id\" ON \"arr_instances\" (\"arr_config_id\")",
+    "CREATE INDEX \"ix_blacklist_sync_history_download_client_id\" ON \"blacklist_sync_history\" (\"download_client_id\")",
+    "CREATE INDEX \"ix_blacklist_sync_history_hash\" ON \"blacklist_sync_history\" (\"hash\")",
+    "CREATE UNIQUE INDEX \"ix_blacklist_sync_history_hash_download_client_id\" ON \"blacklist_sync_history\" (\"hash\", \"download_client_id\")",
+    "CREATE UNIQUE INDEX \"ix_dead_torrent_configs_download_client_config_id\" ON \"dead_torrent_configs\" (\"download_client_config_id\")",
+    "CREATE INDEX \"ix_deluge_seeding_rules_download_client_config_id\" ON \"deluge_seeding_rules\" (\"download_client_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_discord_configs_notification_config_id\" ON \"discord_configs\" (\"notification_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_gotify_configs_notification_config_id\" ON \"gotify_configs\" (\"notification_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_notifiarr_configs_notification_config_id\" ON \"notifiarr_configs\" (\"notification_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_notification_configs_name\" ON \"notification_configs\" (\"name\")",
+    "CREATE UNIQUE INDEX \"ix_ntfy_configs_notification_config_id\" ON \"ntfy_configs\" (\"notification_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_orphaned_files_configs_download_client_config_id\" ON \"orphaned_files_configs\" (\"download_client_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_pushover_configs_notification_config_id\" ON \"pushover_configs\" (\"notification_config_id\")",
+    "CREATE INDEX \"ix_q_bit_seeding_rules_download_client_config_id\" ON \"q_bit_seeding_rules\" (\"download_client_config_id\")",
+    "CREATE INDEX \"ix_r_torrent_seeding_rules_download_client_config_id\" ON \"r_torrent_seeding_rules\" (\"download_client_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_seeker_instance_configs_arr_instance_id\" ON \"seeker_instance_configs\" (\"arr_instance_id\")",
+    "CREATE INDEX \"ix_slow_rules_queue_cleaner_config_id\" ON \"slow_rules\" (\"queue_cleaner_config_id\")",
+    "CREATE INDEX \"ix_stall_rules_queue_cleaner_config_id\" ON \"stall_rules\" (\"queue_cleaner_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_telegram_configs_notification_config_id\" ON \"telegram_configs\" (\"notification_config_id\")",
+    "CREATE INDEX \"ix_transmission_seeding_rules_download_client_config_id\" ON \"transmission_seeding_rules\" (\"download_client_config_id\")",
+    "CREATE INDEX \"ix_u_torrent_seeding_rules_download_client_config_id\" ON \"u_torrent_seeding_rules\" (\"download_client_config_id\")",
+    "CREATE UNIQUE INDEX \"ix_unlinked_configs_download_client_config_id\" ON \"unlinked_configs\" (\"download_client_config_id\")"
+  ],
+  "migrations": {
+    "__EFMigrationsHistory": [
+      {
+        "migration_id": "20250621174558_InitialData",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250628231105_AddReadarr",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250702091059_AddWhisparr",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250702192200_ChangeAppriseConfig",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250704152940_AddAppriseTags",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250801143446_AddKnownMalwareOption",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250816183837_AddAdvancedLoggingSettings",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250830230846_ReworkNotificationSystem",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250912234118_AddNtfy",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250915153159_AddBlacklistSyncSettings",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20250915181529_AddPerJobIgnoredDownloads",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251012100711_AddQueueCleanerRules",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251022212536_AddFailedImportPrivateSafeguardOption",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251023074842_UpdateSearchDelay",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251023184757_AddFailedImportTypeHandling",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251211102657_AddPushoverProvider",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251213201344_AddAppriseCliMode",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251216204347_AddDeleteSourceFilesToCleanCategory",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251216222056_RenameCleanCategoryToSeedingRule",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251219224200_ChangeUnlinkedIgnoredRootDirType",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251227170911_AddTelegram",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20251231171212_AddWhisparrV3",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260112102214_AddDiscord",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260112134008_AddGotify",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260212204459_AddAppStatusSetting",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260212222238_AddExternalUrl",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260213155055_AddStrikeInactivityWindow",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260216220150_AddSeedingRulePrivacyType",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260223085409_AddAuthConfig",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260306140714_AddProcessMissingContentId",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260306144520_RemoveKnownMalwareOption",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260310181205_RemoveProcessMissingId",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260310181320_AddProcessMissingId",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260324200753_AddSeeker",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260325201158_AddPostReleaseGraceHours",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260326195141_AddIsMonitoredToCfScoreEntry",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260329184534_AddPerClientDownloadCleanerSettings",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260408081126_AddSeedingRuleEnhancements",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260415085810_AddSearchItemGrabbedNotification",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260415192034_MoveSeekerFiltersToInstanceConfig",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260420134250_AddLastUpgradedAtToCfScoreEntry",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260504193343_AddQueueCleanerChangeCategory",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260527073208_AddOrphanedFilesCleanup",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260528100503_AddMinSeedersToSeedingRules",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260528201320_AddDeleteIfAnyFileBlocked",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260613142438_AddDeadTorrentConfig",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260614130148_ConvertDatesToDateTimeOffset",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260703173019_AddHistoryRetentionDays",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260710110305_MoveSeekerStateToEvents",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260713155427_WhisparrBlocklistTypeToText",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260721100758_AddSlowRuleIgnoreAltSpeed",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260723144949_AddConnectivityCheck",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260724145908_AddMaxInactiveDaysToQBitSeedingRule",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260804161642_AddSportarr",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260820230125_AddLazyLibrarian",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260822111016_AddHttpSendUserAgent",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260824114948_AddSeekerIgnoreStruckDownloads",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260903082920_AddSeedingRuleStopAction",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260908230836_AddForceImport",
+        "product_version": "10.0.1"
+      },
+      {
+        "migration_id": "20260912212027_RemoveEncryptionKey",
+        "product_version": "10.0.1"
+      }
+    ]
+  },
+  "tables": {
+    "apprise_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "key",
+        "notification_config_id",
+        "tags",
+        "url",
+        "mode",
+        "service_urls"
+      ],
+      "rows": []
+    },
+    "arr_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "type",
+        "failed_import_max_strikes"
+      ],
+      "rows": [
+        {
+          "id": "013994EA-0A5E-4EED-91B7-271F494B6259",
+          "type": "readarr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "0B38A68F-3D7B-4D98-AE96-115DA62D9AF2",
+          "type": "sonarr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "3F6CD06A-98B4-45F1-8F0E-1C2D7A5B9E04",
+          "type": "sportarr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "4FD2B82B-CFFD-4B41-BCC0-204058B1E459",
+          "type": "lidarr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "6096303A-399C-42B8-BE8F-60A02CEC5A51",
+          "type": "radarr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "A7363CA9-224A-46C1-9A94-EDDA11FDE7B2",
+          "type": "whisparr",
+          "failed_import_max_strikes": -1
+        },
+        {
+          "id": "D7C2A7A5-6F31-4F0D-9C52-0C2B8C5B1A90",
+          "type": "lazylibrarian",
+          "failed_import_max_strikes": -1
+        }
+      ]
+    },
+    "arr_instances": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "enabled",
+        "arr_config_id",
+        "name",
+        "url",
+        "api_key",
+        "version",
+        "external_url"
+      ],
+      "rows": [
+        {
+          "id": "8CCD1DDC-7E0B-4A44-AE63-718746EF847A",
+          "enabled": 1,
+          "arr_config_id": "6096303A-399C-42B8-BE8F-60A02CEC5A51",
+          "name": "Radarr",
+          "url": {
+            "__sops": "cleanuparr-arr-instances-8CCD1DDC-7E0B-4A44-AE63-718746EF847A-url"
+          },
+          "api_key": {
+            "__sops": "cleanuparr-arr-instances-8CCD1DDC-7E0B-4A44-AE63-718746EF847A-api-key"
+          },
+          "version": 6.0,
+          "external_url": null
+        },
+        {
+          "id": "E650624C-7752-4024-9CA2-A96A4397203A",
+          "enabled": 1,
+          "arr_config_id": "0B38A68F-3D7B-4D98-AE96-115DA62D9AF2",
+          "name": "Sonarr",
+          "url": {
+            "__sops": "cleanuparr-arr-instances-E650624C-7752-4024-9CA2-A96A4397203A-url"
+          },
+          "api_key": {
+            "__sops": "cleanuparr-arr-instances-E650624C-7752-4024-9CA2-A96A4397203A-api-key"
+          },
+          "version": 4.0,
+          "external_url": {
+            "__sops": "cleanuparr-arr-instances-E650624C-7752-4024-9CA2-A96A4397203A-external-url"
+          }
+        }
+      ]
+    },
+    "blacklist_sync_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "enabled",
+        "cron_expression",
+        "blacklist_path"
+      ],
+      "rows": [
+        {
+          "id": "7B1268D5-7CC7-4D80-920C-855DBD63828F",
+          "enabled": 0,
+          "cron_expression": "0 0 * * * ?",
+          "blacklist_path": null
+        }
+      ]
+    },
+    "content_blocker_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "cron_expression",
+        "delete_if_any_file_blocked",
+        "delete_private",
+        "enabled",
+        "ignore_private",
+        "ignored_downloads",
+        "lidarr_blocklist_path",
+        "lidarr_blocklist_type",
+        "lidarr_enabled",
+        "process_no_content_id",
+        "radarr_blocklist_path",
+        "radarr_blocklist_type",
+        "radarr_enabled",
+        "readarr_blocklist_path",
+        "readarr_blocklist_type",
+        "readarr_enabled",
+        "sonarr_blocklist_path",
+        "sonarr_blocklist_type",
+        "sonarr_enabled",
+        "use_advanced_scheduling",
+        "whisparr_blocklist_path",
+        "whisparr_blocklist_type",
+        "whisparr_enabled",
+        "sportarr_blocklist_path",
+        "sportarr_blocklist_type",
+        "sportarr_enabled",
+        "lazy_librarian_blocklist_path",
+        "lazy_librarian_blocklist_type",
+        "lazy_librarian_enabled"
+      ],
+      "rows": [
+        {
+          "id": "B1C5F8D2-3A0E-4B6C-9F7E-8C1D2E3F4A5B",
+          "cron_expression": "0/5 * * ? * * *",
+          "delete_if_any_file_blocked": 0,
+          "delete_private": 0,
+          "enabled": 1,
+          "ignore_private": 0,
+          "ignored_downloads": "[]",
+          "lidarr_blocklist_path": null,
+          "lidarr_blocklist_type": "blacklist",
+          "lidarr_enabled": 0,
+          "process_no_content_id": 0,
+          "radarr_blocklist_path": "/blocklist.txt",
+          "radarr_blocklist_type": "blacklist",
+          "radarr_enabled": 1,
+          "readarr_blocklist_path": null,
+          "readarr_blocklist_type": "blacklist",
+          "readarr_enabled": 0,
+          "sonarr_blocklist_path": "/blocklist.txt",
+          "sonarr_blocklist_type": "blacklist",
+          "sonarr_enabled": 1,
+          "use_advanced_scheduling": 0,
+          "whisparr_blocklist_path": null,
+          "whisparr_blocklist_type": "blacklist",
+          "whisparr_enabled": 0,
+          "sportarr_blocklist_path": null,
+          "sportarr_blocklist_type": "blacklist",
+          "sportarr_enabled": 0,
+          "lazy_librarian_blocklist_path": null,
+          "lazy_librarian_blocklist_type": "blacklist",
+          "lazy_librarian_enabled": 0
+        }
+      ]
+    },
+    "dead_torrent_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "enabled",
+        "target_category",
+        "use_tag",
+        "max_strikes",
+        "categories"
+      ],
+      "rows": []
+    },
+    "deluge_seeding_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "name",
+        "privacy_type",
+        "max_ratio",
+        "min_seed_time",
+        "max_seed_time",
+        "delete_source_files",
+        "categories",
+        "priority",
+        "tracker_patterns",
+        "min_seeders",
+        "action"
+      ],
+      "rows": []
+    },
+    "discord_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "notification_config_id",
+        "webhook_url",
+        "username",
+        "avatar_url"
+      ],
+      "rows": []
+    },
+    "download_cleaner_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "cron_expression",
+        "enabled",
+        "ignored_downloads",
+        "use_advanced_scheduling"
+      ],
+      "rows": [
+        {
+          "id": "EDB20D44-9D7B-478F-AEC5-93A803C26FB4",
+          "cron_expression": "0 0 * * * ?",
+          "enabled": 0,
+          "ignored_downloads": "[]",
+          "use_advanced_scheduling": 0
+        }
+      ]
+    },
+    "download_clients": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "enabled",
+        "name",
+        "type_name",
+        "type",
+        "host",
+        "username",
+        "password",
+        "url_base",
+        "external_url",
+        "download_directory_source",
+        "download_directory_target"
+      ],
+      "rows": [
+        {
+          "id": "8313E51C-7200-4E0A-B361-0BF81421F9B1",
+          "enabled": 1,
+          "name": "qBittorent",
+          "type_name": "qbittorrent",
+          "type": "torrent",
+          "host": {
+            "__sops": "cleanuparr-download-clients-8313E51C-7200-4E0A-B361-0BF81421F9B1-host"
+          },
+          "username": {
+            "__sops": "cleanuparr-download-clients-8313E51C-7200-4E0A-B361-0BF81421F9B1-username"
+          },
+          "password": {
+            "__sops": "cleanuparr-download-clients-8313E51C-7200-4E0A-B361-0BF81421F9B1-password"
+          },
+          "url_base": {
+            "__sops": "cleanuparr-download-clients-8313E51C-7200-4E0A-B361-0BF81421F9B1-url-base"
+          },
+          "external_url": {
+            "__sops": "cleanuparr-download-clients-8313E51C-7200-4E0A-B361-0BF81421F9B1-external-url"
+          },
+          "download_directory_source": null,
+          "download_directory_target": null
+        }
+      ]
+    },
+    "general_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "auth_disable_auth_for_local_addresses",
+        "auth_trust_forwarded_headers",
+        "auth_trusted_networks",
+        "connectivity_check_enabled",
+        "connectivity_check_urls",
+        "display_support_banner",
+        "dry_run",
+        "history_retention_days",
+        "http_certificate_validation",
+        "http_max_retries",
+        "http_send_user_agent",
+        "http_timeout",
+        "ignored_downloads",
+        "log_archive_enabled",
+        "log_archive_retained_count",
+        "log_archive_time_limit_hours",
+        "log_level",
+        "log_retained_file_count",
+        "log_rolling_size_mb",
+        "log_time_limit_hours",
+        "status_check_enabled",
+        "strike_inactivity_window_hours"
+      ],
+      "rows": [
+        {
+          "id": "1490F450-1B29-4111-AB20-8A03DBD9D366",
+          "auth_disable_auth_for_local_addresses": 0,
+          "auth_trust_forwarded_headers": 0,
+          "auth_trusted_networks": "",
+          "connectivity_check_enabled": 0,
+          "connectivity_check_urls": "[]",
+          "display_support_banner": 0,
+          "dry_run": 0,
+          "history_retention_days": 365,
+          "http_certificate_validation": "enabled",
+          "http_max_retries": 0,
+          "http_send_user_agent": 0,
+          "http_timeout": 100,
+          "ignored_downloads": "[]",
+          "log_archive_enabled": 1,
+          "log_archive_retained_count": 60,
+          "log_archive_time_limit_hours": 720,
+          "log_level": "information",
+          "log_retained_file_count": 5,
+          "log_rolling_size_mb": 10,
+          "log_time_limit_hours": 24,
+          "status_check_enabled": 0,
+          "strike_inactivity_window_hours": 24
+        }
+      ]
+    },
+    "gotify_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "notification_config_id",
+        "server_url",
+        "application_token",
+        "priority"
+      ],
+      "rows": []
+    },
+    "notifiarr_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "api_key",
+        "channel_id",
+        "notification_config_id"
+      ],
+      "rows": []
+    },
+    "notification_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "name",
+        "type",
+        "is_enabled",
+        "on_failed_import_strike",
+        "on_stalled_strike",
+        "on_slow_strike",
+        "on_queue_item_deleted",
+        "on_download_cleaned",
+        "on_category_changed",
+        "created_at",
+        "updated_at",
+        "on_search_triggered",
+        "on_search_item_grabbed",
+        "on_download_stopped",
+        "on_force_imported"
+      ],
+      "rows": []
+    },
+    "ntfy_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "notification_config_id",
+        "server_url",
+        "topics",
+        "authentication_type",
+        "username",
+        "password",
+        "access_token",
+        "priority",
+        "tags"
+      ],
+      "rows": []
+    },
+    "orphaned_files_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "enabled",
+        "scan_directories",
+        "orphaned_directory",
+        "exclude_patterns",
+        "min_file_age_hours",
+        "purge_after_hours"
+      ],
+      "rows": []
+    },
+    "pushover_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "notification_config_id",
+        "api_token",
+        "user_key",
+        "devices",
+        "priority",
+        "sound",
+        "retry",
+        "expire",
+        "tags"
+      ],
+      "rows": []
+    },
+    "q_bit_seeding_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "name",
+        "privacy_type",
+        "max_ratio",
+        "min_seed_time",
+        "max_seed_time",
+        "delete_source_files",
+        "categories",
+        "priority",
+        "tags_all",
+        "tags_any",
+        "tracker_patterns",
+        "min_seeders",
+        "max_inactive_days",
+        "action"
+      ],
+      "rows": []
+    },
+    "queue_cleaner_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "cron_expression",
+        "downloading_metadata_max_strikes",
+        "enabled",
+        "failed_import_delete_private",
+        "failed_import_ignore_private",
+        "failed_import_max_strikes",
+        "failed_import_pattern_mode",
+        "failed_import_patterns",
+        "failed_import_skip_if_not_found_in_client",
+        "ignored_downloads",
+        "use_advanced_scheduling",
+        "process_no_content_id",
+        "failed_import_change_category",
+        "failed_import_force_import",
+        "failed_import_force_import_max_tries"
+      ],
+      "rows": [
+        {
+          "id": "098AE890-21DD-4A23-9BA8-ED5CE1AB4817",
+          "cron_expression": "0 0/5 * ? * * *",
+          "downloading_metadata_max_strikes": 5,
+          "enabled": 1,
+          "failed_import_delete_private": 0,
+          "failed_import_ignore_private": 0,
+          "failed_import_max_strikes": 3,
+          "failed_import_pattern_mode": "exclude",
+          "failed_import_patterns": "[]",
+          "failed_import_skip_if_not_found_in_client": 1,
+          "ignored_downloads": "[]",
+          "use_advanced_scheduling": 0,
+          "process_no_content_id": 0,
+          "failed_import_change_category": 0,
+          "failed_import_force_import": 0,
+          "failed_import_force_import_max_tries": 3
+        }
+      ]
+    },
+    "r_torrent_seeding_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "name",
+        "privacy_type",
+        "max_ratio",
+        "min_seed_time",
+        "max_seed_time",
+        "delete_source_files",
+        "categories",
+        "priority",
+        "tracker_patterns",
+        "action"
+      ],
+      "rows": []
+    },
+    "seeker_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "post_release_grace_hours",
+        "proactive_search_enabled",
+        "search_enabled",
+        "search_interval",
+        "selection_strategy",
+        "use_round_robin"
+      ],
+      "rows": [
+        {
+          "id": "6892F5C9-75E1-4C43-83F2-EBF4E8F486DF",
+          "post_release_grace_hours": 6,
+          "proactive_search_enabled": 1,
+          "search_enabled": 1,
+          "search_interval": 10,
+          "selection_strategy": "balancedweighted",
+          "use_round_robin": 1
+        }
+      ]
+    },
+    "seeker_instance_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "arr_instance_id",
+        "enabled",
+        "skip_tags",
+        "active_download_limit",
+        "min_cycle_time_days",
+        "monitored_only",
+        "use_cutoff",
+        "use_custom_format_score",
+        "ignore_struck_downloads"
+      ],
+      "rows": [
+        {
+          "id": "C67A72B4-2720-4E92-AFBB-D33DE06EE547",
+          "arr_instance_id": "E650624C-7752-4024-9CA2-A96A4397203A",
+          "enabled": 1,
+          "skip_tags": "[]",
+          "active_download_limit": 3,
+          "min_cycle_time_days": 2,
+          "monitored_only": 1,
+          "use_cutoff": 1,
+          "use_custom_format_score": 0,
+          "ignore_struck_downloads": 1
+        },
+        {
+          "id": "FC4DA205-6032-49E3-8770-2B032641A18F",
+          "arr_instance_id": "8CCD1DDC-7E0B-4A44-AE63-718746EF847A",
+          "enabled": 1,
+          "skip_tags": "[]",
+          "active_download_limit": 3,
+          "min_cycle_time_days": 2,
+          "monitored_only": 1,
+          "use_cutoff": 1,
+          "use_custom_format_score": 0,
+          "ignore_struck_downloads": 1
+        }
+      ],
+      "insert_defaults": {
+        "current_cycle_id": "00000000-0000-0000-0000-000000000000",
+        "total_eligible_items": 0
+      }
+    },
+    "slow_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "reset_strikes_on_progress",
+        "max_time_hours",
+        "min_speed",
+        "ignore_above_size",
+        "queue_cleaner_config_id",
+        "name",
+        "enabled",
+        "max_strikes",
+        "privacy_type",
+        "min_completion_percentage",
+        "max_completion_percentage",
+        "delete_private_torrents_from_client",
+        "change_category",
+        "ignore_while_alt_speed_active"
+      ],
+      "rows": [
+        {
+          "id": "5DC14651-52E0-4DB8-91A2-09855707949D",
+          "reset_strikes_on_progress": 1,
+          "max_time_hours": 0.125,
+          "min_speed": "10KB",
+          "ignore_above_size": null,
+          "queue_cleaner_config_id": "098AE890-21DD-4A23-9BA8-ED5CE1AB4817",
+          "name": "Slow",
+          "enabled": 1,
+          "max_strikes": 3,
+          "privacy_type": "both",
+          "min_completion_percentage": 0,
+          "max_completion_percentage": 100,
+          "delete_private_torrents_from_client": 0,
+          "change_category": 0,
+          "ignore_while_alt_speed_active": 1
+        }
+      ]
+    },
+    "stall_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "reset_strikes_on_progress",
+        "minimum_progress",
+        "queue_cleaner_config_id",
+        "name",
+        "enabled",
+        "max_strikes",
+        "privacy_type",
+        "min_completion_percentage",
+        "max_completion_percentage",
+        "delete_private_torrents_from_client",
+        "change_category"
+      ],
+      "rows": [
+        {
+          "id": "15B02BFC-8F04-4B59-99C3-B2029A0DD656",
+          "reset_strikes_on_progress": 1,
+          "minimum_progress": "2MB",
+          "queue_cleaner_config_id": "098AE890-21DD-4A23-9BA8-ED5CE1AB4817",
+          "name": "Stalled",
+          "enabled": 1,
+          "max_strikes": 5,
+          "privacy_type": "both",
+          "min_completion_percentage": 0,
+          "max_completion_percentage": 100,
+          "delete_private_torrents_from_client": 1,
+          "change_category": 0
+        }
+      ]
+    },
+    "telegram_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "notification_config_id",
+        "bot_token",
+        "chat_id",
+        "topic_id",
+        "send_silently"
+      ],
+      "rows": []
+    },
+    "transmission_seeding_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "name",
+        "privacy_type",
+        "max_ratio",
+        "min_seed_time",
+        "max_seed_time",
+        "delete_source_files",
+        "categories",
+        "priority",
+        "tags_all",
+        "tags_any",
+        "tracker_patterns",
+        "min_seeders",
+        "action"
+      ],
+      "rows": []
+    },
+    "u_torrent_seeding_rules": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "download_client_config_id",
+        "name",
+        "privacy_type",
+        "max_ratio",
+        "min_seed_time",
+        "max_seed_time",
+        "delete_source_files",
+        "categories",
+        "priority",
+        "tracker_patterns",
+        "min_seeders",
+        "action"
+      ],
+      "rows": []
+    },
+    "unlinked_configs": {
+      "key": [
+        "id"
+      ],
+      "columns": [
+        "id",
+        "categories",
+        "download_client_config_id",
+        "enabled",
+        "ignored_root_dirs",
+        "target_category",
+        "use_tag"
+      ],
+      "rows": []
+    }
+  }
+}
