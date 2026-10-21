@@ -22,6 +22,8 @@ in
       owner = "sonarr";
     };
 
+    systemd.tmpfiles.rules = [ "d ${dataDir} 0750 sonarr users - -" ];
+
     systemd.services.sonarr = {
       restartTriggers = [
         ./sonarr-settings.json
