@@ -1,0 +1,1792 @@
+{
+  "schema": [
+    "CREATE TABLE \"AutoTagging\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Specifications\" TEXT NOT NULL DEFAULT '[]', \"RemoveTagsAutomatically\" INTEGER NOT NULL DEFAULT 0, \"Tags\" TEXT NOT NULL DEFAULT '[]')",
+    "CREATE TABLE \"Blocklist\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"EpisodeIds\" TEXT NOT NULL, \"SourceTitle\" TEXT NOT NULL, \"Quality\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"PublishedDate\" DATETIME, \"Size\" INTEGER, \"Protocol\" INTEGER, \"Indexer\" TEXT, \"Message\" TEXT, \"TorrentInfoHash\" TEXT, \"Languages\" TEXT NOT NULL, \"IndexerFlags\" INTEGER NOT NULL DEFAULT 0, \"ReleaseType\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"Commands\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Body\" TEXT NOT NULL, \"Priority\" INTEGER NOT NULL, \"Status\" INTEGER NOT NULL, \"QueuedAt\" DATETIME NOT NULL, \"StartedAt\" DATETIME, \"EndedAt\" DATETIME, \"Duration\" TEXT, \"Exception\" TEXT, \"Trigger\" INTEGER NOT NULL, \"Result\" INTEGER NOT NULL)",
+    "CREATE TABLE \"Config\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Key\" TEXT NOT NULL, \"Value\" TEXT NOT NULL)",
+    "CREATE TABLE \"CustomFilters\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Type\" TEXT NOT NULL, \"Label\" TEXT NOT NULL, \"Filters\" TEXT NOT NULL)",
+    "CREATE TABLE \"CustomFormats\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Specifications\" TEXT NOT NULL DEFAULT '[]', \"IncludeCustomFormatWhenRenaming\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"DelayProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"EnableUsenet\" INTEGER NOT NULL, \"EnableTorrent\" INTEGER NOT NULL, \"PreferredProtocol\" INTEGER NOT NULL, \"UsenetDelay\" INTEGER NOT NULL, \"TorrentDelay\" INTEGER NOT NULL, \"Order\" INTEGER NOT NULL, \"Tags\" TEXT NOT NULL, \"BypassIfHighestQuality\" INTEGER NOT NULL DEFAULT 0, \"BypassIfAboveCustomFormatScore\" INTEGER NOT NULL DEFAULT 0, \"MinimumCustomFormatScore\" INTEGER)",
+    "CREATE TABLE \"DownloadClientStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME)",
+    "CREATE TABLE \"DownloadClients\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Enable\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT NOT NULL, \"ConfigContract\" TEXT NOT NULL, \"Priority\" INTEGER NOT NULL DEFAULT 1, \"RemoveCompletedDownloads\" INTEGER NOT NULL DEFAULT 1, \"RemoveFailedDownloads\" INTEGER NOT NULL DEFAULT 1, \"Tags\" TEXT)",
+    "CREATE TABLE \"DownloadHistory\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"EventType\" INTEGER NOT NULL, \"SeriesId\" INTEGER NOT NULL, \"DownloadId\" TEXT NOT NULL, \"SourceTitle\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"Protocol\" INTEGER, \"IndexerId\" INTEGER, \"DownloadClientId\" INTEGER, \"Release\" TEXT, \"Data\" TEXT)",
+    "CREATE TABLE \"EpisodeFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"Quality\" TEXT NOT NULL, \"Size\" INTEGER NOT NULL, \"DateAdded\" DATETIME NOT NULL, \"SeasonNumber\" INTEGER NOT NULL, \"SceneName\" TEXT, \"ReleaseGroup\" TEXT, \"MediaInfo\" TEXT, \"RelativePath\" TEXT, \"OriginalFilePath\" TEXT, \"Languages\" TEXT NOT NULL, \"IndexerFlags\" INTEGER NOT NULL DEFAULT 0, \"ReleaseType\" INTEGER NOT NULL DEFAULT 0, \"ReleaseHash\" TEXT)",
+    "CREATE TABLE \"Episodes\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"SeasonNumber\" INTEGER NOT NULL, \"EpisodeNumber\" INTEGER NOT NULL, \"Title\" TEXT, \"Overview\" TEXT, \"EpisodeFileId\" INTEGER, \"AbsoluteEpisodeNumber\" INTEGER, \"SceneAbsoluteEpisodeNumber\" INTEGER, \"SceneSeasonNumber\" INTEGER, \"SceneEpisodeNumber\" INTEGER, \"Monitored\" INTEGER, \"AirDateUtc\" DATETIME, \"AirDate\" TEXT, \"Ratings\" TEXT, \"Images\" TEXT, \"UnverifiedSceneNumbering\" INTEGER NOT NULL, \"LastSearchTime\" DATETIME, \"AiredAfterSeasonNumber\" INTEGER, \"AiredBeforeSeasonNumber\" INTEGER, \"AiredBeforeEpisodeNumber\" INTEGER, \"TvdbId\" INTEGER, \"Runtime\" INTEGER NOT NULL, \"FinaleType\" TEXT)",
+    "CREATE TABLE \"ExtraFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"SeasonNumber\" INTEGER NOT NULL, \"EpisodeFileId\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"Extension\" TEXT NOT NULL, \"Added\" DATETIME NOT NULL, \"LastUpdated\" DATETIME NOT NULL)",
+    "CREATE TABLE \"History\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"EpisodeId\" INTEGER NOT NULL, \"SeriesId\" INTEGER NOT NULL, \"SourceTitle\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"Quality\" TEXT NOT NULL, \"Data\" TEXT NOT NULL, \"EventType\" INTEGER, \"DownloadId\" TEXT, \"Languages\" TEXT NOT NULL)",
+    "CREATE TABLE \"ImportListExclusions\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TvdbId\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL)",
+    "CREATE TABLE \"ImportListItems\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ImportListId\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL, \"TvdbId\" INTEGER NOT NULL, \"Year\" INTEGER, \"TmdbId\" INTEGER, \"ImdbId\" TEXT, \"MalId\" INTEGER, \"AniListId\" INTEGER, \"ReleaseDate\" DATETIME)",
+    "CREATE TABLE \"ImportListStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME, \"LastInfoSync\" DATETIME, \"HasRemovedItemSinceLastClean\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"ImportLists\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT, \"ConfigContract\" TEXT, \"EnableAutomaticAdd\" INTEGER, \"RootFolderPath\" TEXT NOT NULL, \"ShouldMonitor\" INTEGER NOT NULL, \"QualityProfileId\" INTEGER NOT NULL, \"Tags\" TEXT, \"SeriesType\" INTEGER NOT NULL, \"SeasonFolder\" INTEGER NOT NULL, \"SearchForMissingEpisodes\" INTEGER NOT NULL DEFAULT 1, \"MonitorNewItems\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"IndexerStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME, \"LastRssSyncReleaseInfo\" TEXT)",
+    "CREATE TABLE \"Indexers\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT, \"ConfigContract\" TEXT, \"EnableRss\" INTEGER, \"EnableAutomaticSearch\" INTEGER, \"EnableInteractiveSearch\" INTEGER NOT NULL, \"Priority\" INTEGER NOT NULL DEFAULT 25, \"Tags\" TEXT, \"DownloadClientId\" INTEGER NOT NULL DEFAULT 0, \"SeasonSearchMaximumSingleEpisodeAge\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"Metadata\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Enable\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT NOT NULL, \"ConfigContract\" TEXT NOT NULL)",
+    "CREATE TABLE \"MetadataFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"Consumer\" TEXT NOT NULL, \"Type\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"LastUpdated\" DATETIME NOT NULL, \"SeasonNumber\" INTEGER, \"EpisodeFileId\" INTEGER, \"Hash\" TEXT, \"Added\" DATETIME, \"Extension\" TEXT NOT NULL)",
+    "CREATE TABLE \"NamingConfig\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"MultiEpisodeStyle\" INTEGER NOT NULL, \"RenameEpisodes\" INTEGER, \"StandardEpisodeFormat\" TEXT, \"DailyEpisodeFormat\" TEXT, \"SeasonFolderFormat\" TEXT, \"SeriesFolderFormat\" TEXT, \"AnimeEpisodeFormat\" TEXT, \"ReplaceIllegalCharacters\" INTEGER NOT NULL DEFAULT 1, \"SpecialsFolderFormat\" TEXT, \"ColonReplacementFormat\" INTEGER NOT NULL DEFAULT 4, \"CustomColonReplacementFormat\" TEXT NOT NULL DEFAULT '')",
+    "CREATE TABLE \"NotificationStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME)",
+    "CREATE TABLE \"Notifications\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"OnGrab\" INTEGER NOT NULL, \"OnDownload\" INTEGER NOT NULL, \"Settings\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"ConfigContract\" TEXT, \"OnUpgrade\" INTEGER, \"Tags\" TEXT, \"OnRename\" INTEGER NOT NULL, \"OnHealthIssue\" INTEGER NOT NULL DEFAULT 0, \"IncludeHealthWarnings\" INTEGER NOT NULL DEFAULT 0, \"OnSeriesDelete\" INTEGER NOT NULL DEFAULT 0, \"OnEpisodeFileDelete\" INTEGER NOT NULL DEFAULT 0, \"OnEpisodeFileDeleteForUpgrade\" INTEGER NOT NULL DEFAULT 1, \"OnApplicationUpdate\" INTEGER NOT NULL DEFAULT 0, \"OnManualInteractionRequired\" INTEGER NOT NULL DEFAULT 0, \"OnSeriesAdd\" INTEGER NOT NULL DEFAULT 0, \"OnHealthRestored\" INTEGER NOT NULL DEFAULT 0, \"OnImportComplete\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"PendingReleases\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL, \"Added\" DATETIME NOT NULL, \"ParsedEpisodeInfo\" TEXT NOT NULL, \"Release\" TEXT NOT NULL, \"Reason\" INTEGER NOT NULL, \"AdditionalInfo\" TEXT)",
+    "CREATE TABLE \"QualityDefinitions\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Quality\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL, \"MinSize\" NUMERIC, \"MaxSize\" NUMERIC, \"PreferredSize\" NUMERIC)",
+    "CREATE TABLE \"QualityProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Cutoff\" INTEGER NOT NULL, \"Items\" TEXT NOT NULL, \"UpgradeAllowed\" INTEGER, \"FormatItems\" TEXT NOT NULL DEFAULT '[]', \"MinFormatScore\" INTEGER NOT NULL DEFAULT 0, \"CutoffFormatScore\" INTEGER NOT NULL DEFAULT 0, \"MinUpgradeFormatScore\" INTEGER NOT NULL DEFAULT 1)",
+    "CREATE TABLE \"ReleaseProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Required\" TEXT, \"Ignored\" TEXT, \"Tags\" TEXT NOT NULL, \"Enabled\" INTEGER NOT NULL, \"IndexerId\" INTEGER NOT NULL, \"Name\" TEXT)",
+    "CREATE TABLE \"RemotePathMappings\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Host\" TEXT NOT NULL, \"RemotePath\" TEXT NOT NULL, \"LocalPath\" TEXT NOT NULL)",
+    "CREATE TABLE \"RootFolders\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Path\" TEXT NOT NULL)",
+    "CREATE TABLE \"SceneMappings\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TvdbId\" INTEGER NOT NULL, \"SeasonNumber\" INTEGER, \"SearchTerm\" TEXT NOT NULL, \"ParseTerm\" TEXT NOT NULL, \"Title\" TEXT, \"Type\" TEXT, \"SceneSeasonNumber\" INTEGER, \"FilterRegex\" TEXT, \"SceneOrigin\" TEXT, \"SearchMode\" INTEGER, \"Comment\" TEXT)",
+    "CREATE TABLE \"ScheduledTasks\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TypeName\" TEXT NOT NULL, \"Interval\" INTEGER NOT NULL, \"LastExecution\" DATETIME NOT NULL, \"LastStartTime\" DATETIME)",
+    "CREATE TABLE \"Series\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TvdbId\" INTEGER NOT NULL, \"TvRageId\" INTEGER NOT NULL, \"ImdbId\" TEXT, \"Title\" TEXT NOT NULL, \"TitleSlug\" TEXT, \"CleanTitle\" TEXT NOT NULL, \"Status\" INTEGER NOT NULL, \"Overview\" TEXT, \"AirTime\" TEXT, \"Images\" TEXT NOT NULL, \"Path\" TEXT NOT NULL, \"Monitored\" INTEGER NOT NULL, \"SeasonFolder\" INTEGER NOT NULL, \"LastInfoSync\" DATETIME, \"LastDiskSync\" DATETIME, \"Runtime\" INTEGER NOT NULL, \"SeriesType\" INTEGER NOT NULL, \"Network\" TEXT, \"UseSceneNumbering\" INTEGER NOT NULL, \"FirstAired\" DATETIME, \"NextAiring\" DATETIME, \"Year\" INTEGER, \"Seasons\" TEXT, \"Actors\" TEXT, \"Ratings\" TEXT, \"Genres\" TEXT, \"Certification\" TEXT, \"SortTitle\" TEXT, \"QualityProfileId\" INTEGER, \"Tags\" TEXT, \"Added\" DATETIME, \"AddOptions\" TEXT, \"TvMazeId\" INTEGER NOT NULL, \"OriginalLanguage\" INTEGER NOT NULL, \"LastAired\" DATETIME, \"MonitorNewItems\" INTEGER NOT NULL DEFAULT 0, \"TmdbId\" INTEGER NOT NULL DEFAULT 0, \"MalIds\" TEXT NOT NULL DEFAULT '[]', \"AniListIds\" TEXT NOT NULL DEFAULT '[]')",
+    "CREATE TABLE \"SubtitleFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SeriesId\" INTEGER NOT NULL, \"SeasonNumber\" INTEGER NOT NULL, \"EpisodeFileId\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"Extension\" TEXT NOT NULL, \"Added\" DATETIME, \"LastUpdated\" DATETIME NOT NULL, \"Language\" INTEGER NOT NULL, \"LanguageTags\" TEXT, \"Title\" TEXT, \"Copy\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"Tags\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Label\" TEXT NOT NULL)",
+    "CREATE TABLE \"Users\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Identifier\" TEXT NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"Salt\" TEXT, \"Iterations\" INTEGER)",
+    "CREATE TABLE \"VersionInfo\" (\"Version\" INTEGER NOT NULL, \"AppliedOn\" DATETIME, \"Description\" TEXT)",
+    "CREATE TABLE sqlite_sequence(name,seq)",
+    "CREATE UNIQUE INDEX \"IX_AutoTagging_Name\" ON \"AutoTagging\" (\"Name\" ASC)",
+    "CREATE INDEX \"IX_Blacklist_SeriesId\" ON \"Blocklist\" (\"SeriesId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Config_Key\" ON \"Config\" (\"Key\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_CustomFormats_Name\" ON \"CustomFormats\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_DownloadClientStatus_ProviderId\" ON \"DownloadClientStatus\" (\"ProviderId\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_DownloadId\" ON \"DownloadHistory\" (\"DownloadId\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_EventType\" ON \"DownloadHistory\" (\"EventType\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_SeriesId\" ON \"DownloadHistory\" (\"SeriesId\" ASC)",
+    "CREATE INDEX \"IX_EpisodeFiles_SeriesId\" ON \"EpisodeFiles\" (\"SeriesId\" ASC)",
+    "CREATE INDEX \"IX_Episodes_EpisodeFileId\" ON \"Episodes\" (\"EpisodeFileId\" ASC)",
+    "CREATE INDEX \"IX_Episodes_SeriesId\" ON \"Episodes\" (\"SeriesId\" ASC)",
+    "CREATE INDEX \"IX_Episodes_SeriesId_AirDate\" ON \"Episodes\" (\"SeriesId\" ASC, \"AirDate\" ASC)",
+    "CREATE INDEX \"IX_Episodes_SeriesId_SeasonNumber_EpisodeNumber\" ON \"Episodes\" (\"SeriesId\" ASC, \"SeasonNumber\" ASC, \"EpisodeNumber\" ASC)",
+    "CREATE INDEX \"IX_History_Date\" ON \"History\" (\"Date\" ASC)",
+    "CREATE INDEX \"IX_History_DownloadId_Date\" ON \"History\" (\"DownloadId\" ASC, \"Date\" DESC)",
+    "CREATE INDEX \"IX_History_EpisodeId_Date\" ON \"History\" (\"EpisodeId\" ASC, \"Date\" DESC)",
+    "CREATE INDEX \"IX_History_EventType\" ON \"History\" (\"EventType\" ASC)",
+    "CREATE INDEX \"IX_History_SeriesId\" ON \"History\" (\"SeriesId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_ImportListExclusions_TvdbId\" ON \"ImportListExclusions\" (\"TvdbId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_ImportListStatus_ProviderId\" ON \"ImportListStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_ImportLists_Name\" ON \"ImportLists\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_IndexerStatus_ProviderId\" ON \"IndexerStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Indexers_Name\" ON \"Indexers\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_NotificationStatus_ProviderId\" ON \"NotificationStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_QualityDefinitions_Quality\" ON \"QualityDefinitions\" (\"Quality\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_QualityDefinitions_Title\" ON \"QualityDefinitions\" (\"Title\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_QualityProfiles_Name\" ON \"QualityProfiles\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_RootFolders_Path\" ON \"RootFolders\" (\"Path\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_ScheduledTasks_TypeName\" ON \"ScheduledTasks\" (\"TypeName\" ASC)",
+    "CREATE INDEX \"IX_Series_CleanTitle\" ON \"Series\" (\"CleanTitle\" ASC)",
+    "CREATE INDEX \"IX_Series_Path\" ON \"Series\" (\"Path\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Series_TitleSlug\" ON \"Series\" (\"TitleSlug\" ASC)",
+    "CREATE INDEX \"IX_Series_TmdbId\" ON \"Series\" (\"TmdbId\" ASC)",
+    "CREATE INDEX \"IX_Series_TvMazeId\" ON \"Series\" (\"TvMazeId\" ASC)",
+    "CREATE INDEX \"IX_Series_TvRageId\" ON \"Series\" (\"TvRageId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Series_TvdbId\" ON \"Series\" (\"TvdbId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Tags_Label\" ON \"Tags\" (\"Label\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Users_Identifier\" ON \"Users\" (\"Identifier\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Users_Username\" ON \"Users\" (\"Username\" ASC)",
+    "CREATE UNIQUE INDEX \"UC_Version\" ON \"VersionInfo\" (\"Version\" ASC)"
+  ],
+  "version": [
+    {
+      "Version": 1,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "InitialSetup"
+    },
+    {
+      "Version": 2,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "remove_tvrage_imdb_unique_constraint"
+    },
+    {
+      "Version": 3,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "remove_renamed_scene_mapping_columns"
+    },
+    {
+      "Version": 4,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "updated_history"
+    },
+    {
+      "Version": 5,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "added_eventtype_to_history"
+    },
+    {
+      "Version": 6,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "add_index_to_log_time"
+    },
+    {
+      "Version": 7,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "add_renameEpisodes_to_naming"
+    },
+    {
+      "Version": 8,
+      "AppliedOn": "2025-09-10T20:07:02",
+      "Description": "remove_backlog"
+    },
+    {
+      "Version": 9,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "fix_rename_episodes"
+    },
+    {
+      "Version": 10,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "add_monitored"
+    },
+    {
+      "Version": 11,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "remove_ignored"
+    },
+    {
+      "Version": 12,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "remove_custom_start_date"
+    },
+    {
+      "Version": 13,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "add_air_date_utc"
+    },
+    {
+      "Version": 14,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "drop_air_date"
+    },
+    {
+      "Version": 15,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "add_air_date_as_string"
+    },
+    {
+      "Version": 16,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "updated_imported_history_item"
+    },
+    {
+      "Version": 17,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "reset_scene_names"
+    },
+    {
+      "Version": 18,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "remove_duplicates"
+    },
+    {
+      "Version": 19,
+      "AppliedOn": "2025-09-10T20:07:03",
+      "Description": "restore_unique_constraints"
+    },
+    {
+      "Version": 20,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "add_year_and_seasons_to_series"
+    },
+    {
+      "Version": 21,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "drop_seasons_table"
+    },
+    {
+      "Version": 22,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "move_indexer_to_generic_provider"
+    },
+    {
+      "Version": 23,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "add_config_contract_to_indexers"
+    },
+    {
+      "Version": 24,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "drop_tvdb_episodeid"
+    },
+    {
+      "Version": 25,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "move_notification_to_generic_provider"
+    },
+    {
+      "Version": 26,
+      "AppliedOn": "2025-09-10T20:07:04",
+      "Description": "add_config_contract_to_notifications"
+    },
+    {
+      "Version": 27,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "fix_omgwtfnzbs"
+    },
+    {
+      "Version": 28,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "add_blacklist_table"
+    },
+    {
+      "Version": 29,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "add_formats_to_naming_config"
+    },
+    {
+      "Version": 30,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "add_season_folder_format_to_naming_config"
+    },
+    {
+      "Version": 31,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "delete_old_naming_config_columns"
+    },
+    {
+      "Version": 32,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "set_default_release_group"
+    },
+    {
+      "Version": 33,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "add_api_key_to_pushover"
+    },
+    {
+      "Version": 34,
+      "AppliedOn": "2025-09-10T20:07:05",
+      "Description": "remove_series_contraints"
+    },
+    {
+      "Version": 35,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "add_series_folder_format_to_naming_config"
+    },
+    {
+      "Version": 36,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "update_with_quality_converters"
+    },
+    {
+      "Version": 37,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "add_configurable_qualities"
+    },
+    {
+      "Version": 38,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "add_on_upgrade_to_notifications"
+    },
+    {
+      "Version": 39,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "add_metadata_tables"
+    },
+    {
+      "Version": 40,
+      "AppliedOn": "2025-09-10T20:07:06",
+      "Description": "add_metadata_to_episodes_and_series"
+    },
+    {
+      "Version": 41,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "fix_xbmc_season_images_metadata"
+    },
+    {
+      "Version": 42,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "add_download_clients_table"
+    },
+    {
+      "Version": 43,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "convert_config_to_download_clients"
+    },
+    {
+      "Version": 44,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "fix_xbmc_episode_metadata"
+    },
+    {
+      "Version": 45,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "add_indexes"
+    },
+    {
+      "Version": 46,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "fix_nzb_su_url"
+    },
+    {
+      "Version": 47,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "add_temporary_blacklist_columns"
+    },
+    {
+      "Version": 48,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "add_title_to_scenemappings"
+    },
+    {
+      "Version": 49,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "fix_dognzb_url"
+    },
+    {
+      "Version": 50,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "add_hash_to_metadata_files"
+    },
+    {
+      "Version": 51,
+      "AppliedOn": "2025-09-10T20:07:07",
+      "Description": "download_client_import"
+    },
+    {
+      "Version": 52,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "add_columns_for_anime"
+    },
+    {
+      "Version": 53,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "add_series_sorttitle"
+    },
+    {
+      "Version": 54,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "rename_profiles"
+    },
+    {
+      "Version": 55,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "drop_old_profile_columns"
+    },
+    {
+      "Version": 56,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "add_mediainfo_to_episodefile"
+    },
+    {
+      "Version": 57,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "convert_episode_file_path_to_relative"
+    },
+    {
+      "Version": 58,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "drop_episode_file_path"
+    },
+    {
+      "Version": 59,
+      "AppliedOn": "2025-09-10T20:07:08",
+      "Description": "add_enable_options_to_indexers"
+    },
+    {
+      "Version": 60,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "remove_enable_from_indexers"
+    },
+    {
+      "Version": 61,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "clear_bad_scene_names"
+    },
+    {
+      "Version": 62,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "convert_quality_models"
+    },
+    {
+      "Version": 63,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "add_remotepathmappings"
+    },
+    {
+      "Version": 64,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "remove_method_from_logs"
+    },
+    {
+      "Version": 65,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "make_scene_numbering_nullable"
+    },
+    {
+      "Version": 66,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "add_tags"
+    },
+    {
+      "Version": 67,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "add_added_to_series"
+    },
+    {
+      "Version": 68,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "add_release_restrictions"
+    },
+    {
+      "Version": 69,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "quality_proper"
+    },
+    {
+      "Version": 70,
+      "AppliedOn": "2025-09-10T20:07:09",
+      "Description": "delay_profile"
+    },
+    {
+      "Version": 71,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "unknown_quality_in_profile"
+    },
+    {
+      "Version": 72,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "history_downloadId"
+    },
+    {
+      "Version": 73,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "clear_ratings"
+    },
+    {
+      "Version": 74,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "disable_eztv"
+    },
+    {
+      "Version": 75,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "force_lib_update"
+    },
+    {
+      "Version": 76,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "add_users_table"
+    },
+    {
+      "Version": 77,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "add_add_options_to_series"
+    },
+    {
+      "Version": 78,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "add_commands_table"
+    },
+    {
+      "Version": 79,
+      "AppliedOn": "2025-09-10T20:07:10",
+      "Description": "dedupe_tags"
+    },
+    {
+      "Version": 81,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "move_dot_prefix_to_transmission_category"
+    },
+    {
+      "Version": 82,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "add_fanzub_settings"
+    },
+    {
+      "Version": 83,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "additonal_blacklist_columns"
+    },
+    {
+      "Version": 84,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "update_quality_minmax_size"
+    },
+    {
+      "Version": 85,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "expand_transmission_urlbase"
+    },
+    {
+      "Version": 86,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "pushbullet_device_ids"
+    },
+    {
+      "Version": 87,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "remove_eztv"
+    },
+    {
+      "Version": 88,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "pushbullet_devices_channels_list"
+    },
+    {
+      "Version": 89,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "add_on_rename_to_notifcations"
+    },
+    {
+      "Version": 90,
+      "AppliedOn": "2025-09-10T20:07:11",
+      "Description": "update_kickass_url"
+    },
+    {
+      "Version": 91,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "added_indexerstatus"
+    },
+    {
+      "Version": 92,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "add_unverifiedscenenumbering"
+    },
+    {
+      "Version": 93,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "naming_config_replace_illegal_characters"
+    },
+    {
+      "Version": 94,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "add_tvmazeid"
+    },
+    {
+      "Version": 95,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "add_additional_episodes_index"
+    },
+    {
+      "Version": 96,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "disable_kickass"
+    },
+    {
+      "Version": 97,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "add_reason_to_pending_releases"
+    },
+    {
+      "Version": 98,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "remove_titans_of_tv"
+    },
+    {
+      "Version": 99,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "extra_and_subtitle_files"
+    },
+    {
+      "Version": 100,
+      "AppliedOn": "2025-09-10T20:07:12",
+      "Description": "add_scene_season_number"
+    },
+    {
+      "Version": 101,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "add_ultrahd_quality_in_profiles"
+    },
+    {
+      "Version": 102,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "add_language_to_episodeFiles_history_and_blacklist"
+    },
+    {
+      "Version": 103,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "fix_metadata_file_extensions"
+    },
+    {
+      "Version": 104,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "remove_kickass"
+    },
+    {
+      "Version": 105,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "rename_torrent_downloadstation"
+    },
+    {
+      "Version": 106,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "update_btn_url"
+    },
+    {
+      "Version": 107,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "remove_wombles"
+    },
+    {
+      "Version": 108,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "fix_extra_file_extension"
+    },
+    {
+      "Version": 109,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "import_extra_files"
+    },
+    {
+      "Version": 110,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "fix_extra_files_config"
+    },
+    {
+      "Version": 111,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "create_language_profiles"
+    },
+    {
+      "Version": 112,
+      "AppliedOn": "2025-09-10T20:07:13",
+      "Description": "added_regex_to_scenemapping"
+    },
+    {
+      "Version": 113,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "consolidate_indexer_baseurl"
+    },
+    {
+      "Version": 114,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "rename_indexer_status_id"
+    },
+    {
+      "Version": 115,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "add_downloadclient_status"
+    },
+    {
+      "Version": 116,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "disable_nyaa"
+    },
+    {
+      "Version": 117,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "add_webrip_and_br480_qualites_in_profile"
+    },
+    {
+      "Version": 118,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "add_history_eventType_index"
+    },
+    {
+      "Version": 119,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "separate_automatic_and_interactive_searches"
+    },
+    {
+      "Version": 120,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "update_series_episodes_history_indexes"
+    },
+    {
+      "Version": 121,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "update_animetosho_url"
+    },
+    {
+      "Version": 122,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "add_remux_qualities_in_profile"
+    },
+    {
+      "Version": 123,
+      "AppliedOn": "2025-09-10T20:07:14",
+      "Description": "add_history_seriesId_index"
+    },
+    {
+      "Version": 124,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "remove_media_browser_metadata"
+    },
+    {
+      "Version": 125,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "remove_notify_my_android_and_pushalot_notifications"
+    },
+    {
+      "Version": 126,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "add_custom_filters"
+    },
+    {
+      "Version": 127,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "rename_restrictions_to_release_profiles"
+    },
+    {
+      "Version": 128,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "rename_quality_profiles_add_upgrade_allowed"
+    },
+    {
+      "Version": 129,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "add_relative_original_path_to_episode_file"
+    },
+    {
+      "Version": 130,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "episode_last_searched_time"
+    },
+    {
+      "Version": 131,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "download_propers_config"
+    },
+    {
+      "Version": 132,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "add_download_client_priority"
+    },
+    {
+      "Version": 134,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "add_specials_folder_format"
+    },
+    {
+      "Version": 135,
+      "AppliedOn": "2025-09-10T20:07:15",
+      "Description": "health_issue_notification"
+    },
+    {
+      "Version": 136,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "add_indexer_and_enabled_to_release_profiles"
+    },
+    {
+      "Version": 137,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "add_airedbefore_to_episodes"
+    },
+    {
+      "Version": 138,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "remove_bitmetv"
+    },
+    {
+      "Version": 139,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "add_download_history"
+    },
+    {
+      "Version": 140,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "remove_chown_and_folderchmod_config_v2"
+    },
+    {
+      "Version": 141,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "add_update_history"
+    },
+    {
+      "Version": 142,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "import_lists"
+    },
+    {
+      "Version": 143,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "add_priority_to_indexers"
+    },
+    {
+      "Version": 144,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "import_lists_series_type_and_season_folder"
+    },
+    {
+      "Version": 145,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "remove_growl"
+    },
+    {
+      "Version": 146,
+      "AppliedOn": "2025-09-10T20:07:16",
+      "Description": "cleanup_duplicates_updatehistory"
+    },
+    {
+      "Version": 147,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "swap_filechmod_for_folderchmod"
+    },
+    {
+      "Version": 148,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "mediainfo_channels"
+    },
+    {
+      "Version": 149,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_on_delete_to_notifications"
+    },
+    {
+      "Version": 150,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_scene_mapping_origin"
+    },
+    {
+      "Version": 151,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "remove_custom_filter_type"
+    },
+    {
+      "Version": 152,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "update_btn_url_to_https"
+    },
+    {
+      "Version": 153,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_on_episodefiledelete_for_upgrade"
+    },
+    {
+      "Version": 154,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_name_release_profile"
+    },
+    {
+      "Version": 155,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_arabic_and_hindi_languages"
+    },
+    {
+      "Version": 156,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "add_bypass_to_delay_profile"
+    },
+    {
+      "Version": 157,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "email_multiple_addresses"
+    },
+    {
+      "Version": 158,
+      "AppliedOn": "2025-09-10T20:07:17",
+      "Description": "cdh_per_downloadclient"
+    },
+    {
+      "Version": 159,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_indexer_tags"
+    },
+    {
+      "Version": 160,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "rename_blacklist_to_blocklist"
+    },
+    {
+      "Version": 161,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "remove_plex_hometheatre"
+    },
+    {
+      "Version": 162,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "release_profile_to_array"
+    },
+    {
+      "Version": 163,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "mediainfo_to_ffmpeg"
+    },
+    {
+      "Version": 164,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "download_client_per_indexer"
+    },
+    {
+      "Version": 165,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_on_update_to_notifications"
+    },
+    {
+      "Version": 166,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "update_series_sort_title"
+    },
+    {
+      "Version": 167,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_tvdbid_to_episode"
+    },
+    {
+      "Version": 168,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_additional_info_to_pending_releases"
+    },
+    {
+      "Version": 169,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_malayalam_and_ukrainian_languages"
+    },
+    {
+      "Version": 170,
+      "AppliedOn": "2025-09-10T20:07:18",
+      "Description": "add_language_tags_to_subtitle_files"
+    },
+    {
+      "Version": 171,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "add_custom_formats"
+    },
+    {
+      "Version": 172,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "add_SeasonSearchMaximumSingleEpisodeAge_to_indexers"
+    },
+    {
+      "Version": 173,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "remove_omg"
+    },
+    {
+      "Version": 174,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "add_salt_to_users"
+    },
+    {
+      "Version": 175,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "language_profiles_to_custom_formats"
+    },
+    {
+      "Version": 176,
+      "AppliedOn": "2025-09-10T20:07:19",
+      "Description": "original_language"
+    },
+    {
+      "Version": 177,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_on_manual_interaction_required_to_notifications"
+    },
+    {
+      "Version": 178,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "list_sync_time"
+    },
+    {
+      "Version": 179,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_auto_tagging"
+    },
+    {
+      "Version": 180,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "task_duration"
+    },
+    {
+      "Version": 181,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "quality_definition_preferred_size"
+    },
+    {
+      "Version": 182,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_custom_format_score_bypass_to_delay_profile"
+    },
+    {
+      "Version": 183,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "update_images_remote_url"
+    },
+    {
+      "Version": 184,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "remove_invalid_roksbox_metadata_images"
+    },
+    {
+      "Version": 185,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_episode_runtime"
+    },
+    {
+      "Version": 186,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_result_to_commands"
+    },
+    {
+      "Version": 187,
+      "AppliedOn": "2025-09-10T20:07:20",
+      "Description": "add_on_series_add_to_notifications"
+    },
+    {
+      "Version": 188,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "postgres_update_timestamp_columns_to_with_timezone"
+    },
+    {
+      "Version": 189,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "add_colon_replacement_to_naming_config"
+    },
+    {
+      "Version": 190,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "health_restored_notification"
+    },
+    {
+      "Version": 191,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "add_download_client_tags"
+    },
+    {
+      "Version": 192,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "import_exclusion_type"
+    },
+    {
+      "Version": 193,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "add_import_list_items"
+    },
+    {
+      "Version": 194,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "add_notification_status"
+    },
+    {
+      "Version": 195,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "parse_language_tags_from_existing_subtitle_files"
+    },
+    {
+      "Version": 196,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "add_finale_type"
+    },
+    {
+      "Version": 197,
+      "AppliedOn": "2025-09-10T20:07:23",
+      "Description": "list_add_missing_search"
+    },
+    {
+      "Version": 198,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "parse_title_from_existing_subtitle_files"
+    },
+    {
+      "Version": 199,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "series_last_aired"
+    },
+    {
+      "Version": 200,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "AddNewItemMonitorType"
+    },
+    {
+      "Version": 201,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "email_encryption"
+    },
+    {
+      "Version": 202,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "add_indexer_flags"
+    },
+    {
+      "Version": 203,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "release_type"
+    },
+    {
+      "Version": 204,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "add_add_release_hash"
+    },
+    {
+      "Version": 205,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "rename_season_pack_spec"
+    },
+    {
+      "Version": 206,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "add_tmdbid"
+    },
+    {
+      "Version": 209,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "add_on_import_complete_to_notifications"
+    },
+    {
+      "Version": 210,
+      "AppliedOn": "2025-09-10T20:07:24",
+      "Description": "add_monitored_seasons_filter"
+    },
+    {
+      "Version": 211,
+      "AppliedOn": "2025-09-10T20:07:25",
+      "Description": "add_custom_colon_replacement_to_naming_config"
+    },
+    {
+      "Version": 212,
+      "AppliedOn": "2025-09-10T20:07:25",
+      "Description": "add_minium_upgrade_format_score_to_quality_profiles"
+    },
+    {
+      "Version": 214,
+      "AppliedOn": "2025-09-10T20:07:25",
+      "Description": "add_blurary576p_quality_in_profiles"
+    },
+    {
+      "Version": 215,
+      "AppliedOn": "2025-09-10T20:07:25",
+      "Description": "add_blurary576p_quality_in_profiles_with_grouped_blurary480p"
+    },
+    {
+      "Version": 217,
+      "AppliedOn": "2025-09-10T20:07:25",
+      "Description": "add_mal_and_anilist_ids"
+    }
+  ],
+  "tables": {
+    "Config": [
+      {
+        "Id": 1,
+        "Key": "enablecompleteddownloadhandling",
+        "Value": "True"
+      },
+      {
+        "Id": 2,
+        "Key": "plexclientidentifier",
+        "Value": {
+          "$secret": "Config/2/Value"
+        }
+      },
+      {
+        "Id": 3,
+        "Key": "rijndaelpassphrase",
+        "Value": {
+          "$secret": "Config/3/Value"
+        }
+      },
+      {
+        "Id": 4,
+        "Key": "hmacpassphrase",
+        "Value": {
+          "$secret": "Config/4/Value"
+        }
+      },
+      {
+        "Id": 5,
+        "Key": "rijndaelsalt",
+        "Value": {
+          "$secret": "Config/5/Value"
+        }
+      },
+      {
+        "Id": 6,
+        "Key": "hmacsalt",
+        "Value": {
+          "$secret": "Config/6/Value"
+        }
+      },
+      {
+        "Id": 7,
+        "Key": "cleanupmetadataimages",
+        "Value": "False"
+      }
+    ],
+    "RootFolders": [
+      {
+        "Id": 7,
+        "Path": "/data/media/tv/"
+      }
+    ],
+    "NamingConfig": [
+      {
+        "Id": 1,
+        "MultiEpisodeStyle": 5,
+        "RenameEpisodes": 1,
+        "StandardEpisodeFormat": "{Series Title} - S{season:00}E{episode:00} - {Episode Title} {Quality Title}",
+        "DailyEpisodeFormat": "{Series Title} - {Air-Date} - {Episode Title} {Quality Full}",
+        "SeasonFolderFormat": "Season {season}",
+        "SeriesFolderFormat": "{Series Title}",
+        "AnimeEpisodeFormat": "{Series Title} - S{season:00}E{episode:00} - {Episode Title} {Quality Full}",
+        "ReplaceIllegalCharacters": 1,
+        "SpecialsFolderFormat": "Specials",
+        "ColonReplacementFormat": 4,
+        "CustomColonReplacementFormat": ""
+      }
+    ],
+    "Metadata": [
+      {
+        "Id": 1,
+        "Enable": 0,
+        "Name": "Kodi (XBMC) / Emby",
+        "Implementation": "XbmcMetadata",
+        "Settings": {
+          "$secret": "Metadata/1/Settings"
+        },
+        "ConfigContract": "XbmcMetadataSettings"
+      },
+      {
+        "Id": 2,
+        "Enable": 0,
+        "Name": "WDTV",
+        "Implementation": "WdtvMetadata",
+        "Settings": {
+          "$secret": "Metadata/2/Settings"
+        },
+        "ConfigContract": "WdtvMetadataSettings"
+      },
+      {
+        "Id": 3,
+        "Enable": 0,
+        "Name": "Roksbox",
+        "Implementation": "RoksboxMetadata",
+        "Settings": {
+          "$secret": "Metadata/3/Settings"
+        },
+        "ConfigContract": "RoksboxMetadataSettings"
+      },
+      {
+        "Id": 4,
+        "Enable": 0,
+        "Name": "Plex",
+        "Implementation": "PlexMetadata",
+        "Settings": {
+          "$secret": "Metadata/4/Settings"
+        },
+        "ConfigContract": "PlexMetadataSettings"
+      },
+      {
+        "Id": 5,
+        "Enable": 0,
+        "Name": "Kometa",
+        "Implementation": "KometaMetadata",
+        "Settings": {
+          "$secret": "Metadata/5/Settings"
+        },
+        "ConfigContract": "KometaMetadataSettings"
+      }
+    ],
+    "DownloadClients": [
+      {
+        "Id": 1,
+        "Enable": 1,
+        "Name": "qBittorrent",
+        "Implementation": "QBittorrent",
+        "Settings": {
+          "$secret": "DownloadClients/1/Settings"
+        },
+        "ConfigContract": "QBittorrentSettings",
+        "Priority": 1,
+        "RemoveCompletedDownloads": 1,
+        "RemoveFailedDownloads": 1,
+        "Tags": "[]"
+      }
+    ],
+    "RemotePathMappings": [],
+    "DelayProfiles": [
+      {
+        "Id": 1,
+        "EnableUsenet": 1,
+        "EnableTorrent": 1,
+        "PreferredProtocol": 1,
+        "UsenetDelay": 0,
+        "TorrentDelay": 0,
+        "Order": 2147483647,
+        "Tags": "[]",
+        "BypassIfHighestQuality": 1,
+        "BypassIfAboveCustomFormatScore": 0,
+        "MinimumCustomFormatScore": null
+      }
+    ],
+    "Users": [
+      {
+        "Id": 1,
+        "Identifier": {
+          "$secret": "Users/1/Identifier"
+        },
+        "Username": {
+          "$secret": "Users/1/Username"
+        },
+        "Password": {
+          "$secret": "Users/1/Password"
+        },
+        "Salt": {
+          "$secret": "Users/1/Salt"
+        },
+        "Iterations": {
+          "$secret": "Users/1/Iterations"
+        }
+      }
+    ],
+    "Tags": [
+      {
+        "Id": 1,
+        "Label": "pulsarr-jas341"
+      },
+      {
+        "Id": 2,
+        "Label": "pulsarr-paivi-man"
+      },
+      {
+        "Id": 3,
+        "Label": "pulsarr-neil-gallagher"
+      }
+    ],
+    "QualityDefinitions": [
+      {
+        "Id": 1,
+        "Quality": 0,
+        "Title": "Unknown",
+        "MinSize": 1,
+        "MaxSize": 199.9,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 2,
+        "Quality": 1,
+        "Title": "SDTV",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 3,
+        "Quality": 12,
+        "Title": "WEBRip-480p",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 4,
+        "Quality": 8,
+        "Title": "WEBDL-480p",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 5,
+        "Quality": 2,
+        "Title": "DVD",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 6,
+        "Quality": 13,
+        "Title": "Bluray-480p",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 7,
+        "Quality": 22,
+        "Title": "Bluray-576p",
+        "MinSize": 2,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 8,
+        "Quality": 4,
+        "Title": "HDTV-720p",
+        "MinSize": 3,
+        "MaxSize": 125,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 9,
+        "Quality": 9,
+        "Title": "HDTV-1080p",
+        "MinSize": 4,
+        "MaxSize": 125,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 10,
+        "Quality": 10,
+        "Title": "Raw-HD",
+        "MinSize": 4,
+        "MaxSize": null,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 11,
+        "Quality": 14,
+        "Title": "WEBRip-720p",
+        "MinSize": 3,
+        "MaxSize": 130,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 12,
+        "Quality": 5,
+        "Title": "WEBDL-720p",
+        "MinSize": 3,
+        "MaxSize": 130,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 13,
+        "Quality": 6,
+        "Title": "Bluray-720p",
+        "MinSize": 4,
+        "MaxSize": 130,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 14,
+        "Quality": 15,
+        "Title": "WEBRip-1080p",
+        "MinSize": 4,
+        "MaxSize": 130,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 15,
+        "Quality": 3,
+        "Title": "WEBDL-1080p",
+        "MinSize": 4,
+        "MaxSize": 130,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 16,
+        "Quality": 7,
+        "Title": "Bluray-1080p",
+        "MinSize": 4,
+        "MaxSize": 155,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 17,
+        "Quality": 20,
+        "Title": "Bluray-1080p Remux",
+        "MinSize": 35,
+        "MaxSize": null,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 18,
+        "Quality": 16,
+        "Title": "HDTV-2160p",
+        "MinSize": 35,
+        "MaxSize": 199.9,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 19,
+        "Quality": 17,
+        "Title": "WEBRip-2160p",
+        "MinSize": 35,
+        "MaxSize": null,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 20,
+        "Quality": 18,
+        "Title": "WEBDL-2160p",
+        "MinSize": 35,
+        "MaxSize": null,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 21,
+        "Quality": 19,
+        "Title": "Bluray-2160p",
+        "MinSize": 35,
+        "MaxSize": null,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 22,
+        "Quality": 21,
+        "Title": "Bluray-2160p Remux",
+        "MinSize": 35,
+        "MaxSize": null,
+        "PreferredSize": 95
+      }
+    ],
+    "Notifications": [
+      {
+        "Id": 4,
+        "Name": "Plex Media Server",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/4/Settings"
+        },
+        "Implementation": "PlexServer",
+        "ConfigContract": "PlexServerSettings",
+        "OnUpgrade": 1,
+        "Tags": "[]",
+        "OnRename": 1,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnSeriesDelete": 1,
+        "OnEpisodeFileDelete": 1,
+        "OnEpisodeFileDeleteForUpgrade": 1,
+        "OnApplicationUpdate": 0,
+        "OnManualInteractionRequired": 0,
+        "OnSeriesAdd": 0,
+        "OnHealthRestored": 0,
+        "OnImportComplete": 0
+      },
+      {
+        "Id": 8,
+        "Name": "Pulsarr (127.0.0.1:3003)",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/8/Settings"
+        },
+        "Implementation": "Webhook",
+        "ConfigContract": "WebhookSettings",
+        "OnUpgrade": 0,
+        "Tags": "[]",
+        "OnRename": 0,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnSeriesDelete": 0,
+        "OnEpisodeFileDelete": 0,
+        "OnEpisodeFileDeleteForUpgrade": 0,
+        "OnApplicationUpdate": 0,
+        "OnManualInteractionRequired": 0,
+        "OnSeriesAdd": 0,
+        "OnHealthRestored": 0,
+        "OnImportComplete": 0
+      },
+      {
+        "Id": 9,
+        "Name": "Plex Preview",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/9/Settings"
+        },
+        "Implementation": "Webhook",
+        "ConfigContract": "WebhookSettings",
+        "OnUpgrade": 1,
+        "Tags": "[]",
+        "OnRename": 0,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnSeriesDelete": 0,
+        "OnEpisodeFileDelete": 0,
+        "OnEpisodeFileDeleteForUpgrade": 1,
+        "OnApplicationUpdate": 0,
+        "OnManualInteractionRequired": 0,
+        "OnSeriesAdd": 0,
+        "OnHealthRestored": 0,
+        "OnImportComplete": 0
+      }
+    ],
+    "QualityProfiles": [
+      {
+        "Id": 1,
+        "Name": "Any",
+        "Cutoff": 1,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "UpgradeAllowed": 0,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 2,
+        "Name": "SD",
+        "Cutoff": 1,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "UpgradeAllowed": 0,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 3,
+        "Name": "HD-720p",
+        "Cutoff": 4,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "UpgradeAllowed": 0,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 4,
+        "Name": "HD-1080p",
+        "Cutoff": 7,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "UpgradeAllowed": 1,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 5,
+        "Name": "Ultra-HD",
+        "Cutoff": 21,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": true\n  }\n]",
+        "UpgradeAllowed": 1,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 6,
+        "Name": "HD - 720p/1080p",
+        "Cutoff": 20,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "UpgradeAllowed": 1,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 7,
+        "Name": "HD Upgrade to 4k",
+        "Cutoff": 21,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 13,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": true\n  }\n]",
+        "UpgradeAllowed": 1,
+        "FormatItems": "[]",
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      }
+    ],
+    "Indexers": [
+      {
+        "Id": 1,
+        "Name": "1337x",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/1/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      },
+      {
+        "Id": 2,
+        "Name": "TheRARBG",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/2/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      },
+      {
+        "Id": 3,
+        "Name": "kickasstorrents.to",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/3/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      },
+      {
+        "Id": 4,
+        "Name": "The Pirate Bay",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/4/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      },
+      {
+        "Id": 5,
+        "Name": "LimeTorrents",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/5/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      },
+      {
+        "Id": 6,
+        "Name": "EZTV",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/6/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0,
+        "SeasonSearchMaximumSingleEpisodeAge": 0
+      }
+    ],
+    "CustomFilters": [
+      {
+        "Id": 1,
+        "Type": "queue",
+        "Label": "series",
+        "Filters": "[\n  {\n    \"key\": \"seriesIds\",\n    \"value\": [\n      65\n    ],\n    \"type\": \"equal\"\n  }\n]"
+      }
+    ],
+    "CustomFormats": [],
+    "ReleaseProfiles": [],
+    "ImportLists": [],
+    "AutoTagging": [],
+    "ImportListExclusions": []
+  },
+  "xml": {
+    "BindAddress": "*",
+    "Port": "8989",
+    "SslPort": "9898",
+    "EnableSsl": "False",
+    "LaunchBrowser": "True",
+    "ApiKey": {
+      "$secret": "xml/ApiKey"
+    },
+    "AuthenticationMethod": "Forms",
+    "AuthenticationRequired": "DisabledForLocalAddresses",
+    "Branch": "main",
+    "LogLevel": "info",
+    "SslCertPath": null,
+    "SslCertPassword": {
+      "$secret": "xml/SslCertPassword"
+    },
+    "UrlBase": null,
+    "InstanceName": "Sonarr",
+    "UpdateMechanism": "BuiltIn"
+  }
+}
