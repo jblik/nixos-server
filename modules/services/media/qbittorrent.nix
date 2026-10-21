@@ -137,7 +137,7 @@ in
     systemd.timers.qbittorrent-seeding-schedule = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "*-*-* *:*:00";
+        OnCalendar = "*-*-* *:0/5:00";
         AccuracySec = "1s";
       };
     };

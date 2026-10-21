@@ -34,7 +34,7 @@ in
     media.enable = true;
     media.qbittorrent.seedingSchedule = {
       start = "01:30";
-      end = "05:00";
+      end = "05:50";
     };
     forgejo.enable = true;
     immich.enable = true;
