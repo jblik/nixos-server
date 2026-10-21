@@ -85,4 +85,4 @@ if __name__ == "__main__":
     parser.add_argument("mode", choices=["public", "secrets"])
     args = parser.parse_args()
     snapshot, secrets = export(pathlib.Path("/var/lib/cleanuparr"))
-    print(json.dumps(snapshot if args.mode == "public" else secrets, indent=2))
+    print(json.dumps(snapshot if args.mode == "public" else {"settings": json.dumps(secrets)}, indent=2))

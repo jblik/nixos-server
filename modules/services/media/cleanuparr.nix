@@ -4,27 +4,12 @@
   pkgs,
   ...
 }:
-let
-  settings = builtins.fromJSON (builtins.readFile ./cleanuparr-settings.json);
-  secretNames = lib.concatMap (
-    table:
-    lib.concatMap (
-      row:
-      map (value: value.__sops) (
-        lib.filter (value: builtins.isAttrs value && value ? __sops) (lib.attrValues row)
-      )
-    ) table.rows
-  ) (lib.attrValues settings.tables);
-in
 {
   config = lib.mkIf config.host.media.enable {
-    sops.secrets = lib.genAttrs secretNames (_: {
+    sops.secrets.cleanuparr-settings = {
       sopsFile = ../../../secrets/media-cleanuparr.yaml;
+      key = "settings";
       restartUnits = [ "podman-cleanuparr.service" ];
-    });
-    sops.templates.cleanuparr-settings = {
-      content = builtins.toJSON (lib.genAttrs secretNames (name: config.sops.placeholder.${name}));
-      mode = "0400";
     };
 
     virtualisation.oci-containers.containers.cleanuparr = {
@@ -57,7 +42,7 @@ in
       preStart = ''
         umask 0077
         ${pkgs.python3}/bin/python3 ${./settings/sqlite-settings.py} \
-          ${./cleanuparr-settings.json} ${config.sops.templates.cleanuparr-settings.path} \
+          ${./cleanuparr-settings.json} ${config.sops.secrets.cleanuparr-settings.path} \
           /var/lib/cleanuparr/cleanuparr.db
         chown 99:100 /var/lib/cleanuparr/cleanuparr.db
         chmod 0600 /var/lib/cleanuparr/cleanuparr.db
