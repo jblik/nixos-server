@@ -1,0 +1,1507 @@
+{
+  "schema": [
+    "CREATE TABLE \"AlternativeTitles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Title\" TEXT NOT NULL, \"CleanTitle\" TEXT NOT NULL, \"SourceType\" INTEGER NOT NULL, \"MovieMetadataId\" INTEGER NOT NULL)",
+    "CREATE TABLE \"AutoTagging\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Specifications\" TEXT NOT NULL DEFAULT '[]', \"RemoveTagsAutomatically\" INTEGER NOT NULL DEFAULT 0, \"Tags\" TEXT NOT NULL DEFAULT '[]')",
+    "CREATE TABLE \"Blocklist\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SourceTitle\" TEXT NOT NULL, \"Quality\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"PublishedDate\" DATETIME, \"Size\" INTEGER, \"Protocol\" INTEGER, \"Indexer\" TEXT, \"Message\" TEXT, \"TorrentInfoHash\" TEXT, \"MovieId\" INTEGER, \"Languages\" TEXT NOT NULL, \"IndexerFlags\" INTEGER NOT NULL)",
+    "CREATE TABLE \"Collections\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TmdbId\" INTEGER NOT NULL, \"QualityProfileId\" INTEGER NOT NULL, \"RootFolderPath\" TEXT NOT NULL, \"MinimumAvailability\" INTEGER NOT NULL, \"SearchOnAdd\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL, \"SortTitle\" TEXT, \"CleanTitle\" TEXT NOT NULL, \"Overview\" TEXT, \"Images\" TEXT NOT NULL, \"Monitored\" INTEGER NOT NULL, \"LastInfoSync\" DATETIME, \"Added\" DATETIME, \"Tags\" TEXT)",
+    "CREATE TABLE \"Commands\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Body\" TEXT NOT NULL, \"Priority\" INTEGER NOT NULL, \"Status\" INTEGER NOT NULL, \"QueuedAt\" DATETIME NOT NULL, \"StartedAt\" DATETIME, \"EndedAt\" DATETIME, \"Duration\" TEXT, \"Exception\" TEXT, \"Trigger\" INTEGER NOT NULL, \"Result\" INTEGER NOT NULL DEFAULT 1)",
+    "CREATE TABLE \"Config\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Key\" TEXT NOT NULL, \"Value\" TEXT NOT NULL)",
+    "CREATE TABLE \"Credits\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"CreditTmdbId\" TEXT NOT NULL, \"PersonTmdbId\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Images\" TEXT NOT NULL, \"Character\" TEXT, \"Order\" INTEGER NOT NULL, \"Job\" TEXT, \"Department\" TEXT, \"Type\" INTEGER NOT NULL, \"MovieMetadataId\" INTEGER NOT NULL)",
+    "CREATE TABLE \"CustomFilters\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Type\" TEXT NOT NULL, \"Label\" TEXT NOT NULL, \"Filters\" TEXT NOT NULL)",
+    "CREATE TABLE \"CustomFormats\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Specifications\" TEXT NOT NULL, \"IncludeCustomFormatWhenRenaming\" INTEGER NOT NULL)",
+    "CREATE TABLE \"DelayProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"EnableUsenet\" INTEGER NOT NULL, \"EnableTorrent\" INTEGER NOT NULL, \"PreferredProtocol\" INTEGER NOT NULL, \"UsenetDelay\" INTEGER NOT NULL, \"TorrentDelay\" INTEGER NOT NULL, \"Order\" INTEGER NOT NULL, \"Tags\" TEXT NOT NULL, \"BypassIfHighestQuality\" INTEGER NOT NULL DEFAULT 0, \"BypassIfAboveCustomFormatScore\" INTEGER NOT NULL DEFAULT 0, \"MinimumCustomFormatScore\" INTEGER)",
+    "CREATE TABLE \"DownloadClientStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME)",
+    "CREATE TABLE \"DownloadClients\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Enable\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT NOT NULL, \"ConfigContract\" TEXT NOT NULL, \"Priority\" INTEGER NOT NULL DEFAULT 1, \"RemoveCompletedDownloads\" INTEGER NOT NULL DEFAULT 1, \"RemoveFailedDownloads\" INTEGER NOT NULL DEFAULT 1, \"Tags\" TEXT)",
+    "CREATE TABLE \"DownloadHistory\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"EventType\" INTEGER NOT NULL, \"MovieId\" INTEGER NOT NULL, \"DownloadId\" TEXT NOT NULL, \"SourceTitle\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"Protocol\" INTEGER, \"IndexerId\" INTEGER, \"DownloadClientId\" INTEGER, \"Release\" TEXT, \"Data\" TEXT)",
+    "CREATE TABLE \"ExtraFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"MovieId\" INTEGER NOT NULL, \"MovieFileId\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"Extension\" TEXT NOT NULL, \"Added\" DATETIME NOT NULL, \"LastUpdated\" DATETIME NOT NULL)",
+    "CREATE TABLE \"History\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"SourceTitle\" TEXT NOT NULL, \"Date\" DATETIME NOT NULL, \"Quality\" TEXT NOT NULL, \"Data\" TEXT NOT NULL, \"EventType\" INTEGER, \"DownloadId\" TEXT, \"MovieId\" INTEGER NOT NULL, \"Languages\" TEXT NOT NULL)",
+    "CREATE TABLE \"ImportExclusions\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TmdbId\" INTEGER NOT NULL, \"MovieTitle\" TEXT, \"MovieYear\" INTEGER DEFAULT 0)",
+    "CREATE TABLE \"ImportListMovies\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ListId\" INTEGER NOT NULL, \"MovieMetadataId\" INTEGER NOT NULL)",
+    "CREATE TABLE \"ImportListStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME, \"LastInfoSync\" DATETIME)",
+    "CREATE TABLE \"ImportLists\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Enabled\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"ConfigContract\" TEXT, \"Settings\" TEXT, \"EnableAuto\" INTEGER NOT NULL, \"RootFolderPath\" TEXT NOT NULL, \"QualityProfileId\" INTEGER NOT NULL, \"MinimumAvailability\" INTEGER NOT NULL, \"Tags\" TEXT, \"SearchOnAdd\" INTEGER NOT NULL, \"Monitor\" INTEGER NOT NULL)",
+    "CREATE TABLE \"IndexerStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME, \"LastRssSyncReleaseInfo\" TEXT, \"Cookies\" TEXT, \"CookiesExpirationDate\" DATETIME)",
+    "CREATE TABLE \"Indexers\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT, \"ConfigContract\" TEXT, \"EnableRss\" INTEGER, \"EnableAutomaticSearch\" INTEGER, \"EnableInteractiveSearch\" INTEGER NOT NULL, \"Priority\" INTEGER NOT NULL DEFAULT 25, \"Tags\" TEXT, \"DownloadClientId\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"Metadata\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Enable\" INTEGER NOT NULL, \"Name\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"Settings\" TEXT NOT NULL, \"ConfigContract\" TEXT NOT NULL)",
+    "CREATE TABLE \"MetadataFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"MovieId\" INTEGER NOT NULL, \"Consumer\" TEXT NOT NULL, \"Type\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"LastUpdated\" DATETIME NOT NULL, \"MovieFileId\" INTEGER, \"Hash\" TEXT, \"Added\" DATETIME, \"Extension\" TEXT NOT NULL)",
+    "CREATE TABLE \"MovieFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"MovieId\" INTEGER NOT NULL, \"Quality\" TEXT NOT NULL, \"Size\" INTEGER NOT NULL, \"DateAdded\" DATETIME NOT NULL, \"SceneName\" TEXT, \"MediaInfo\" TEXT, \"ReleaseGroup\" TEXT, \"RelativePath\" TEXT, \"Edition\" TEXT, \"Languages\" TEXT NOT NULL, \"IndexerFlags\" INTEGER NOT NULL, \"OriginalFilePath\" TEXT)",
+    "CREATE TABLE \"MovieMetadata\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TmdbId\" INTEGER NOT NULL, \"ImdbId\" TEXT, \"Images\" TEXT NOT NULL, \"Genres\" TEXT, \"Title\" TEXT NOT NULL, \"SortTitle\" TEXT, \"CleanTitle\" TEXT, \"OriginalTitle\" TEXT, \"CleanOriginalTitle\" TEXT, \"OriginalLanguage\" INTEGER NOT NULL, \"Status\" INTEGER NOT NULL, \"LastInfoSync\" DATETIME, \"Runtime\" INTEGER NOT NULL, \"InCinemas\" DATETIME, \"PhysicalRelease\" DATETIME, \"DigitalRelease\" DATETIME, \"Year\" INTEGER, \"SecondaryYear\" INTEGER, \"Ratings\" TEXT, \"Recommendations\" TEXT NOT NULL, \"Certification\" TEXT, \"YouTubeTrailerId\" TEXT, \"Studio\" TEXT, \"Overview\" TEXT, \"Website\" TEXT, \"Popularity\" NUMERIC, \"CollectionTmdbId\" INTEGER, \"CollectionTitle\" TEXT, \"Keywords\" TEXT)",
+    "CREATE TABLE \"MovieTranslations\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Title\" TEXT, \"CleanTitle\" TEXT, \"Overview\" TEXT, \"Language\" INTEGER NOT NULL, \"MovieMetadataId\" INTEGER NOT NULL)",
+    "CREATE TABLE \"Movies\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Path\" TEXT NOT NULL, \"Monitored\" INTEGER NOT NULL, \"QualityProfileId\" INTEGER NOT NULL, \"Added\" DATETIME, \"Tags\" TEXT, \"AddOptions\" TEXT, \"MovieFileId\" INTEGER NOT NULL, \"MinimumAvailability\" INTEGER NOT NULL, \"MovieMetadataId\" INTEGER NOT NULL, \"LastSearchTime\" DATETIME)",
+    "CREATE TABLE \"NamingConfig\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ReplaceIllegalCharacters\" INTEGER NOT NULL, \"StandardMovieFormat\" TEXT, \"MovieFolderFormat\" TEXT, \"ColonReplacementFormat\" INTEGER NOT NULL, \"RenameMovies\" INTEGER NOT NULL)",
+    "CREATE TABLE \"NotificationStatus\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"ProviderId\" INTEGER NOT NULL, \"InitialFailure\" DATETIME, \"MostRecentFailure\" DATETIME, \"EscalationLevel\" INTEGER NOT NULL, \"DisabledTill\" DATETIME)",
+    "CREATE TABLE \"Notifications\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"OnGrab\" INTEGER NOT NULL, \"OnDownload\" INTEGER NOT NULL, \"Settings\" TEXT NOT NULL, \"Implementation\" TEXT NOT NULL, \"ConfigContract\" TEXT, \"OnUpgrade\" INTEGER, \"Tags\" TEXT, \"OnRename\" INTEGER NOT NULL, \"OnHealthIssue\" INTEGER NOT NULL, \"IncludeHealthWarnings\" INTEGER NOT NULL, \"OnMovieDelete\" INTEGER NOT NULL, \"OnMovieFileDelete\" INTEGER NOT NULL DEFAULT 0, \"OnMovieFileDeleteForUpgrade\" INTEGER NOT NULL DEFAULT 0, \"OnApplicationUpdate\" INTEGER NOT NULL DEFAULT 0, \"OnMovieAdded\" INTEGER NOT NULL DEFAULT 0, \"OnHealthRestored\" INTEGER NOT NULL DEFAULT 0, \"OnManualInteractionRequired\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"PendingReleases\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Title\" TEXT NOT NULL, \"Added\" DATETIME NOT NULL, \"Release\" TEXT NOT NULL, \"MovieId\" INTEGER NOT NULL, \"ParsedMovieInfo\" TEXT, \"Reason\" INTEGER NOT NULL, \"AdditionalInfo\" TEXT)",
+    "CREATE TABLE \"QualityDefinitions\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Quality\" INTEGER NOT NULL, \"Title\" TEXT NOT NULL, \"MinSize\" NUMERIC, \"MaxSize\" NUMERIC, \"PreferredSize\" NUMERIC)",
+    "CREATE TABLE \"QualityProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Name\" TEXT NOT NULL, \"Cutoff\" INTEGER NOT NULL, \"Items\" TEXT NOT NULL, \"Language\" INTEGER, \"FormatItems\" TEXT NOT NULL, \"UpgradeAllowed\" INTEGER, \"MinFormatScore\" INTEGER NOT NULL, \"CutoffFormatScore\" INTEGER NOT NULL, \"MinUpgradeFormatScore\" INTEGER NOT NULL DEFAULT 1)",
+    "CREATE TABLE \"ReleaseProfiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Required\" TEXT, \"Ignored\" TEXT, \"Tags\" TEXT NOT NULL, \"Name\" TEXT, \"Enabled\" INTEGER NOT NULL, \"IndexerId\" INTEGER NOT NULL)",
+    "CREATE TABLE \"RemotePathMappings\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Host\" TEXT NOT NULL, \"RemotePath\" TEXT NOT NULL, \"LocalPath\" TEXT NOT NULL)",
+    "CREATE TABLE \"RootFolders\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Path\" TEXT NOT NULL)",
+    "CREATE TABLE \"ScheduledTasks\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"TypeName\" TEXT NOT NULL, \"Interval\" NUMERIC NOT NULL, \"LastExecution\" DATETIME NOT NULL, \"LastStartTime\" DATETIME)",
+    "CREATE TABLE \"SubtitleFiles\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"MovieId\" INTEGER NOT NULL, \"MovieFileId\" INTEGER NOT NULL, \"RelativePath\" TEXT NOT NULL, \"Extension\" TEXT NOT NULL, \"Added\" DATETIME NOT NULL, \"LastUpdated\" DATETIME NOT NULL, \"Language\" INTEGER NOT NULL, \"LanguageTags\" TEXT, \"Title\" TEXT, \"Copy\" INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE \"Tags\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Label\" TEXT NOT NULL)",
+    "CREATE TABLE \"Users\" (\"Id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, \"Identifier\" TEXT NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"Salt\" TEXT, \"Iterations\" INTEGER)",
+    "CREATE TABLE \"VersionInfo\" (\"Version\" INTEGER NOT NULL, \"AppliedOn\" DATETIME, \"Description\" TEXT)",
+    "CREATE INDEX \"IX_AlternativeTitles_CleanTitle\" ON \"AlternativeTitles\" (\"CleanTitle\" ASC)",
+    "CREATE INDEX \"IX_AlternativeTitles_MovieMetadataId\" ON \"AlternativeTitles\" (\"MovieMetadataId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_AutoTagging_Name\" ON \"AutoTagging\" (\"Name\" ASC)",
+    "CREATE INDEX \"IX_Blocklist_Date\" ON \"Blocklist\" (\"Date\" ASC)",
+    "CREATE INDEX \"IX_Blocklist_MovieId\" ON \"Blocklist\" (\"MovieId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Collections_TmdbId\" ON \"Collections\" (\"TmdbId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Config_Key\" ON \"Config\" (\"Key\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Credits_CreditTmdbId\" ON \"Credits\" (\"CreditTmdbId\" ASC)",
+    "CREATE INDEX \"IX_Credits_MovieMetadataId\" ON \"Credits\" (\"MovieMetadataId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_CustomFormats_Name\" ON \"CustomFormats\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_DownloadClientStatus_ProviderId\" ON \"DownloadClientStatus\" (\"ProviderId\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_DownloadId\" ON \"DownloadHistory\" (\"DownloadId\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_EventType\" ON \"DownloadHistory\" (\"EventType\" ASC)",
+    "CREATE INDEX \"IX_DownloadHistory_MovieId\" ON \"DownloadHistory\" (\"MovieId\" ASC)",
+    "CREATE INDEX \"IX_History_Date\" ON \"History\" (\"Date\" ASC)",
+    "CREATE INDEX \"IX_History_DownloadId_Date\" ON \"History\" (\"DownloadId\" ASC, \"Date\" DESC)",
+    "CREATE INDEX \"IX_History_MovieId_Date\" ON \"History\" (\"MovieId\" ASC, \"Date\" DESC)",
+    "CREATE UNIQUE INDEX \"IX_ImportExclusions_TmdbId\" ON \"ImportExclusions\" (\"TmdbId\" ASC)",
+    "CREATE INDEX \"IX_ImportListMovies_MovieMetadataId\" ON \"ImportListMovies\" (\"MovieMetadataId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_IndexerStatus_ProviderId\" ON \"IndexerStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Indexers_Name\" ON \"Indexers\" (\"Name\" ASC)",
+    "CREATE INDEX \"IX_MovieFiles_MovieId\" ON \"MovieFiles\" (\"MovieId\" ASC)",
+    "CREATE INDEX \"IX_MovieMetadata_CleanOriginalTitle\" ON \"MovieMetadata\" (\"CleanOriginalTitle\" ASC)",
+    "CREATE INDEX \"IX_MovieMetadata_CleanTitle\" ON \"MovieMetadata\" (\"CleanTitle\" ASC)",
+    "CREATE INDEX \"IX_MovieMetadata_CollectionTmdbId\" ON \"MovieMetadata\" (\"CollectionTmdbId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_MovieMetadata_TmdbId\" ON \"MovieMetadata\" (\"TmdbId\" ASC)",
+    "CREATE INDEX \"IX_MovieTranslations_CleanTitle\" ON \"MovieTranslations\" (\"CleanTitle\" ASC)",
+    "CREATE INDEX \"IX_MovieTranslations_Language\" ON \"MovieTranslations\" (\"Language\" ASC)",
+    "CREATE INDEX \"IX_MovieTranslations_MovieMetadataId\" ON \"MovieTranslations\" (\"MovieMetadataId\" ASC)",
+    "CREATE INDEX \"IX_Movies_MovieFileId\" ON \"Movies\" (\"MovieFileId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Movies_MovieMetadataId\" ON \"Movies\" (\"MovieMetadataId\" ASC)",
+    "CREATE INDEX \"IX_Movies_Path\" ON \"Movies\" (\"Path\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_NetImportStatus_ProviderId\" ON \"ImportListStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_NetImport_Name\" ON \"ImportLists\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_NotificationStatus_ProviderId\" ON \"NotificationStatus\" (\"ProviderId\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Profiles_Name\" ON \"QualityProfiles\" (\"Name\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_QualityDefinitions_Quality\" ON \"QualityDefinitions\" (\"Quality\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_QualityDefinitions_Title\" ON \"QualityDefinitions\" (\"Title\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_RootFolders_Path\" ON \"RootFolders\" (\"Path\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_ScheduledTasks_TypeName\" ON \"ScheduledTasks\" (\"TypeName\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Tags_Label\" ON \"Tags\" (\"Label\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Users_Identifier\" ON \"Users\" (\"Identifier\" ASC)",
+    "CREATE UNIQUE INDEX \"IX_Users_Username\" ON \"Users\" (\"Username\" ASC)",
+    "CREATE UNIQUE INDEX \"UC_Version\" ON \"VersionInfo\" (\"Version\" ASC)"
+  ],
+  "version": [
+    {
+      "Version": 1,
+      "AppliedOn": "2025-09-10T20:04:34",
+      "Description": "InitialSetup"
+    },
+    {
+      "Version": 104,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "add_moviefiles_table"
+    },
+    {
+      "Version": 105,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "fix_history_movieId"
+    },
+    {
+      "Version": 106,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "add_tmdb_stuff"
+    },
+    {
+      "Version": 107,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "fix_movie_files"
+    },
+    {
+      "Version": 108,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "update_schedule_intervale"
+    },
+    {
+      "Version": 109,
+      "AppliedOn": "2025-09-10T20:04:35",
+      "Description": "add_movie_formats_to_naming_config"
+    },
+    {
+      "Version": 110,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "add_phyiscal_release"
+    },
+    {
+      "Version": 111,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "remove_bitmetv"
+    },
+    {
+      "Version": 112,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "remove_torrentleech"
+    },
+    {
+      "Version": 113,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "remove_broadcasthenet"
+    },
+    {
+      "Version": 114,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "remove_fanzub"
+    },
+    {
+      "Version": 115,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "update_movie_sorttitle"
+    },
+    {
+      "Version": 116,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "update_movie_sorttitle_again"
+    },
+    {
+      "Version": 117,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "update_movie_file"
+    },
+    {
+      "Version": 118,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "update_movie_slug"
+    },
+    {
+      "Version": 119,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "add_youtube_trailer_id"
+    },
+    {
+      "Version": 120,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "add_studio"
+    },
+    {
+      "Version": 121,
+      "AppliedOn": "2025-09-10T20:04:36",
+      "Description": "update_filedate_config"
+    },
+    {
+      "Version": 122,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "add_movieid_to_blacklist"
+    },
+    {
+      "Version": 123,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "create_netimport_table"
+    },
+    {
+      "Version": 124,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "add_preferred_tags_to_profile"
+    },
+    {
+      "Version": 125,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "fix_imdb_unique"
+    },
+    {
+      "Version": 126,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "update_qualities_and_profiles"
+    },
+    {
+      "Version": 127,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "remove_wombles"
+    },
+    {
+      "Version": 128,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "remove_kickass"
+    },
+    {
+      "Version": 129,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "add_parsed_movie_info_to_pending_release"
+    },
+    {
+      "Version": 130,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "remove_wombles_kickass"
+    },
+    {
+      "Version": 131,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "make_parsed_episode_info_nullable"
+    },
+    {
+      "Version": 132,
+      "AppliedOn": "2025-09-10T20:04:37",
+      "Description": "rename_torrent_downloadstation"
+    },
+    {
+      "Version": 133,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_minimumavailability"
+    },
+    {
+      "Version": 134,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_remux_qualities_for_the_wankers"
+    },
+    {
+      "Version": 135,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_haspredbentry_to_movies"
+    },
+    {
+      "Version": 136,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_pathstate_to_movies"
+    },
+    {
+      "Version": 137,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_import_exclusions_table"
+    },
+    {
+      "Version": 138,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_physical_release_note"
+    },
+    {
+      "Version": 139,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "consolidate_indexer_baseurl"
+    },
+    {
+      "Version": 140,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "add_alternative_titles_table"
+    },
+    {
+      "Version": 141,
+      "AppliedOn": "2025-09-10T20:04:38",
+      "Description": "fix_duplicate_alt_titles"
+    },
+    {
+      "Version": 142,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "movie_extras"
+    },
+    {
+      "Version": 143,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "clean_core_tv"
+    },
+    {
+      "Version": 144,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "add_cookies_to_indexer_status"
+    },
+    {
+      "Version": 145,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "banner_to_fanart"
+    },
+    {
+      "Version": 146,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "naming_config_colon_action"
+    },
+    {
+      "Version": 147,
+      "AppliedOn": "2025-09-10T20:04:39",
+      "Description": "add_custom_formats"
+    },
+    {
+      "Version": 148,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "remove_extra_naming_config"
+    },
+    {
+      "Version": 149,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "convert_regex_required_tags"
+    },
+    {
+      "Version": 150,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "fix_format_tags_double_underscore"
+    },
+    {
+      "Version": 151,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "add_tags_to_net_import"
+    },
+    {
+      "Version": 152,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "add_custom_filters"
+    },
+    {
+      "Version": 153,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "indexer_client_status_search_changes"
+    },
+    {
+      "Version": 154,
+      "AppliedOn": "2025-09-10T20:04:40",
+      "Description": "add_language_to_files_history_blacklist"
+    },
+    {
+      "Version": 155,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "add_update_allowed_quality_profile"
+    },
+    {
+      "Version": 156,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "add_download_client_priority"
+    },
+    {
+      "Version": 157,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "remove_growl_prowl"
+    },
+    {
+      "Version": 158,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "remove_plex_hometheatre"
+    },
+    {
+      "Version": 159,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "add_webrip_qualites"
+    },
+    {
+      "Version": 160,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "health_issue_notification"
+    },
+    {
+      "Version": 161,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "speed_improvements"
+    },
+    {
+      "Version": 162,
+      "AppliedOn": "2025-09-10T20:04:41",
+      "Description": "fix_profile_format_default"
+    },
+    {
+      "Version": 163,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "task_duration"
+    },
+    {
+      "Version": 164,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "movie_collections_crew"
+    },
+    {
+      "Version": 165,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "remove_custom_formats_from_quality_model"
+    },
+    {
+      "Version": 166,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "fix_tmdb_list_config"
+    },
+    {
+      "Version": 167,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "remove_movie_pathstate"
+    },
+    {
+      "Version": 168,
+      "AppliedOn": "2025-09-10T20:04:42",
+      "Description": "custom_format_rework"
+    },
+    {
+      "Version": 169,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "custom_format_scores"
+    },
+    {
+      "Version": 170,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "fix_trakt_list_config"
+    },
+    {
+      "Version": 171,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "quality_definition_preferred_size"
+    },
+    {
+      "Version": 172,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "add_download_history"
+    },
+    {
+      "Version": 173,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "net_import_status"
+    },
+    {
+      "Version": 174,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "email_multiple_addresses"
+    },
+    {
+      "Version": 175,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "remove_chown_and_folderchmod_config"
+    },
+    {
+      "Version": 176,
+      "AppliedOn": "2025-09-10T20:04:43",
+      "Description": "movie_recommendations"
+    },
+    {
+      "Version": 177,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "language_improvements"
+    },
+    {
+      "Version": 178,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "new_list_server"
+    },
+    {
+      "Version": 179,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "movie_translation_indexes"
+    },
+    {
+      "Version": 180,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "fix_invalid_profile_references"
+    },
+    {
+      "Version": 181,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "list_movies_table"
+    },
+    {
+      "Version": 182,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "on_delete_notification"
+    },
+    {
+      "Version": 183,
+      "AppliedOn": "2025-09-10T20:04:44",
+      "Description": "download_propers_config"
+    },
+    {
+      "Version": 184,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "add_priority_to_indexers"
+    },
+    {
+      "Version": 185,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "add_alternative_title_indices"
+    },
+    {
+      "Version": 186,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "fix_tmdb_duplicates"
+    },
+    {
+      "Version": 187,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "swap_filechmod_for_folderchmod"
+    },
+    {
+      "Version": 188,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "mediainfo_channels"
+    },
+    {
+      "Version": 189,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "add_update_history"
+    },
+    {
+      "Version": 190,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "update_awesome_hd_link"
+    },
+    {
+      "Version": 191,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "remove_awesomehd"
+    },
+    {
+      "Version": 192,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "add_on_delete_to_notifications"
+    },
+    {
+      "Version": 194,
+      "AppliedOn": "2025-09-10T20:04:45",
+      "Description": "add_bypass_to_delay_profile"
+    },
+    {
+      "Version": 195,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "update_notifiarr"
+    },
+    {
+      "Version": 196,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "legacy_mediainfo_hdr"
+    },
+    {
+      "Version": 197,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "rename_blacklist_to_blocklist"
+    },
+    {
+      "Version": 198,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "add_indexer_tags"
+    },
+    {
+      "Version": 199,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "mediainfo_to_ffmpeg"
+    },
+    {
+      "Version": 200,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "cdh_per_downloadclient"
+    },
+    {
+      "Version": 201,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "migrate_discord_from_slack"
+    },
+    {
+      "Version": 202,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "remove_predb"
+    },
+    {
+      "Version": 203,
+      "AppliedOn": "2025-09-10T20:04:46",
+      "Description": "add_on_update_to_notifications"
+    },
+    {
+      "Version": 204,
+      "AppliedOn": "2025-09-10T20:04:47",
+      "Description": "ensure_identity_on_id_columns"
+    },
+    {
+      "Version": 205,
+      "AppliedOn": "2025-09-10T20:04:47",
+      "Description": "download_client_per_indexer"
+    },
+    {
+      "Version": 206,
+      "AppliedOn": "2025-09-10T20:04:47",
+      "Description": "multiple_ratings_support"
+    },
+    {
+      "Version": 207,
+      "AppliedOn": "2025-09-10T20:04:48",
+      "Description": "movie_metadata"
+    },
+    {
+      "Version": 208,
+      "AppliedOn": "2025-09-10T20:04:48",
+      "Description": "collections"
+    },
+    {
+      "Version": 209,
+      "AppliedOn": "2025-09-10T20:04:48",
+      "Description": "movie_meta_collection_index"
+    },
+    {
+      "Version": 210,
+      "AppliedOn": "2025-09-10T20:04:48",
+      "Description": "movie_added_notifications"
+    },
+    {
+      "Version": 211,
+      "AppliedOn": "2025-09-10T20:04:48",
+      "Description": "more_movie_meta_index"
+    },
+    {
+      "Version": 212,
+      "AppliedOn": "2025-09-10T20:04:50",
+      "Description": "postgres_update_timestamp_columns_to_with_timezone"
+    },
+    {
+      "Version": 214,
+      "AppliedOn": "2025-09-10T20:04:50",
+      "Description": "add_language_tags_to_subtitle_files"
+    },
+    {
+      "Version": 215,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "add_salt_to_users"
+    },
+    {
+      "Version": 216,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "clean_alt_titles"
+    },
+    {
+      "Version": 217,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "remove_omg"
+    },
+    {
+      "Version": 218,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "add_additional_info_to_pending_releases"
+    },
+    {
+      "Version": 219,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "add_result_to_commands"
+    },
+    {
+      "Version": 220,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "health_restored_notification"
+    },
+    {
+      "Version": 221,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "add_on_manual_interaction_required_to_notifications"
+    },
+    {
+      "Version": 222,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "remove_rarbg"
+    },
+    {
+      "Version": 223,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "remove_invalid_roksbox_metadata_images"
+    },
+    {
+      "Version": 224,
+      "AppliedOn": "2025-09-10T20:04:51",
+      "Description": "list_sync_time"
+    },
+    {
+      "Version": 225,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "add_tags_to_collections"
+    },
+    {
+      "Version": 226,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "add_download_client_tags"
+    },
+    {
+      "Version": 227,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "add_auto_tagging"
+    },
+    {
+      "Version": 228,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "add_custom_format_score_bypass_to_delay_profile"
+    },
+    {
+      "Version": 229,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "update_restrictions_to_release_profiles"
+    },
+    {
+      "Version": 230,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "rename_quality_profiles"
+    },
+    {
+      "Version": 231,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "update_images_remote_url"
+    },
+    {
+      "Version": 232,
+      "AppliedOn": "2025-09-10T20:04:52",
+      "Description": "add_notification_status"
+    },
+    {
+      "Version": 233,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "rename_deprecated_indexer_flags"
+    },
+    {
+      "Version": 234,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "movie_last_searched_time"
+    },
+    {
+      "Version": 235,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "email_encryption"
+    },
+    {
+      "Version": 236,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "clear_last_rss_releases_info"
+    },
+    {
+      "Version": 237,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "add_indexes"
+    },
+    {
+      "Version": 238,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "parse_title_from_existing_subtitle_files"
+    },
+    {
+      "Version": 239,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "add_minimum_upgrade_format_score_to_quality_profiles"
+    },
+    {
+      "Version": 240,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "drop_multi_episode_style_from_naming_config"
+    },
+    {
+      "Version": 241,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "stevenlu_update_url"
+    },
+    {
+      "Version": 242,
+      "AppliedOn": "2025-09-10T20:04:53",
+      "Description": "add_movie_keywords"
+    }
+  ],
+  "tables": {
+    "Config": [
+      {
+        "Id": 1,
+        "Key": "plexclientidentifier",
+        "Value": {
+          "$secret": "Config/1/Value"
+        }
+      },
+      {
+        "Id": 2,
+        "Key": "rijndaelpassphrase",
+        "Value": {
+          "$secret": "Config/2/Value"
+        }
+      },
+      {
+        "Id": 3,
+        "Key": "hmacpassphrase",
+        "Value": {
+          "$secret": "Config/3/Value"
+        }
+      },
+      {
+        "Id": 4,
+        "Key": "rijndaelsalt",
+        "Value": {
+          "$secret": "Config/4/Value"
+        }
+      },
+      {
+        "Id": 5,
+        "Key": "hmacsalt",
+        "Value": {
+          "$secret": "Config/5/Value"
+        }
+      },
+      {
+        "Id": 6,
+        "Key": "cleanupmetadataimages",
+        "Value": "False"
+      },
+      {
+        "Id": 7,
+        "Key": "deleteemptyfolders",
+        "Value": "True"
+      }
+    ],
+    "RootFolders": [
+      {
+        "Id": 1,
+        "Path": "/data/media/movies/"
+      }
+    ],
+    "NamingConfig": [
+      {
+        "Id": 1,
+        "ReplaceIllegalCharacters": 1,
+        "StandardMovieFormat": "{Movie Title} ({Release Year}) {Quality Full}",
+        "MovieFolderFormat": "{Movie Title} ({Release Year})",
+        "ColonReplacementFormat": 4,
+        "RenameMovies": 1
+      }
+    ],
+    "Metadata": [
+      {
+        "Id": 1,
+        "Enable": 0,
+        "Name": "Kodi (XBMC) / Emby",
+        "Implementation": "XbmcMetadata",
+        "Settings": {
+          "$secret": "Metadata/1/Settings"
+        },
+        "ConfigContract": "XbmcMetadataSettings"
+      },
+      {
+        "Id": 2,
+        "Enable": 0,
+        "Name": "WDTV",
+        "Implementation": "WdtvMetadata",
+        "Settings": {
+          "$secret": "Metadata/2/Settings"
+        },
+        "ConfigContract": "WdtvMetadataSettings"
+      },
+      {
+        "Id": 3,
+        "Enable": 0,
+        "Name": "Roksbox",
+        "Implementation": "RoksboxMetadata",
+        "Settings": {
+          "$secret": "Metadata/3/Settings"
+        },
+        "ConfigContract": "RoksboxMetadataSettings"
+      },
+      {
+        "Id": 4,
+        "Enable": 0,
+        "Name": "Emby (Legacy)",
+        "Implementation": "MediaBrowserMetadata",
+        "Settings": {
+          "$secret": "Metadata/4/Settings"
+        },
+        "ConfigContract": "MediaBrowserMetadataSettings"
+      },
+      {
+        "Id": 5,
+        "Enable": 0,
+        "Name": "Kometa",
+        "Implementation": "KometaMetadata",
+        "Settings": {
+          "$secret": "Metadata/5/Settings"
+        },
+        "ConfigContract": "KometaMetadataSettings"
+      }
+    ],
+    "DownloadClients": [
+      {
+        "Id": 1,
+        "Enable": 1,
+        "Name": "qBittorrent",
+        "Implementation": "QBittorrent",
+        "Settings": {
+          "$secret": "DownloadClients/1/Settings"
+        },
+        "ConfigContract": "QBittorrentSettings",
+        "Priority": 1,
+        "RemoveCompletedDownloads": 1,
+        "RemoveFailedDownloads": 1,
+        "Tags": "[]"
+      }
+    ],
+    "RemotePathMappings": [],
+    "DelayProfiles": [
+      {
+        "Id": 1,
+        "EnableUsenet": 1,
+        "EnableTorrent": 1,
+        "PreferredProtocol": 1,
+        "UsenetDelay": 0,
+        "TorrentDelay": 0,
+        "Order": 2147483647,
+        "Tags": "[]",
+        "BypassIfHighestQuality": 1,
+        "BypassIfAboveCustomFormatScore": 0,
+        "MinimumCustomFormatScore": null
+      }
+    ],
+    "Users": [
+      {
+        "Id": 1,
+        "Identifier": {
+          "$secret": "Users/1/Identifier"
+        },
+        "Username": {
+          "$secret": "Users/1/Username"
+        },
+        "Password": {
+          "$secret": "Users/1/Password"
+        },
+        "Salt": {
+          "$secret": "Users/1/Salt"
+        },
+        "Iterations": {
+          "$secret": "Users/1/Iterations"
+        }
+      }
+    ],
+    "Tags": [
+      {
+        "Id": 3,
+        "Label": "pulsarr-jas341"
+      },
+      {
+        "Id": 4,
+        "Label": "pulsarr-alexanderm830"
+      },
+      {
+        "Id": 5,
+        "Label": "pulsarr-paivi-man"
+      },
+      {
+        "Id": 6,
+        "Label": "pulsarr-neil-gallagher"
+      }
+    ],
+    "QualityDefinitions": [
+      {
+        "Id": 1,
+        "Quality": 0,
+        "Title": "Unknown",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 2,
+        "Quality": 24,
+        "Title": "WORKPRINT",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 3,
+        "Quality": 25,
+        "Title": "CAM",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 4,
+        "Quality": 26,
+        "Title": "TELESYNC",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 5,
+        "Quality": 27,
+        "Title": "TELECINE",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 6,
+        "Quality": 29,
+        "Title": "REGIONAL",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 7,
+        "Quality": 28,
+        "Title": "DVDSCR",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 8,
+        "Quality": 1,
+        "Title": "SDTV",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 9,
+        "Quality": 2,
+        "Title": "DVD",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 10,
+        "Quality": 23,
+        "Title": "DVD-R",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 11,
+        "Quality": 8,
+        "Title": "WEBDL-480p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 12,
+        "Quality": 12,
+        "Title": "WEBRip-480p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 13,
+        "Quality": 20,
+        "Title": "Bluray-480p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 14,
+        "Quality": 21,
+        "Title": "Bluray-576p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 15,
+        "Quality": 4,
+        "Title": "HDTV-720p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 16,
+        "Quality": 5,
+        "Title": "WEBDL-720p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 17,
+        "Quality": 14,
+        "Title": "WEBRip-720p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 18,
+        "Quality": 6,
+        "Title": "Bluray-720p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 19,
+        "Quality": 9,
+        "Title": "HDTV-1080p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 20,
+        "Quality": 3,
+        "Title": "WEBDL-1080p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 21,
+        "Quality": 15,
+        "Title": "WEBRip-1080p",
+        "MinSize": 0,
+        "MaxSize": 100,
+        "PreferredSize": 95
+      },
+      {
+        "Id": 22,
+        "Quality": 7,
+        "Title": "Bluray-1080p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 23,
+        "Quality": 30,
+        "Title": "Remux-1080p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 24,
+        "Quality": 16,
+        "Title": "HDTV-2160p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 25,
+        "Quality": 18,
+        "Title": "WEBDL-2160p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 26,
+        "Quality": 17,
+        "Title": "WEBRip-2160p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 27,
+        "Quality": 19,
+        "Title": "Bluray-2160p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 28,
+        "Quality": 31,
+        "Title": "Remux-2160p",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 29,
+        "Quality": 22,
+        "Title": "BR-DISK",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      },
+      {
+        "Id": 30,
+        "Quality": 10,
+        "Title": "Raw-HD",
+        "MinSize": 0,
+        "MaxSize": null,
+        "PreferredSize": null
+      }
+    ],
+    "Notifications": [
+      {
+        "Id": 4,
+        "Name": "Plex Media Server",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/4/Settings"
+        },
+        "Implementation": "PlexServer",
+        "ConfigContract": "PlexServerSettings",
+        "OnUpgrade": 1,
+        "Tags": "[]",
+        "OnRename": 1,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnMovieDelete": 1,
+        "OnMovieFileDelete": 1,
+        "OnMovieFileDeleteForUpgrade": 1,
+        "OnApplicationUpdate": 0,
+        "OnMovieAdded": 0,
+        "OnHealthRestored": 0,
+        "OnManualInteractionRequired": 0
+      },
+      {
+        "Id": 8,
+        "Name": "Pulsarr (127.0.0.1:3003)",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/8/Settings"
+        },
+        "Implementation": "Webhook",
+        "ConfigContract": "WebhookSettings",
+        "OnUpgrade": 0,
+        "Tags": "[]",
+        "OnRename": 0,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnMovieDelete": 0,
+        "OnMovieFileDelete": 0,
+        "OnMovieFileDeleteForUpgrade": 0,
+        "OnApplicationUpdate": 0,
+        "OnMovieAdded": 0,
+        "OnHealthRestored": 0,
+        "OnManualInteractionRequired": 0
+      },
+      {
+        "Id": 9,
+        "Name": "Plex Previews",
+        "OnGrab": 0,
+        "OnDownload": 1,
+        "Settings": {
+          "$secret": "Notifications/9/Settings"
+        },
+        "Implementation": "Webhook",
+        "ConfigContract": "WebhookSettings",
+        "OnUpgrade": 1,
+        "Tags": "[]",
+        "OnRename": 0,
+        "OnHealthIssue": 0,
+        "IncludeHealthWarnings": 0,
+        "OnMovieDelete": 0,
+        "OnMovieFileDelete": 0,
+        "OnMovieFileDeleteForUpgrade": 1,
+        "OnApplicationUpdate": 0,
+        "OnMovieAdded": 0,
+        "OnHealthRestored": 0,
+        "OnManualInteractionRequired": 0
+      }
+    ],
+    "QualityProfiles": [
+      {
+        "Id": 1,
+        "Name": "Any",
+        "Cutoff": 31,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": 1,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 0,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 2,
+        "Name": "SD",
+        "Cutoff": 20,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": 1,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 0,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 3,
+        "Name": "HD-720p",
+        "Cutoff": 6,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": 1,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 0,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 4,
+        "Name": "HD-1080p",
+        "Cutoff": 30,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": -2,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 1,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 5,
+        "Name": "Ultra-HD",
+        "Cutoff": 31,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": -2,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 1,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 6,
+        "Name": "HD - 720p/1080p",
+        "Cutoff": 30,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": false\n  }\n]",
+        "Language": -2,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 1,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      },
+      {
+        "Id": 7,
+        "Name": "HD Upgrade to 4k",
+        "Cutoff": 10,
+        "Items": "[\n  {\n    \"quality\": 0,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 24,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 25,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 26,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 27,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 29,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 28,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 1,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 2,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 23,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1000,\n    \"name\": \"WEB 480p\",\n    \"items\": [\n      {\n        \"quality\": 8,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 12,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 20,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 21,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 4,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"id\": 1001,\n    \"name\": \"WEB 720p\",\n    \"items\": [\n      {\n        \"quality\": 5,\n        \"items\": [],\n        \"allowed\": false\n      },\n      {\n        \"quality\": 14,\n        \"items\": [],\n        \"allowed\": false\n      }\n    ],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 6,\n    \"items\": [],\n    \"allowed\": false\n  },\n  {\n    \"quality\": 9,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1002,\n    \"name\": \"WEB 1080p\",\n    \"items\": [\n      {\n        \"quality\": 3,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 15,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 7,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 30,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 16,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"id\": 1003,\n    \"name\": \"WEB 2160p\",\n    \"items\": [\n      {\n        \"quality\": 18,\n        \"items\": [],\n        \"allowed\": true\n      },\n      {\n        \"quality\": 17,\n        \"items\": [],\n        \"allowed\": true\n      }\n    ],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 19,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 31,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 22,\n    \"items\": [],\n    \"allowed\": true\n  },\n  {\n    \"quality\": 10,\n    \"items\": [],\n    \"allowed\": true\n  }\n]",
+        "Language": -2,
+        "FormatItems": "[]",
+        "UpgradeAllowed": 1,
+        "MinFormatScore": 0,
+        "CutoffFormatScore": 0,
+        "MinUpgradeFormatScore": 1
+      }
+    ],
+    "Indexers": [
+      {
+        "Id": 1,
+        "Name": "1337x",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/1/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      },
+      {
+        "Id": 2,
+        "Name": "TheRARBG",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/2/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      },
+      {
+        "Id": 3,
+        "Name": "kickasstorrents.to",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/3/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      },
+      {
+        "Id": 4,
+        "Name": "The Pirate Bay",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/4/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      },
+      {
+        "Id": 5,
+        "Name": "LimeTorrents",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/5/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      },
+      {
+        "Id": 6,
+        "Name": "kickasstorrents.ws",
+        "Implementation": "Torznab",
+        "Settings": {
+          "$secret": "Indexers/6/Settings"
+        },
+        "ConfigContract": "TorznabSettings",
+        "EnableRss": 1,
+        "EnableAutomaticSearch": 1,
+        "EnableInteractiveSearch": 1,
+        "Priority": 25,
+        "Tags": "[]",
+        "DownloadClientId": 0
+      }
+    ],
+    "CustomFilters": [
+      {
+        "Id": 1,
+        "Type": "movieIndex",
+        "Label": "Ultra-HD",
+        "Filters": "[\n  {\n    \"key\": \"qualityProfileId\",\n    \"value\": [\n      5,\n      7\n    ],\n    \"type\": \"equal\"\n  }\n]"
+      },
+      {
+        "Id": 2,
+        "Type": "movieIndex",
+        "Label": "1080",
+        "Filters": "[\n  {\n    \"key\": \"qualityProfileId\",\n    \"value\": [\n      4,\n      6\n    ],\n    \"type\": \"equal\"\n  }\n]"
+      },
+      {
+        "Id": 3,
+        "Type": "movieIndex",
+        "Label": "any quality",
+        "Filters": "[\n  {\n    \"key\": \"qualityProfileId\",\n    \"value\": [\n      1\n    ],\n    \"type\": \"equal\"\n  }\n]"
+      }
+    ],
+    "CustomFormats": [],
+    "ReleaseProfiles": [],
+    "ImportLists": [],
+    "AutoTagging": [],
+    "ImportExclusions": []
+  },
+  "xml": {
+    "BindAddress": "*",
+    "Port": "7878",
+    "SslPort": "9898",
+    "EnableSsl": "False",
+    "LaunchBrowser": "True",
+    "ApiKey": {
+      "$secret": "xml/ApiKey"
+    },
+    "AuthenticationRequired": "DisabledForLocalAddresses",
+    "Branch": "master",
+    "LogLevel": "debug",
+    "SslCertPath": null,
+    "SslCertPassword": {
+      "$secret": "xml/SslCertPassword"
+    },
+    "UrlBase": null,
+    "InstanceName": "Radarr",
+    "UpdateMechanism": "BuiltIn",
+    "AuthenticationMethod": "Forms",
+    "AllowedHosts": null,
+    "TrustedNetworks": null
+  }
+}

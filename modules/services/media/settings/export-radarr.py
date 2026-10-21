@@ -9,7 +9,7 @@ names = [
     "Config", "RootFolders", "NamingConfig", "Metadata", "DownloadClients",
     "RemotePathMappings", "DelayProfiles", "Users", "Tags", "QualityDefinitions",
     "Notifications", "QualityProfiles", "Indexers", "CustomFilters", "CustomFormats",
-    "ReleaseProfiles", "ImportLists", "AutoTagging", "ImportListExclusions",
+    "ReleaseProfiles", "ImportLists", "AutoTagging", "ImportListExclusions", "ImportExclusions",
 ]
 existing = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
 connection.execute("BEGIN")
