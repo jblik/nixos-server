@@ -6,9 +6,15 @@
 }:
 let
   settings = builtins.fromJSON (builtins.readFile ./cleanuparr-settings.json);
-  secretNames = map (value: value.__sops) (
-    lib.collect (value: builtins.isAttrs value && value ? __sops) settings
-  );
+  secretNames = lib.concatMap (
+    table:
+    lib.concatMap (
+      row:
+      map (value: value.__sops) (
+        lib.filter (value: builtins.isAttrs value && value ? __sops) (lib.attrValues row)
+      )
+    ) table.rows
+  ) (lib.attrValues settings.tables);
 in
 {
   config = lib.mkIf config.host.media.enable {
