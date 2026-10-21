@@ -25,6 +25,9 @@ let
     }
     // lib.optionalAttrs config.host.home-assistant.enable {
       home = s.home-assistant.config.http.server_port;
+    }
+    // lib.optionalAttrs config.host.media.enable {
+      plex = config.host.media.plex.port;
     };
 
   privateServices =
@@ -33,7 +36,6 @@ let
       sendspin = 8098;
     }
     // lib.optionalAttrs config.host.media.enable {
-      plex = config.host.media.plex.port;
       media-preview-generator =
         config.virtualisation.oci-containers.containers.media-preview-generator.environment.WEB_PORT;
       sonarr = s.sonarr.settings.server.port;

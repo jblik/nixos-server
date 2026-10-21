@@ -43,7 +43,7 @@ let
 
   services =
     lib.optionals host.media.enable [
-      (service media internal "plex" "Plex" "Stream the library" (svg "plex"))
+      (service media public "plex" "Plex" "Stream Media" (svg "plex"))
       (service media internal "media-preview-generator" "Media Preview Generator" "Generate Plex previews"
         "https://raw.githubusercontent.com/stevezau/media_preview_generator/refs/heads/dev/docs/images/icon.svg"
       )
