@@ -59,6 +59,18 @@ def verify_migrations(connection, snapshot):
             raise ValueError(f"Database migrations changed in {table}; recapture settings before upgrading")
 
 
+def verify_schema(connection, snapshot):
+    query = "SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' ORDER BY type, name"
+    expected = sqlite3.connect(":memory:")
+    try:
+        for statement in snapshot["schema"]:
+            expected.execute(statement)
+        if [tuple(row) for row in connection.execute(query)] != list(expected.execute(query)):
+            raise ValueError("Database schema changed; recapture settings before upgrading")
+    finally:
+        expected.close()
+
+
 def verify_deletions(connection, snapshot, changes):
     tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")]
     for child in tables:
@@ -126,21 +138,28 @@ def reconcile(snapshot, database, check=False):
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys=ON")
     try:
+        initialized = bool(connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' LIMIT 1"
+        ).fetchone())
+        if check and not initialized:
+            print("Settings differ: database is uninitialized")
+            return 1
         if not check:
             connection.execute("BEGIN IMMEDIATE")
             connection.execute("PRAGMA defer_foreign_keys=ON")
-        if not existed:
+        if not initialized:
             for statement in snapshot["schema"]:
                 connection.execute(statement)
             for table, entries in snapshot["migrations"].items():
                 for row in entries:
                     upsert(connection, table, row, [next(iter(row))])
+        verify_schema(connection, snapshot)
         verify_migrations(connection, snapshot)
         changes = difference(connection, snapshot)
         if check:
             print("Settings match" if not changes else "Settings differ: " + ", ".join(changes))
             return int(bool(changes))
-        if existed and changes:
+        if initialized and changes:
             verify_deletions(connection, snapshot, changes)
             backup(database)
         for table, change in changes.items():
