@@ -22,6 +22,9 @@ let
   seedingSchedule = pkgs.writers.writePython3 "qbittorrent-seeding-schedule" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-seeding-schedule.py);
+  metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
+    libraries = [ pkgs.python3Packages.requests ];
+  } (builtins.readFile ./qbittorrent-metrics.py);
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -110,6 +113,42 @@ in
           # The host's NSS resolver modules can use Unix sockets outside the VPN namespace.
           "${nsswitch}:/etc/nsswitch.conf"
         ];
+      };
+    };
+
+    systemd.services.speedtest-nordvpn = lib.mkIf config.host.dashboard.enable {
+      serviceConfig = {
+        NetworkNamespacePath = namespacePath;
+        BindReadOnlyPaths = [
+          "${resolver}:/etc/resolv.conf"
+          "${nsswitch}:/etc/nsswitch.conf"
+        ];
+      };
+    };
+
+    systemd.services.qbittorrent-metrics = lib.mkIf config.host.dashboard.enable {
+      description = "Collect qBittorrent metrics for Prometheus";
+      requisite = [ "qbittorrent.service" ];
+      after = [ "qbittorrent.service" ];
+      environment = {
+        QBITTORRENT_PROFILE = profile;
+        QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
+        METRICS_DIRECTORY = "/run/prometheus-textfile";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = metrics;
+        NetworkNamespacePath = namespacePath;
+        UMask = "0022";
+      };
+    };
+
+    systemd.timers.qbittorrent-metrics = lib.mkIf config.host.dashboard.enable {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "2min";
+        OnUnitActiveSec = "30s";
+        AccuracySec = "1s";
       };
     };
 

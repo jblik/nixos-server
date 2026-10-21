@@ -124,6 +124,32 @@ Configure the window in `hosts/nixos-server/default.nix`
 | Tailscale (exit node)                      | —                          | native                                          |
 | Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
 
+## VPN and torrent monitoring
+
+With the dashboard and media stack enabled, `speedtest-nordvpn.timer` runs an
+Ookla speedtest hourly, offset by 30 minutes from the host speedtest. It runs
+inside qBittorrent's network namespace and binds to `nordvpn`, using the same
+VPN DNS configuration. To run it manually after deploying:
+
+```sh
+sudo systemctl start speedtest-nordvpn.service
+journalctl -u speedtest-nordvpn -n 50
+```
+
+Grafana's [NordVPN dashboard](https://grafana.internal.steenblik.ch/d/nordvpn)
+compares VPN and host speeds and shows VPN latency, jitter, packet loss, and the
+age of the last result.
+
+The [qBittorrent dashboard](https://grafana.internal.steenblik.ch/d/qbittorrent)
+shows transfer rates, session and all-time totals, share ratio, torrent counts by
+state, remaining downloads, free download space, peers, DHT nodes, and connection
+status. `qbittorrent-metrics.timer` collects every 30 seconds through the local
+API inside the VPN namespace, using the API key already managed in qBittorrent's
+profile. No additional credentials or public metrics port are needed. Both
+collectors publish through node_exporter's textfile collector. If a collection
+fails, its last successful result remains; check the age panels and service
+journals when interpreting old readings.
+
 ## Home Assistant
 
 Home Assistant runs natively through `services.home-assistant`, enabled by

@@ -297,16 +297,107 @@ let
     ];
   };
 
-  dashboards = pkgs.linkFarm "grafana-dashboards" {
-    "server.json" = pkgs.writeText "server.json" (builtins.toJSON server);
-    "fans.json" = pkgs.writeText "fans.json" (builtins.toJSON fanDashboard);
-    "node-exporter-full.json" =
-      communityDashboard "node-exporter-full" 1860 45
-        "sha256-GExrdAnzBtp1Ul13cvcZRbEM6iOtFrXXjEaY6g6lGYY=";
-    "nvidia-gpu.json" =
-      communityDashboard "nvidia-gpu" 14574 15
-        "sha256-L1yXeL3LLnyPHlS0l30075gO+WS/WE3zXD8eNeR1r80=";
+  nordvpn = {
+    title = "NordVPN";
+    uid = "nordvpn";
+    timezone = "browser";
+    refresh = "30s";
+    time = {
+      from = "now-24h";
+      to = "now";
+    };
+    schemaVersion = 39;
+    panels = [
+      (panel "stat" "NordVPN speed" 0 0 12 4 [
+        (target "nordvpn_speedtest_download_bytes_per_second * 8" "Down")
+        (target "nordvpn_speedtest_upload_bytes_per_second * 8" "Up")
+      ] (unit "bps"))
+      (panel "stat" "Last speedtest age" 12 0 12 4 [
+        (target "time() - nordvpn_speedtest_timestamp_seconds" "Age")
+      ] (unit "s"))
+      (panel "timeseries" "Speed — NordVPN and host" 0 4 24 8 [
+        (target "nordvpn_speedtest_download_bytes_per_second * 8" "NordVPN down")
+        (target "nordvpn_speedtest_upload_bytes_per_second * 8" "NordVPN up")
+        (target "speedtest_download_bytes_per_second * 8" "Host down")
+        (target "speedtest_upload_bytes_per_second * 8" "Host up")
+      ] (unit "bps"))
+      (panel "timeseries" "NordVPN latency" 0 12 12 8 [
+        (target "nordvpn_speedtest_ping_latency_seconds" "Idle")
+        (target "nordvpn_speedtest_ping_jitter_seconds" "Jitter")
+        (target "nordvpn_speedtest_download_latency_seconds" "During download")
+        (target "nordvpn_speedtest_upload_latency_seconds" "During upload")
+      ] (unit "s"))
+      (panel "timeseries" "NordVPN packet loss" 12 12 12 8 [
+        (target "nordvpn_speedtest_packet_loss_ratio" "Loss")
+      ] percent)
+    ];
   };
+
+  qbittorrent = {
+    title = "qBittorrent";
+    uid = "qbittorrent";
+    timezone = "browser";
+    refresh = "30s";
+    time = {
+      from = "now-24h";
+      to = "now";
+    };
+    schemaVersion = 39;
+    panels = [
+      (panel "stat" "Last collection age" 0 0 6 4 [
+        (target "time() - qbittorrent_timestamp_seconds" "Age")
+      ] (unit "s"))
+      (panel "stat" "Torrents" 6 0 6 4 [ (target "qbittorrent_torrents" "Total") ] { })
+      (panel "stat" "Remaining downloads" 12 0 6 4 [
+        (target "qbittorrent_remaining_bytes" "Remaining")
+      ] (unit "bytes"))
+      (panel "stat" "Free download space" 18 0 6 4 [
+        (target "qbittorrent_free_space_bytes" "Free")
+      ] (unit "bytes"))
+      (panel "timeseries" "Transfer speed" 0 4 12 8 [
+        (target "qbittorrent_download_bytes_per_second" "Down")
+        (target "qbittorrent_upload_bytes_per_second" "Up")
+      ] (unit "Bps"))
+      (panel "timeseries" "Torrents by state" 12 4 12 8 [
+        (target "qbittorrent_torrents_by_state" "{{state}}")
+      ] { })
+      (panel "stat" "All-time transferred" 0 12 8 5 [
+        (target "qbittorrent_downloaded_bytes_total" "Downloaded")
+        (target "qbittorrent_uploaded_bytes_total" "Uploaded")
+      ] (unit "bytes"))
+      (panel "stat" "Session transferred" 8 12 8 5 [
+        (target "qbittorrent_session_download_bytes" "Downloaded")
+        (target "qbittorrent_session_upload_bytes" "Uploaded")
+      ] (unit "bytes"))
+      (panel "stat" "All-time share ratio" 16 12 8 5 [
+        (target "qbittorrent_uploaded_bytes_total / clamp_min(qbittorrent_downloaded_bytes_total, 1)" "Ratio")
+      ] { })
+      (panel "timeseries" "Peers and DHT" 0 17 12 8 [
+        (target "qbittorrent_peers" "Peer connections")
+        (target "qbittorrent_dht_nodes" "DHT nodes")
+      ] { })
+      (panel "stat" "Connection status" 12 17 12 8 [
+        ((target "qbittorrent_connection_status == 1" "{{status}}") // { instant = true; })
+      ] { options.textMode = "name"; })
+    ];
+  };
+
+  dashboards = pkgs.linkFarm "grafana-dashboards" (
+    {
+      "server.json" = pkgs.writeText "server.json" (builtins.toJSON server);
+      "fans.json" = pkgs.writeText "fans.json" (builtins.toJSON fanDashboard);
+      "node-exporter-full.json" =
+        communityDashboard "node-exporter-full" 1860 45
+          "sha256-GExrdAnzBtp1Ul13cvcZRbEM6iOtFrXXjEaY6g6lGYY=";
+      "nvidia-gpu.json" =
+        communityDashboard "nvidia-gpu" 14574 15
+          "sha256-L1yXeL3LLnyPHlS0l30075gO+WS/WE3zXD8eNeR1r80=";
+    }
+    // lib.optionalAttrs host.media.enable {
+      "nordvpn.json" = pkgs.writeText "nordvpn.json" (builtins.toJSON nordvpn);
+      "qbittorrent.json" = pkgs.writeText "qbittorrent.json" (builtins.toJSON qbittorrent);
+    }
+  );
 
   secret = name: "$__file{${config.sops.secrets.${name}.path}}";
 in
