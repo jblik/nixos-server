@@ -19,6 +19,9 @@ let
       config.environment.etc."nsswitch.conf".text
   );
   profile = "${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf";
+  seedingSchedule = pkgs.writers.writePython3 "qbittorrent-seeding-schedule" {
+    libraries = [ pkgs.python3Packages.requests ];
+  } (builtins.readFile ./qbittorrent-seeding-schedule.py);
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -92,6 +95,12 @@ in
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceName' ${interface}
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceAddress' ""
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
+        chmod 600 ${lib.escapeShellArg profile}
+        apiKey=$(${pkgs.crudini}/bin/crudini --get ${lib.escapeShellArg profile} Preferences 'WebUI\APIKey' || true)
+        if [ -z "$apiKey" ]; then
+          apiKey="qbt_$(${pkgs.openssl}/bin/openssl rand -hex 14)"
+          printf '[Preferences]\nWebUI\\APIKey=%s\n' "$apiKey" | ${pkgs.crudini}/bin/crudini --merge ${lib.escapeShellArg profile}
+        fi
       '';
       serviceConfig = {
         UMask = lib.mkForce "0002";
@@ -101,6 +110,33 @@ in
           # The host's NSS resolver modules can use Unix sockets outside the VPN namespace.
           "${nsswitch}:/etc/nsswitch.conf"
         ];
+      };
+    };
+
+    systemd.services.qbittorrent-seeding-schedule = {
+      description = "Restrict completed torrents to nighttime seeding";
+      requisite = [ "qbittorrent.service" ];
+      after = [ "qbittorrent.service" ];
+      environment = {
+        QBITTORRENT_PROFILE = profile;
+        QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
+        TZ = config.time.timeZone;
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = seedingSchedule;
+        NetworkNamespacePath = namespacePath;
+        StateDirectory = "qbittorrent-seeding-schedule";
+        StateDirectoryMode = "0700";
+        UMask = "0077";
+      };
+    };
+
+    systemd.timers.qbittorrent-seeding-schedule = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "*-*-* *:*:00";
+        AccuracySec = "1s";
       };
     };
 
