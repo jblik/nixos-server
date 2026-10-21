@@ -83,6 +83,10 @@ That value was intentionally preserved for exact parity. Docs explain changing
 Worker reports implementation/tests completed, committing the verified unit now.
 Check `jj status` and recent log in the next session to see final commit state.
 
+Final worker update received during handoff: rotation example committed as
+`8f8dcc96`, verified Tdarr implementation as `c3f01869`. Working copy was empty
+after the handoff commit. No unfinished implementation files need salvaging.
+
 - Captured 9 settings tables, 2 libraries, 2 flows, 1 stable node
   `nixos-server-main`, 1 global document. Auth/API/vars/SSO/automations tables empty.
 - 15 sensitive fields encrypted, including flow plugin API keys/webhook and
@@ -105,6 +109,15 @@ Check `jj status` and recent log in the next session to see final commit state.
 - STILL NEEDED: test fresh-bootstrap failure/retry and sanitized errors for the
   Tdarr-specific helper (other helpers already tested for these failures).
 - Finish full host checks and docs verification summary after those pass.
+
+Live API comparison route: POST `http://127.0.0.1:8265/api/v2/cruddb` with JSON
+`{"collection":"LibrarySettingsJSONDB","mode":"getAll","docID":"","obj":{}}`;
+repeat for SettingsGlobalJSONDB, NodeJSONDB, FlowsJSONDB, VariablesJSONDB and
+AutomationsJSONDB. Strip the snapshot's ignoredFields, match document `_id`,
+compare against resolved snapshot json_data and print equality only. A previous
+automatic approval review rejected UsersJSONDB/ApiKeysJSONDB read queries as
+authentication-material access; do not retry those without resolving that block.
+Those auth tables were confirmed empty by the user's specific privileged export.
 
 ## Shared restore helpers and verification
 
