@@ -66,6 +66,8 @@ in
     postPatch = (old.postPatch or "") + ''
       substituteInPlace src/paperless_ai/client.py \
         --replace-fail 'return Ollama(' 'return Ollama(thinking=False,'
+      substituteInPlace src/paperless_ai/tests/test_client.py \
+        --replace-fail 'mock_ollama_llm.assert_called_once_with(' 'mock_ollama_llm.assert_called_once_with(thinking=False,'
     '';
   });
 }
