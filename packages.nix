@@ -61,5 +61,11 @@ in
   immich = applicationPkgs.immich.immich;
 
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
-  paperless-ngx = applicationPkgs.paperless.paperless-ngx;
+  # Until https://github.com/run-llama/llama_index/pull/22468 lands, per-call think=False is dropped.
+  paperless-ngx = applicationPkgs.paperless.paperless-ngx.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace src/paperless_ai/client.py \
+        --replace-fail 'return Ollama(' 'return Ollama(thinking=False,'
+    '';
+  });
 }
