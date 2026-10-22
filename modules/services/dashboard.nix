@@ -101,7 +101,7 @@ let
     Value = value;
   };
 
-  # CoolerControl reports the same sensors its fan curves use (modules/hardware/fans.nix).
+  # CoolerControl reports the same sensors its fan curves use (modules/hardware/fans/default.nix).
   reading = metric: key: label': device: value: {
     Label = label';
     Metric = "coolercontrol_${metric}";
@@ -110,7 +110,7 @@ let
       (label key value)
     ];
   };
-  # A spun-down Hdd reads 0 °C (drivetemp_suspend in modules/hardware/fans.nix).
+  # A spun-down Hdd reads 0 °C (drivetemp_suspend in modules/hardware/fans/default.nix).
   temperature =
     part:
     reading "temperature_celsius" "sensor" part.name part.device part.sensor // { Kind = part.kind; };
@@ -203,7 +203,8 @@ in
       polkit.addRule(function(action, subject) {
         if (action.id == "org.freedesktop.systemd1.manage-units" &&
             ["speedtest.service", "qbittorrent-seeding-schedule.service",
-             "tdarr-maintenance.service", "previews-maintenance.service"].indexOf(action.lookup("unit")) !== -1 &&
+             "tdarr-maintenance.service", "previews-maintenance.service",
+             "coolercontrol-maintenance.service", "coolercontrol-maintenance-manual.service"].indexOf(action.lookup("unit")) !== -1 &&
             action.lookup("verb") == "start" &&
             subject.user == "server-dashboard") {
           return polkit.Result.YES;
@@ -219,9 +220,10 @@ in
           PrometheusUrl = "http://127.0.0.1:${toString config.services.prometheus.port}";
           FanControlUrl = "http://127.0.0.1:${toString host.fans.port}";
           FanControlTokenFile = credential "server-dashboard";
-          # Modes from modules/hardware/fans.nix.
+          # Modes from modules/hardware/fans/default.nix.
           KeepCoolMode = "Keep cool";
           KeepCoolOffMode = "Quiet";
+          KeepCoolManualUnit = "coolercontrol-maintenance-manual.service";
           KeepCoolWindowStart = host.maintenanceWindow.start;
           KeepCoolWindowEnd = host.maintenanceWindow.end;
           MaintenanceTasks =
@@ -238,6 +240,7 @@ in
                   {
                     Id = "keep-cool";
                     Name = "Keep cool";
+                    Unit = "coolercontrol-maintenance.service";
                     Start = host.fans.keepCoolSchedule.start;
                     End = host.fans.keepCoolSchedule.end;
                   }

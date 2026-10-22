@@ -1,4 +1,4 @@
-# Applies $DEFAULTS (see fans.nix) through the CoolerControl API when it differs from
+# Applies $DEFAULTS (see default.nix) through the CoolerControl API when it differs from
 # what was applied last, and keeps a dashboard token in $STATE_DIR/dashboard-token.
 
 jar="$RUNTIME_DIRECTORY/cookies"

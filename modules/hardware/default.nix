@@ -1,7 +1,7 @@
 {
   imports = [
     ./nvidia.nix
-    ./fans.nix
+    ./fans
     ./rgb.nix
   ];
 }

@@ -289,7 +289,7 @@ in
     fans.port = lib.mkOption {
       type = lib.types.port;
       default = 11987;
-      description = "CoolerControl API and web UI port (modules/hardware/fans.nix).";
+      description = "CoolerControl API and web UI port (modules/hardware/fans/default.nix).";
     };
 
     sensors = lib.mkOption {
@@ -304,7 +304,7 @@ in
       };
       description = ''
         Temperature sensors as CoolerControl reports them. The fan curves
-        (modules/hardware/fans.nix) and the dashboard (modules/services/dashboard.nix)
+        (modules/hardware/fans/default.nix) and the dashboard (modules/services/dashboard.nix)
         both read them.
       '';
       type = lib.types.attrsOf (

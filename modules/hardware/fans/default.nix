@@ -19,6 +19,14 @@
 #   fan2 CPU_FAN, fan5 chipset, fan7 CPU_OPT (empty)
 # The GPU fans keep the card's own zero-rpm curve.
 let
+  maintenance = import ../../services/maintenance { inherit config lib pkgs; };
+  maintenanceService = import ../../services/maintenance/service.nix { inherit config lib pkgs; };
+  keepCoolMaintenance = maintenance.script "coolercontrol-maintenance" ./maintenance.py;
+  maintenanceConfig = {
+    StateDirectory = "coolercontrol-maintenance";
+    StateDirectoryMode = "0700";
+    UMask = "0077";
+  };
   api = "http://127.0.0.1:${toString config.host.fans.port}";
   stateDir = "/var/lib/coolercontrol-defaults";
   gpuExhaustFile = "/run/coolercontrol-gpu-exhaust/temperature";
@@ -441,6 +449,29 @@ in
       ExecStart = lib.getExe gpuExhaust;
       Restart = "on-failure";
       RestartSec = 2;
+    };
+  };
+
+  systemd.services.coolercontrol-maintenance = lib.mkMerge [
+    (maintenanceService {
+      task = "keep-cool";
+      description = "Apply the keep cool maintenance window";
+      unit = "coolercontrol-defaults.service";
+      script = ./maintenance.py;
+      environment.COOLERCONTROL_URL = api;
+    })
+    {
+      serviceConfig = maintenanceConfig // {
+        LoadCredential = "coolercontrol-token:${stateDir}/dashboard-token";
+      };
+    }
+  ];
+
+  systemd.services.coolercontrol-maintenance-manual = {
+    description = "Preserve a manual fan mode beyond the maintenance window";
+    serviceConfig = maintenanceConfig // {
+      Type = "oneshot";
+      ExecStart = "${keepCoolMaintenance} --manual";
     };
   };
 

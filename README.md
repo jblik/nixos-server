@@ -115,7 +115,13 @@ qBittorrent seeding. It applies settings at startup and after edits, then sleeps
 boundary. The media tasks each have a `default.nix` and `maintenance.py` under their own directory in
 `modules/services/media/`; Tdarr's local plugins and qBittorrent's metrics script live beside them.
 Shared window evaluation and task launchers live in `modules/services/maintenance/`. Keep cool's
-schedule handling lives in the dashboard, alongside its manual fan-mode ownership tracking.
+`maintenance.py`, CoolerControl configuration, and supporting scripts live together in
+`modules/hardware/fans/`. All four tasks run through systemd; the dashboard scheduler only triggers
+them. The keep cool task tracks its ownership locally. Manual fan changes clear that ownership
+through a separate oneshot invocation of the same script. Ownership state in
+`/var/lib/coolercontrol-maintenance/` survives service restarts; schedule overrides stay in dashboard
+memory.
+
 Separate task services pause/unpause the Tdarr node, set preview CPU workers to
 `host.media.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
 to their seeding window. No maintenance polling timers are used. Application startup checks read

@@ -8,6 +8,7 @@ let
   defaults = pkgs.writeText "maintenance-defaults.json" (
     builtins.toJSON {
       Tasks = {
+        keep-cool = host.fans.keepCoolSchedule;
         seeding = host.media.qbittorrent.seedingSchedule;
         tdarr = host.media.tdarr.nodeSchedule;
         previews = host.media.mediaPreviewGenerator.cpuWorkersSchedule;
