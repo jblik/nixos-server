@@ -93,20 +93,26 @@ HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on por
 
 ## Maintenance Window
 
-Maintenance defaults to **01:30–05:50** in the server timezone. Set
-`host.maintenanceWindow = { start = "01:30"; end = "05:50"; };` in the host configuration.
-Individual windows are declared in `modules/options.nix` and default to that shared value:
+The host explicitly sets `host.maintenance.window = { start = "01:45"; end = "05:30"; };`
+in the server timezone; there are no fallback times. `host.maintenance.enable` defaults to
+`false` and provides the default enable value for each task:
 
-- `host.fans.keepCoolSchedule`
-- `host.media.qbittorrent.seedingSchedule`
-- `host.media.tdarr.nodeSchedule`
-- `host.media.mediaPreviewGenerator.cpuWorkersSchedule`
+- `host.maintenance.keepCool`
+- `host.maintenance.qbittorrent`
+- `host.maintenance.tdarr`
+- `host.maintenance.mediaPreviewGenerator`
+
+Each task has `enable` and `window` options. Its window inherits the shared window.
+For example, `host.maintenance.enable = true;` enables all tasks, while
+`host.maintenance.tdarr.enable = false;` disables only Tdarr maintenance. An explicit
+per-task enable value overrides the global default. The dashboard's runtime maintenance
+switch gates all tasks; it does not enable tasks disabled in Nix.
 
 The dashboard's Maintenance card edits the shared window or a task override in memory. Refreshing
 reads the current settings; restarting the dashboard resets them to the Nix configuration. The card
 notes: “Changes reset when the dashboard restarts.” The dashboard neither reads nor writes schedule
 files and has no writable StateDirectory; existing schedule files become unused. “Use Nix default”
-clears a task override. Tasks whose configured window matches `maintenanceWindow` follow shared
+clears a task override. Tasks whose configured window matches `host.maintenance.window` follow shared
 edits. Equal start/end times disable a window; an earlier end crosses midnight. The maintenance
 switch disables scheduled work across all tasks. Keep cool's manual toggle is in Fans.
 
@@ -123,7 +129,7 @@ through a separate oneshot invocation of the same script. Ownership state in
 memory.
 
 Separate task services pause/unpause the Tdarr node, set preview CPU workers to
-`host.media.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
+`host.maintenance.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
 to their seeding window. No maintenance polling timers are used. Application startup checks read
 `GET /maintenance-windows` on the dashboard's internal loopback port, falling back to Nix defaults
 when the dashboard is unavailable. Dashboard startup reconciles all tasks. Failed task services retry

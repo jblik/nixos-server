@@ -12,7 +12,7 @@ from maintenance import active
 def main():
     task, command = sys.argv[1:]
     defaults = json.loads(Path(os.environ["MAINTENANCE_DEFAULTS"]).read_text())
-    window = dict(defaults["Tasks"][task], enabled=True)
+    window = defaults["Tasks"][task]
     if os.environ.get("MAINTENANCE_URL"):
         try:
             with build_opener(ProxyHandler({})).open(

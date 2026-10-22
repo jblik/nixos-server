@@ -224,15 +224,15 @@ in
           KeepCoolMode = "Keep cool";
           KeepCoolOffMode = "Quiet";
           KeepCoolManualUnit = "coolercontrol-maintenance-manual.service";
-          KeepCoolWindowStart = host.maintenanceWindow.start;
-          KeepCoolWindowEnd = host.maintenanceWindow.end;
+          KeepCoolWindowStart = host.maintenance.window.start;
+          KeepCoolWindowEnd = host.maintenance.window.end;
           MaintenanceTasks =
             map
               (
                 task:
                 task
                 // {
-                  Inherit = task.Start == host.maintenanceWindow.start && task.End == host.maintenanceWindow.end;
+                  Inherit = task.Start == host.maintenance.window.start && task.End == host.maintenance.window.end;
                 }
               )
               (
@@ -241,8 +241,9 @@ in
                     Id = "keep-cool";
                     Name = "Keep cool";
                     Unit = "coolercontrol-maintenance.service";
-                    Start = host.fans.keepCoolSchedule.start;
-                    End = host.fans.keepCoolSchedule.end;
+                    Enabled = host.maintenance.keepCool.enable;
+                    Start = host.maintenance.keepCool.window.start;
+                    End = host.maintenance.keepCool.window.end;
                   }
                 ]
                 ++ lib.optionals host.media.enable [
@@ -250,22 +251,25 @@ in
                     Id = "seeding";
                     Name = "qBittorrent seeding";
                     Unit = "qbittorrent-seeding-schedule.service";
-                    Start = host.media.qbittorrent.seedingSchedule.start;
-                    End = host.media.qbittorrent.seedingSchedule.end;
+                    Enabled = host.maintenance.qbittorrent.enable;
+                    Start = host.maintenance.qbittorrent.window.start;
+                    End = host.maintenance.qbittorrent.window.end;
                   }
                   {
                     Id = "tdarr";
                     Name = "Tdarr node";
                     Unit = "tdarr-maintenance.service";
-                    Start = host.media.tdarr.nodeSchedule.start;
-                    End = host.media.tdarr.nodeSchedule.end;
+                    Enabled = host.maintenance.tdarr.enable;
+                    Start = host.maintenance.tdarr.window.start;
+                    End = host.maintenance.tdarr.window.end;
                   }
                   {
                     Id = "previews";
                     Name = "Preview CPU workers";
                     Unit = "previews-maintenance.service";
-                    Start = host.media.mediaPreviewGenerator.cpuWorkersSchedule.start;
-                    End = host.media.mediaPreviewGenerator.cpuWorkersSchedule.end;
+                    Enabled = host.maintenance.mediaPreviewGenerator.enable;
+                    Start = host.maintenance.mediaPreviewGenerator.window.start;
+                    End = host.maintenance.mediaPreviewGenerator.window.end;
                   }
                 ]
               );

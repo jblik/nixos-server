@@ -6,12 +6,32 @@ let
       type = lib.types.submodule {
         options = lib.genAttrs [ "start" "end" ] (
           name:
-          lib.mkOption {
-            type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
-            default = default.${name};
-            description = "${name} of the daily window in server time (HH:MM). Equal times disable it; an earlier end crosses midnight.";
-          }
+          lib.mkOption (
+            {
+              type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
+              description = "${name} of the daily window in server time (HH:MM). Equal times disable it; an earlier end crosses midnight.";
+            }
+            // lib.optionalAttrs (builtins.hasAttr name default) {
+              default = default.${name};
+            }
+          )
         );
+      };
+      default = { };
+    };
+  maintenanceWindowTask =
+    extraOptions:
+    lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = config.host.maintenance.enable;
+            description = "Enable this maintenance task. Defaults to the shared maintenance switch.";
+          };
+          window = window config.host.maintenance.window;
+        }
+        // extraOptions;
       };
       default = { };
     };
@@ -50,11 +70,20 @@ in
       '';
     };
 
-    maintenanceWindow = window {
-      start = "01:45";
-      end = "05:00";
+    maintenance = {
+      enable = lib.mkEnableOption "scheduled maintenance";
+      window = window { };
+      keepCool = maintenanceWindowTask { };
+      qbittorrent = maintenanceWindowTask { };
+      tdarr = maintenanceWindowTask { };
+      mediaPreviewGenerator = maintenanceWindowTask {
+        cpuWorkers = lib.mkOption {
+          type = lib.types.ints.between 1 64;
+          default = 2;
+          description = "Dedicated preview CPU workers during their scheduled window.";
+        };
+      };
     };
-    fans.keepCoolSchedule = window config.host.maintenanceWindow;
 
     networking = {
       dnsPort = lib.mkOption {
@@ -85,7 +114,6 @@ in
     media = {
       enable = lib.mkEnableOption "Plex and the *arr stack (modules/services/media)";
 
-      qbittorrent.seedingSchedule = window config.host.maintenanceWindow;
       qbittorrent.port = lib.mkOption {
         type = lib.types.port;
         default = 8080;
@@ -127,7 +155,6 @@ in
         default = 8265;
         description = "Tdarr web UI port.";
       };
-      tdarr.nodeSchedule = window config.host.maintenanceWindow;
       tdarr.serverPort = lib.mkOption {
         type = lib.types.port;
         default = 8266;
@@ -138,12 +165,6 @@ in
           type = lib.types.port;
           default = 8280;
           description = "Media preview generator web UI port.";
-        };
-        cpuWorkersSchedule = window config.host.maintenanceWindow;
-        cpuWorkers = lib.mkOption {
-          type = lib.types.ints.between 1 64;
-          default = 2;
-          description = "Dedicated preview CPU workers during their scheduled window.";
         };
       };
 

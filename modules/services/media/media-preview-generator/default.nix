@@ -26,7 +26,7 @@ in
       environment = {
         PREVIEWS_URL = "http://127.0.0.1:${toString port}";
         PREVIEWS_AUTH = "${stateDir}/auth.json";
-        PREVIEWS_CPU_WORKERS = toString config.host.media.mediaPreviewGenerator.cpuWorkers;
+        PREVIEWS_CPU_WORKERS = toString config.host.maintenance.mediaPreviewGenerator.cpuWorkers;
       };
     };
 

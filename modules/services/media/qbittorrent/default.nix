@@ -25,9 +25,9 @@ let
     seedingSchedule
     "--profile ${profile}"
     "--url http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}"
-    "--enabled true"
-    "--start ${config.host.media.qbittorrent.seedingSchedule.start}"
-    "--end ${config.host.media.qbittorrent.seedingSchedule.end}"
+    "--enabled ${lib.boolToString config.host.maintenance.qbittorrent.enable}"
+    "--start ${config.host.maintenance.qbittorrent.window.start}"
+    "--end ${config.host.maintenance.qbittorrent.window.end}"
   ];
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];

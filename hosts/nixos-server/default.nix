@@ -32,9 +32,12 @@ in
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
-    maintenanceWindow = {
-      start = "01:30";
-      end = "05:50";
+    maintenance = {
+      enable = true;
+      window = {
+        start = "01:45";
+        end = "05:30";
+      };
     };
     forgejo.enable = true;
     immich.enable = true;

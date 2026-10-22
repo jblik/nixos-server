@@ -5,13 +5,14 @@
 }:
 let
   host = config.host;
+  taskDefaults = task: task.window // { enabled = task.enable; };
   defaults = pkgs.writeText "maintenance-defaults.json" (
     builtins.toJSON {
       Tasks = {
-        keep-cool = host.fans.keepCoolSchedule;
-        seeding = host.media.qbittorrent.seedingSchedule;
-        tdarr = host.media.tdarr.nodeSchedule;
-        previews = host.media.mediaPreviewGenerator.cpuWorkersSchedule;
+        keep-cool = taskDefaults host.maintenance.keepCool;
+        seeding = taskDefaults host.maintenance.qbittorrent;
+        tdarr = taskDefaults host.maintenance.tdarr;
+        previews = taskDefaults host.maintenance.mediaPreviewGenerator;
       };
     }
   );
