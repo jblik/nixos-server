@@ -221,9 +221,47 @@ in
           # Modes from modules/hardware/fans.nix.
           KeepCoolMode = "Keep cool";
           KeepCoolOffMode = "Quiet";
-          # Only the first window; the dashboard's keep cool menu changes it.
-          KeepCoolWindowStart = "02:00";
-          KeepCoolWindowEnd = "05:00";
+          KeepCoolWindowStart = host.maintenanceWindow.start;
+          KeepCoolWindowEnd = host.maintenanceWindow.end;
+          MaintenanceTasks =
+            map
+              (
+                task:
+                task
+                // {
+                  Inherit = task.Start == host.maintenanceWindow.start && task.End == host.maintenanceWindow.end;
+                }
+              )
+              (
+                [
+                  {
+                    Id = "keep-cool";
+                    Name = "Keep cool";
+                    Start = host.fans.keepCoolSchedule.start;
+                    End = host.fans.keepCoolSchedule.end;
+                  }
+                ]
+                ++ lib.optionals host.media.enable [
+                  {
+                    Id = "seeding";
+                    Name = "qBittorrent seeding";
+                    Start = host.media.qbittorrent.seedingSchedule.start;
+                    End = host.media.qbittorrent.seedingSchedule.end;
+                  }
+                  {
+                    Id = "tdarr";
+                    Name = "Tdarr node";
+                    Start = host.media.tdarr.nodeSchedule.start;
+                    End = host.media.tdarr.nodeSchedule.end;
+                  }
+                  {
+                    Id = "previews";
+                    Name = "Preview CPU workers";
+                    Start = host.media.mediaPreviewGenerator.cpuWorkersSchedule.start;
+                    End = host.media.mediaPreviewGenerator.cpuWorkersSchedule.end;
+                  }
+                ]
+              );
           KeepCoolStateFile = "/var/lib/server-dashboard/keep-cool.json";
           # Written by modules/services/speedtest.nix.
           Speedtest = true;

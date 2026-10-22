@@ -32,7 +32,7 @@ in
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
-    media.qbittorrent.seedingSchedule = {
+    maintenanceWindow = {
       start = "01:30";
       end = "05:50";
     };

@@ -22,6 +22,7 @@ let
   seedingSchedule = pkgs.writers.writePython3 "qbittorrent-seeding-schedule" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-seeding-schedule.py);
+  maintenanceCommand = import ../maintenance-command.nix { inherit config lib pkgs; };
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-metrics.py);
@@ -159,13 +160,11 @@ in
       environment = {
         QBITTORRENT_PROFILE = profile;
         QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
-        SEEDING_SCHEDULE_START = config.host.media.qbittorrent.seedingSchedule.start;
-        SEEDING_SCHEDULE_END = config.host.media.qbittorrent.seedingSchedule.end;
         TZ = config.time.timeZone;
       };
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = seedingSchedule;
+        ExecStart = maintenanceCommand "seeding" seedingSchedule;
         NetworkNamespacePath = namespacePath;
         StateDirectory = "qbittorrent-seeding-schedule";
         StateDirectoryMode = "0700";
@@ -176,7 +175,8 @@ in
     systemd.timers.qbittorrent-seeding-schedule = {
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnCalendar = "*-*-* *:0/5:00";
+        OnBootSec = "1min";
+        OnUnitActiveSec = "30s";
         AccuracySec = "1s";
       };
     };

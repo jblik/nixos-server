@@ -1,4 +1,21 @@
-{ lib, ... }:
+{ config, lib, ... }:
+let
+  window =
+    default:
+    lib.mkOption {
+      type = lib.types.submodule {
+        options = lib.genAttrs [ "start" "end" ] (
+          name:
+          lib.mkOption {
+            type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
+            default = default.${name};
+            description = "${name} of the daily window in server time (HH:MM). Equal times disable it; an earlier end crosses midnight.";
+          }
+        );
+      };
+      default = { };
+    };
+in
 {
   options.host = {
     hostname = lib.mkOption {
@@ -33,20 +50,22 @@
       '';
     };
 
+    maintenanceWindow = window {
+      start = "01:45";
+      end = "05:00";
+    };
+    fans.keepCoolSchedule = window config.host.maintenanceWindow;
+
     media = {
       enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media)";
 
-      qbittorrent.seedingSchedule = {
-        start = lib.mkOption {
-          type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
-          default = "01:30";
-          description = "Start of the daily seeding window, as HH:MM in the server timezone (inclusive).";
-        };
-        end = lib.mkOption {
-          type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
-          default = "05:00";
-          description = "End of the daily seeding window, as HH:MM in the server timezone (exclusive). An earlier end crosses midnight; equal times disable seeding.";
-        };
+      qbittorrent.seedingSchedule = window config.host.maintenanceWindow;
+      tdarr.nodeSchedule = window config.host.maintenanceWindow;
+      mediaPreviewGenerator.cpuWorkersSchedule = window config.host.maintenanceWindow;
+      mediaPreviewGenerator.cpuWorkers = lib.mkOption {
+        type = lib.types.ints.between 1 64;
+        default = 2;
+        description = "Dedicated preview CPU workers during their scheduled window.";
       };
 
       plex = {

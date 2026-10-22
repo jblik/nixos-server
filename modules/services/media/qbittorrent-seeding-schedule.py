@@ -1,5 +1,4 @@
 import configparser
-from datetime import datetime, time
 import json
 import os
 from pathlib import Path
@@ -22,13 +21,7 @@ def main():
     response.raise_for_status()
     torrents = {torrent["hash"]: torrent for torrent in response.json()}
     stopped.intersection_update(torrents)
-    now = datetime.now().time()
-    start = time.fromisoformat(os.environ["SEEDING_SCHEDULE_START"])
-    end = time.fromisoformat(os.environ["SEEDING_SCHEDULE_END"])
-    if start <= end:
-        nighttime = start <= now < end
-    else:
-        nighttime = now >= start or now < end
+    nighttime = os.environ["MAINTENANCE_ACTIVE"] == "true"
 
     if nighttime:
         hashes = [

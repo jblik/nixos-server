@@ -37,6 +37,7 @@ in
     ./qbittorrent.nix
     ./containers.nix
     ./media-preview-generator.nix
+    ./maintenance.nix
     ./plex.nix
     ./tdarr.nix
   ];

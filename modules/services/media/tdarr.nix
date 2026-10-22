@@ -15,6 +15,7 @@ in
       };
       nodes = {
         main = {
+          startPaused = true;
           workers.transcodeCPU = 0;
           workers.healthcheckCPU = 0;
           workers.transcodeGPU = 2;
