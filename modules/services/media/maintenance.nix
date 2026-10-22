@@ -28,7 +28,7 @@ in
           TASK = if tdarr then "tdarr" else "previews";
           TDARR_URL = "http://127.0.0.1:${toString config.services.tdarr.server.serverPort}";
           TDARR_NODE = config.services.tdarr.nodes.main.name;
-          PREVIEWS_URL = "http://127.0.0.1:8280";
+          PREVIEWS_URL = "http://127.0.0.1:${toString config.host.media.mediaPreviewGenerator.port}";
           PREVIEWS_AUTH = "/var/lib/media-preview-generator/auth.json";
           PREVIEWS_CPU_WORKERS = toString config.host.media.mediaPreviewGenerator.cpuWorkers;
           TZ = config.time.timeZone;
