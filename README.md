@@ -91,12 +91,35 @@ Plex/Tdarr transcode cache.
 Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
 HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port 8280.
 
-qBittorrent seeds completed torrents only from **01:30 to 05:00**, in the server's
-`Europe/Brussels` timezone. `qbittorrent-seeding-schedule.timer` checks every minute,
-stops completed torrents outside that window (including newly completed downloads),
-and resumes only torrents it stopped. Torrents already stopped manually or by seeding
-limits stay stopped; ratio and total seeding-time limits are checked before resuming.
-Configure the window in `hosts/nixos-server/default.nix`
+## Maintenance Window
+
+Maintenance defaults to **01:30–05:50** in the server timezone. Set
+`host.maintenanceWindow = { start = "01:30"; end = "05:50"; };` in the host configuration.
+Individual windows are declared in `modules/options.nix` and default to that shared value:
+
+- `host.fans.keepCoolSchedule`
+- `host.media.qbittorrent.seedingSchedule`
+- `host.media.tdarr.nodeSchedule`
+- `host.media.mediaPreviewGenerator.cpuWorkersSchedule`
+
+The dashboard's Maintenance card edits the shared window or a task override and saves changes in
+`/var/lib/server-dashboard/keep-cool.json`. Saved edits take precedence over Nix defaults; “Use Nix
+default” clears a task override. Tasks whose configured window matches `maintenanceWindow` follow
+shared dashboard edits. Equal start/end times disable a window; an earlier end crosses midnight.
+The maintenance switch disables scheduled work across all tasks. Keep cool's manual toggle is in Fans.
+
+Every 30 seconds, maintenance units pause/unpause the Tdarr node, set preview CPU workers to
+`host.media.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
+to their seeding window. Tdarr and preview workers finish current files when paused/reduced;
+preview GPU workers stay available. The preview API's CPU count control requires a single dedicated
+CPU worker group; split or mixed CPU/GPU groups must be adjusted in the preview application's Workers settings.
+The scheduler reads the preview application's existing `auth.json` token locally, without exposing it
+to the dashboard. qBittorrent resumes only torrents it stopped; manual stops and ratio/time limits
+remain respected. Keep cool retains manual fan-mode ownership and its existing 30-second scheduler.
+
+The server configuration and dashboard changes must be deployed together. For local validation,
+use `--override-input server-dashboard path:/Users/jblik/projects/server-dashboard`; the checked-in
+flake input continues to reference the published dashboard revision.
 
 ## Services
 
