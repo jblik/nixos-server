@@ -44,6 +44,11 @@ def main():
             torrent_hash for torrent_hash, torrent in torrents.items()
             if torrent["state"] in (
                 "uploading", "stalledUP", "queuedUP", "forcedUP"
+            ) or (
+                torrent.get("progress", 0) == 1
+                and torrent["state"] not in (
+                    "stoppedUP", "stoppedDL", "error", "missingFiles"
+                )
             )
         ]
         stopped.update(hashes)

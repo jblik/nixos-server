@@ -202,7 +202,8 @@ in
     security.polkit.extraConfig = ''
       polkit.addRule(function(action, subject) {
         if (action.id == "org.freedesktop.systemd1.manage-units" &&
-            action.lookup("unit") == "speedtest.service" &&
+            ["speedtest.service", "qbittorrent-seeding-schedule.service",
+             "tdarr-maintenance.service", "previews-maintenance.service"].indexOf(action.lookup("unit")) !== -1 &&
             action.lookup("verb") == "start" &&
             subject.user == "server-dashboard") {
           return polkit.Result.YES;
@@ -245,18 +246,21 @@ in
                   {
                     Id = "seeding";
                     Name = "qBittorrent seeding";
+                    Unit = "qbittorrent-seeding-schedule.service";
                     Start = host.media.qbittorrent.seedingSchedule.start;
                     End = host.media.qbittorrent.seedingSchedule.end;
                   }
                   {
                     Id = "tdarr";
                     Name = "Tdarr node";
+                    Unit = "tdarr-maintenance.service";
                     Start = host.media.tdarr.nodeSchedule.start;
                     End = host.media.tdarr.nodeSchedule.end;
                   }
                   {
                     Id = "previews";
                     Name = "Preview CPU workers";
+                    Unit = "previews-maintenance.service";
                     Start = host.media.mediaPreviewGenerator.cpuWorkersSchedule.start;
                     End = host.media.mediaPreviewGenerator.cpuWorkersSchedule.end;
                   }

@@ -23,6 +23,9 @@ let
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-seeding-schedule.py);
   maintenanceCommand = import ../maintenance-command.nix { inherit config lib pkgs; };
+  completed = pkgs.writeShellScript "qbittorrent-maintenance-finished" ''
+    exec ${pkgs.systemd}/bin/systemctl --no-block restart qbittorrent-seeding-schedule.service
+  '';
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-metrics.py);
@@ -99,6 +102,8 @@ in
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceName' ${interface}
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceAddress' ""
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
+        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} AutoRun enabled true
+        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} AutoRun program ${completed}
         chmod 600 ${lib.escapeShellArg profile}
         apiKey=$(${pkgs.crudini}/bin/crudini --get ${lib.escapeShellArg profile} Preferences 'WebUI\APIKey' || true)
         if [ -z "$apiKey" ]; then
@@ -154,7 +159,9 @@ in
     };
 
     systemd.services.qbittorrent-seeding-schedule = {
-      description = "Restrict completed torrents to nighttime seeding";
+      description = "Restrict completed torrents to their maintenance window";
+      wantedBy = [ "qbittorrent.service" ];
+      partOf = [ "qbittorrent.service" ];
       requisite = [ "qbittorrent.service" ];
       after = [ "qbittorrent.service" ];
       environment = {
@@ -165,6 +172,8 @@ in
       serviceConfig = {
         Type = "oneshot";
         ExecStart = maintenanceCommand "seeding" seedingSchedule;
+        Restart = "on-failure";
+        RestartSec = "10s";
         NetworkNamespacePath = namespacePath;
         StateDirectory = "qbittorrent-seeding-schedule";
         StateDirectoryMode = "0700";
@@ -172,14 +181,16 @@ in
       };
     };
 
-    systemd.timers.qbittorrent-seeding-schedule = {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "1min";
-        OnUnitActiveSec = "30s";
-        AccuracySec = "1s";
-      };
-    };
+    security.polkit.extraConfig = ''
+      polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.systemd1.manage-units" &&
+            action.lookup("unit") == "qbittorrent-seeding-schedule.service" &&
+            action.lookup("verb") == "restart" &&
+            subject.user == ${builtins.toJSON config.services.qbittorrent.user}) {
+          return polkit.Result.YES;
+        }
+      });
+    '';
 
     systemd.sockets.qbittorrent-webui = {
       description = "qBittorrent WebUI on the host";

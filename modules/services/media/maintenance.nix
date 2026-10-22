@@ -21,8 +21,12 @@ in
         description = "Apply the ${
           if tdarr then "Tdarr node" else "preview CPU worker"
         } maintenance window";
-        after = [
-          (if tdarr then "tdarr-node-config-main.service" else "podman-media-preview-generator.service")
+        wantedBy = [
+          (if tdarr then "tdarr-node-main.service" else "podman-media-preview-generator.service")
+        ];
+        after = [ (if tdarr then "tdarr-node-main.service" else "podman-media-preview-generator.service") ];
+        partOf = [
+          (if tdarr then "tdarr-node-main.service" else "podman-media-preview-generator.service")
         ];
         environment = {
           TASK = if tdarr then "tdarr" else "previews";
@@ -35,17 +39,11 @@ in
         };
         serviceConfig = {
           Type = "oneshot";
+          Restart = "on-failure";
+          RestartSec = "10s";
           ExecStart = maintenanceCommand (if tdarr then "tdarr" else "previews") workerSchedule;
         };
       }
     );
-    systemd.timers = lib.genAttrs [ "tdarr-maintenance" "previews-maintenance" ] (_: {
-      wantedBy = [ "timers.target" ];
-      timerConfig = {
-        OnBootSec = "1min";
-        OnUnitActiveSec = "30s";
-        AccuracySec = "1s";
-      };
-    });
   };
 }
