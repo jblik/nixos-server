@@ -23,10 +23,14 @@ let
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-seeding-schedule.py);
   maintenanceCommand = import ../maintenance-command.nix { inherit config lib pkgs; };
-  completionFile = "${config.services.qbittorrent.profileDir}/maintenance-finished";
-  completed = pkgs.writeShellScript "qbittorrent-maintenance-finished" ''
-    printf '%s\n' finished > ${lib.escapeShellArg completionFile}
-  '';
+  completed = lib.concatStringsSep " " [
+    seedingSchedule
+    "--profile ${profile}"
+    "--url http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}"
+    "--enabled true"
+    "--start ${config.host.media.qbittorrent.seedingSchedule.start}"
+    "--end ${config.host.media.qbittorrent.seedingSchedule.end}"
+  ];
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-metrics.py);
@@ -104,7 +108,7 @@ in
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} BitTorrent 'Session\InterfaceAddress' ""
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} Network PortForwardingEnabled false
         ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} AutoRun enabled true
-        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} AutoRun program ${completed}
+        ${pkgs.crudini}/bin/crudini --set ${lib.escapeShellArg profile} AutoRun program ${lib.escapeShellArg completed}
         chmod 600 ${lib.escapeShellArg profile}
         apiKey=$(${pkgs.crudini}/bin/crudini --get ${lib.escapeShellArg profile} Preferences 'WebUI\APIKey' || true)
         if [ -z "$apiKey" ]; then
@@ -161,7 +165,6 @@ in
 
     systemd.services.qbittorrent-seeding-schedule = {
       description = "Restrict completed torrents to their maintenance window";
-      # Completion bursts must not disable the path watch through the service start limit.
       unitConfig.StartLimitIntervalSec = 0;
       wantedBy = [ "qbittorrent.service" ];
       partOf = [ "qbittorrent.service" ];
@@ -171,24 +174,16 @@ in
         QBITTORRENT_PROFILE = profile;
         QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
         TZ = config.time.timeZone;
+        QBITTORRENT_UPDATE_HOOK = "true";
       };
       serviceConfig = {
         Type = "oneshot";
+        User = config.services.qbittorrent.user;
+        Group = config.services.qbittorrent.group;
         ExecStart = maintenanceCommand "seeding" seedingSchedule;
         Restart = "on-failure";
         RestartSec = "10s";
-        NetworkNamespacePath = namespacePath;
-        StateDirectory = "qbittorrent-seeding-schedule";
-        StateDirectoryMode = "0700";
         UMask = "0077";
-      };
-    };
-
-    systemd.paths.qbittorrent-seeding-schedule = {
-      wantedBy = [ "multi-user.target" ];
-      pathConfig = {
-        PathChanged = completionFile;
-        Unit = "qbittorrent-seeding-schedule.service";
       };
     };
 

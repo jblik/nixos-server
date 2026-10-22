@@ -3,32 +3,36 @@ import json
 import os
 from pathlib import Path
 import sys
+from urllib.error import URLError
+from urllib.request import ProxyHandler, build_opener
 
 
-def active(task, defaults, state, now):
-    shared = {
-        "Start": defaults["Window"]["start"],
-        "End": defaults["Window"]["end"],
-    }
-    window = defaults["Tasks"][task]
-    if window != defaults["Window"]:
-        shared = {"Start": window["start"], "End": window["end"]}
-    else:
-        shared = {key: state.get(key, value) for key, value in shared.items()}
-    window = (state.get("TaskWindows") or {}).get(task, shared)
-    start = time.fromisoformat(window["Start"])
-    end = time.fromisoformat(window["End"])
+def active(window, now):
+    start = time.fromisoformat(window["start"])
+    end = time.fromisoformat(window["end"])
     inside = start <= now < end if start <= end else now >= start or now < end
-    return state.get("Enabled", True) and inside
+    return window["enabled"] and inside
 
 
 def main():
     task, command = sys.argv[1:]
     defaults = json.loads(Path(os.environ["MAINTENANCE_DEFAULTS"]).read_text())
-    file = Path(os.environ["MAINTENANCE_STATE"])
-    state = json.loads(file.read_text()) if file.exists() else {}
-    enabled = active(task, defaults, state, datetime.now().time())
-    os.environ["MAINTENANCE_ACTIVE"] = str(enabled).lower()
+    window = dict(defaults["Tasks"][task], enabled=True)
+    if os.environ.get("MAINTENANCE_URL"):
+        try:
+            with build_opener(ProxyHandler({})).open(
+                os.environ["MAINTENANCE_URL"], timeout=5
+            ) as response:
+                window = json.load(response)[task]
+        except URLError:
+            # Application startup can precede the dashboard's listener.
+            pass
+    os.environ["MAINTENANCE_ENABLED"] = str(window["enabled"]).lower()
+    os.environ["MAINTENANCE_START"] = window["start"]
+    os.environ["MAINTENANCE_END"] = window["end"]
+    os.environ["MAINTENANCE_ACTIVE"] = str(
+        active(window, datetime.now().time())
+    ).lower()
     os.execv(command, [command])
 
 

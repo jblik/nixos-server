@@ -266,7 +266,6 @@ in
                   }
                 ]
               );
-          KeepCoolStateFile = "/var/lib/server-dashboard/keep-cool.json";
           # Written by modules/services/speedtest.nix.
           Speedtest = true;
           SpeedtestUnit = "speedtest.service";

@@ -102,30 +102,36 @@ Individual windows are declared in `modules/options.nix` and default to that sha
 - `host.media.tdarr.nodeSchedule`
 - `host.media.mediaPreviewGenerator.cpuWorkersSchedule`
 
-The dashboard's Maintenance card edits the shared window or a task override and saves changes in
-`/var/lib/server-dashboard/keep-cool.json`. The card shows the shared daily window; “Additional
-configuration” opens the individual task windows. Saved edits take precedence over Nix defaults.
-Tasks whose configured window matches `maintenanceWindow` follow
-shared dashboard edits. Equal start/end times disable a window; an earlier end crosses midnight.
-The maintenance switch disables scheduled work across all tasks. Keep cool's manual toggle is in Fans.
+The dashboard's Maintenance card edits the shared window or a task override in memory. Refreshing
+reads the current settings; restarting the dashboard resets them to the Nix configuration. The card
+notes: “Changes reset when the dashboard restarts.” The dashboard neither reads nor writes schedule
+files and has no writable StateDirectory; existing schedule files become unused. “Use Nix default”
+clears a task override. Tasks whose configured window matches `maintenanceWindow` follow shared
+edits. Equal start/end times disable a window; an earlier end crosses midnight. The maintenance
+switch disables scheduled work across all tasks. Keep cool's manual toggle is in Fans.
 
-The dashboard scheduler applies maintenance on startup and sleeps until the next task's window
-boundary. Saving a schedule wakes it immediately to apply the current windows and recalculate the
-next boundary. Scheduling requires the dashboard service to be running. Separate oneshot services
-pause/unpause the Tdarr node, set preview CPU workers to
+The dashboard applies settings at startup and after edits, then sleeps until the next window boundary.
+Separate task services pause/unpause the Tdarr node, set preview CPU workers to
 `host.media.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
-to their seeding window. Each application startup also reapplies its window, with retries on API
-failures. There are no maintenance polling timers; the qBittorrent metrics timer remains separate. Tdarr and preview workers finish current files when paused/reduced;
-preview GPU workers stay available. The preview API's CPU count control requires a single dedicated
-CPU worker group; split or mixed CPU/GPU groups must be adjusted in the preview application's Workers settings.
-The scheduler reads the preview application's existing `auth.json` token locally, without exposing it
-to the dashboard. qBittorrent resumes only torrents it stopped; manual stops and ratio/time limits
-remain respected. Nix configures qBittorrent's torrent-finished external program to write a marker
-in its existing profile directory. A systemd path watch triggers the seeding check, including
-torrents that are still moving after completion. The hook does not interpolate torrent names or
-paths and needs no additional sandbox permissions. Keep cool retains
-manual fan-mode ownership. Manual task changes between boundaries remain until another schedule,
-application-startup, or completion event reapplies the window.
+to their seeding window. No maintenance polling timers are used. Application startup checks read
+`GET /maintenance-windows` on the dashboard's internal loopback port, falling back to Nix defaults
+when the dashboard is unavailable. Dashboard startup reconciles all tasks. Failed task services retry
+after ten seconds. The dashboard must stay running for boundary scheduling.
+
+Tdarr and preview workers finish current files when paused/reduced; preview GPU workers stay
+available. The preview API's CPU count control requires a single dedicated CPU worker group; split
+or mixed CPU/GPU groups must be adjusted in the preview application's Workers settings. The task
+service reads the preview application's existing `auth.json` token locally, without exposing it to the
+dashboard. Keep cool retains manual fan-mode ownership within a window.
+
+qBittorrent directly runs its completion script as `qbittorrent`, with enabled/start/end arguments.
+Boundary checks run as the same user through the existing host-side WebUI proxy and update the
+completion command through `app/setPreferences`. Completion hooks use the VPN namespace's local
+WebUI and need no dashboard connectivity. A shared lock and `seeding-stopped.json` live in the
+existing writable `qBittorrent` profile subdirectory; this operational ownership state survives
+restarts and is separate from schedule overrides. Only torrents stopped by the script are resumed;
+manual stops and ratio/time limits remain respected. There is no completion marker or systemd path
+watch, and qBittorrent's sandbox is unchanged. Applications may still save their own settings.
 
 The server configuration and dashboard changes must be deployed together. For local validation,
 use `--override-input server-dashboard path:/Users/jblik/projects/server-dashboard`; the checked-in
