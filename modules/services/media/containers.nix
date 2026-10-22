@@ -8,7 +8,7 @@ let
   gid = "100";
   containers = {
     cleanuparr = {
-      image = "ghcr.io/cleanuparr/cleanuparr:latest";
+      image = "ghcr.io/cleanuparr/cleanuparr:2.10.12";
       environment = {
         PUID = uid;
         PGID = gid;
@@ -34,7 +34,7 @@ let
     };
 
     maintainerr = {
-      image = "ghcr.io/maintainerr/maintainerr:latest";
+      image = "ghcr.io/maintainerr/maintainerr:3.31.0";
       user = "${uid}:${gid}";
       environment.UI_PORT = toString m.maintainerr.port;
       volumes = [ "/var/lib/maintainerr:/opt/data" ];
