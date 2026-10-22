@@ -2,27 +2,10 @@
 # *arr helpers that have no NixOS module. Host networking so they reach Plex and
 # the *arr apps on localhost; all run as 99:100
 let
-  inherit (config.host.storage) bulkMount;
   m = config.host.media;
   uid = "99";
   gid = "100";
   containers = {
-    cleanuparr = {
-      image = "ghcr.io/cleanuparr/cleanuparr:2.10.12";
-      environment = {
-        PUID = uid;
-        PGID = gid;
-        UMASK = "002";
-        PORT = toString m.cleanuparr.port;
-      };
-      # Same path as qBittorrent sees, so the torrent paths it reports resolve.
-      volumes = [
-        "/var/lib/cleanuparr:/config"
-        "${bulkMount}/torrents:${bulkMount}/torrents"
-        "${./cleanuparr-blocklist.txt}:/blocklist.txt:ro"
-      ];
-    };
-
     pulsarr = {
       image = "lakker/pulsarr:0.19.7";
       environment = {
@@ -63,8 +46,7 @@ in
       lib.nameValuePair "podman-${name}" {
         unitConfig.RequiresMountsFor = [
           "/var/lib/${name}"
-        ]
-        ++ lib.optional (name == "cleanuparr") bulkMount;
+        ];
       }
     ) containers;
   };

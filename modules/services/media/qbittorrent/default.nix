@@ -19,10 +19,8 @@ let
       config.environment.etc."nsswitch.conf".text
   );
   profile = "${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf";
-  seedingSchedule = pkgs.writers.writePython3 "qbittorrent-seeding-schedule" {
-    libraries = [ pkgs.python3Packages.requests ];
-  } (builtins.readFile ./qbittorrent-seeding-schedule.py);
-  maintenanceCommand = import ../maintenance-command.nix { inherit config lib pkgs; };
+  maintenance = import ../../maintenance { inherit config lib pkgs; };
+  seedingSchedule = maintenance.script "qbittorrent-seeding-schedule" ./maintenance.py;
   completed = lib.concatStringsSep " " [
     seedingSchedule
     "--profile ${profile}"
@@ -33,7 +31,7 @@ let
   ];
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
-  } (builtins.readFile ./qbittorrent-metrics.py);
+  } (builtins.readFile ./metrics.py);
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -180,7 +178,7 @@ in
         Type = "oneshot";
         User = config.services.qbittorrent.user;
         Group = config.services.qbittorrent.group;
-        ExecStart = maintenanceCommand "seeding" seedingSchedule;
+        ExecStart = maintenance.command "seeding" seedingSchedule;
         Restart = "on-failure";
         RestartSec = "10s";
         UMask = "0077";

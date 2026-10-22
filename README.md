@@ -110,7 +110,12 @@ clears a task override. Tasks whose configured window matches `maintenanceWindow
 edits. Equal start/end times disable a window; an earlier end crosses midnight. The maintenance
 switch disables scheduled work across all tasks. Keep cool's manual toggle is in Fans.
 
-The dashboard applies settings at startup and after edits, then sleeps until the next window boundary.
+The dashboard has one scheduler for all four tasks: keep cool, Tdarr, preview CPU workers, and
+qBittorrent seeding. It applies settings at startup and after edits, then sleeps until the next window
+boundary. The media tasks each have a `default.nix` and `maintenance.py` under their own directory in
+`modules/services/media/`; Tdarr's local plugins and qBittorrent's metrics script live beside them.
+Shared window evaluation and task launchers live in `modules/services/maintenance/`. Keep cool's
+schedule handling lives in the dashboard, alongside its manual fan-mode ownership tracking.
 Separate task services pause/unpause the Tdarr node, set preview CPU workers to
 `host.media.mediaPreviewGenerator.cpuWorkers` (default 2) or zero, and restrict completed torrents
 to their seeding window. No maintenance polling timers are used. Application startup checks read

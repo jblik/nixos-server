@@ -5,6 +5,7 @@
   ...
 }:
 let
+  maintenanceService = import ../../maintenance/service.nix { inherit config lib pkgs; };
   inherit (config.host.storage) bulkMount scratchDir;
   languagePlugin = pkgs.writeText "Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js" (
     lib.replaceStrings
@@ -13,7 +14,7 @@ let
         (toString config.services.sonarr.settings.server.port)
         (toString config.services.radarr.settings.server.port)
       ]
-      (builtins.readFile ./tdarr-plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js)
+      (builtins.readFile ./plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js)
   );
 in
 {
@@ -50,6 +51,18 @@ in
     # The Tdarr module only lets it write to its own state; it has to replace
     # files in the library and use the cache under scratchDir.
     systemd.services = lib.mkMerge [
+      {
+        tdarr-maintenance = maintenanceService {
+          task = "tdarr";
+          description = "Apply the Tdarr node maintenance window";
+          unit = "tdarr-node-main.service";
+          script = ./maintenance.py;
+          environment = {
+            TDARR_URL = "http://127.0.0.1:${toString config.services.tdarr.server.serverPort}";
+            TDARR_NODE = config.services.tdarr.nodes.main.name;
+          };
+        };
+      }
       (lib.genAttrs
         [
           "tdarr-server"

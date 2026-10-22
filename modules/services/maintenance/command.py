@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -6,12 +6,7 @@ import sys
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
 
-
-def active(window, now):
-    start = time.fromisoformat(window["start"])
-    end = time.fromisoformat(window["end"])
-    inside = start <= now < end if start <= end else now >= start or now < end
-    return window["enabled"] and inside
+from maintenance import active
 
 
 def main():

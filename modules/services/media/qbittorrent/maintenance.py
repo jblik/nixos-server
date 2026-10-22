@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from datetime import datetime, time
+from datetime import datetime
 import fcntl
 import json
 import os
@@ -8,6 +8,8 @@ from pathlib import Path
 import sys
 
 import requests
+
+from maintenance import active
 
 
 def arguments():
@@ -51,11 +53,11 @@ def reconcile(args, state):
     response.raise_for_status()
     torrents = {torrent["hash"]: torrent for torrent in response.json()}
     stopped.intersection_update(torrents)
-    start = time.fromisoformat(args.start)
-    end = time.fromisoformat(args.end)
-    now = datetime.now().time()
-    inside = start <= now < end if start <= end else now >= start or now < end
-    nighttime = args.enabled == "true" and inside
+    nighttime = active({
+        "enabled": args.enabled == "true",
+        "start": args.start,
+        "end": args.end,
+    }, datetime.now().time())
 
     if nighttime:
         hashes = [

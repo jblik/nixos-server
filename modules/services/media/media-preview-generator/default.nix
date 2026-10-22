@@ -5,6 +5,7 @@
   ...
 }:
 let
+  maintenanceService = import ../../maintenance/service.nix { inherit config lib pkgs; };
   inherit (config.host.storage) bulkMount scratchDir;
   plex = config.services.plex;
   plexRoot = "${plex.dataDir}/Plex Media Server";
@@ -17,6 +18,18 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
+    systemd.services.previews-maintenance = maintenanceService {
+      task = "previews";
+      description = "Apply the preview CPU worker maintenance window";
+      unit = "podman-media-preview-generator.service";
+      script = ./maintenance.py;
+      environment = {
+        PREVIEWS_URL = "http://127.0.0.1:${toString port}";
+        PREVIEWS_AUTH = "${stateDir}/auth.json";
+        PREVIEWS_CPU_WORKERS = toString config.host.media.mediaPreviewGenerator.cpuWorkers;
+      };
+    };
+
     hardware.nvidia-container-toolkit.enable = true;
     virtualisation.podman.enable = true;
     virtualisation.oci-containers.backend = "podman";

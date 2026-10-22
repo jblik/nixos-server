@@ -34,12 +34,12 @@ in
 {
   imports = [
     ./arr.nix
-    ./qbittorrent.nix
+    ./qbittorrent
     ./containers.nix
-    ./media-preview-generator.nix
-    ./maintenance.nix
+    ./cleanuparr
+    ./media-preview-generator
     ./plex.nix
-    ./tdarr.nix
+    ./tdarr
   ];
 
   config = lib.mkIf m.enable {
