@@ -9,7 +9,7 @@ let
   plex = config.services.plex;
   plexRoot = "${plex.dataDir}/Plex Media Server";
   stateDir = "/var/lib/media-preview-generator";
-  port = 8280;
+  port = config.host.media.mediaPreviewGenerator.port;
   nvidiaVulkanIcd = pkgs.runCommand "nvidia-egl-icd.json" { nativeBuildInputs = [ pkgs.jq ]; } ''
     jq '.ICD.library_path = "/usr/local/nvidia/lib64/libEGL_nvidia.so.0"' \
       ${config.hardware.nvidia.package}/share/vulkan/icd.d/nvidia_icd.json > "$out"

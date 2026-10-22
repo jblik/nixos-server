@@ -32,8 +32,8 @@ let
 
   privateServices =
     lib.optionalAttrs config.host.music-assistant.enable {
-      music = 8095;
-      sendspin = 8098;
+      music = config.host.music-assistant.ma-port;
+      sendspin = config.host.music-assistant.sendspin-port;
     }
     // lib.optionalAttrs config.host.media.enable {
       media-preview-generator =

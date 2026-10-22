@@ -57,15 +57,27 @@ in
     fans.keepCoolSchedule = window config.host.maintenanceWindow;
 
     media = {
-      enable = lib.mkEnableOption "Plex, the *arr stack and Tdarr (modules/services/media)";
+      enable = lib.mkEnableOption "Plex and the *arr stack (modules/services/media)";
 
       qbittorrent.seedingSchedule = window config.host.maintenanceWindow;
+      tdarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 8265;
+        description = "Tdarr web UI port.";
+      };
       tdarr.nodeSchedule = window config.host.maintenanceWindow;
-      mediaPreviewGenerator.cpuWorkersSchedule = window config.host.maintenanceWindow;
-      mediaPreviewGenerator.cpuWorkers = lib.mkOption {
-        type = lib.types.ints.between 1 64;
-        default = 2;
-        description = "Dedicated preview CPU workers during their scheduled window.";
+      mediaPreviewGenerator = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 8280;
+          description = "Media preview generator web UI port.";
+        };
+        cpuWorkersSchedule = window config.host.maintenanceWindow;
+        cpuWorkers = lib.mkOption {
+          type = lib.types.ints.between 1 64;
+          default = 2;
+          description = "Dedicated preview CPU workers during their scheduled window.";
+        };
       };
 
       plex = {
@@ -99,13 +111,33 @@ in
       };
     };
 
-    forgejo.enable = lib.mkEnableOption "the Forgejo git forge (modules/services/forgejo.nix)";
+    forgejo = {
+      enable = lib.mkEnableOption "the Forgejo git forge (modules/services/forgejo.nix)";
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 3000;
+        description = "Forgejo web UI port.";
+      };
+    };
 
     immich.enable = lib.mkEnableOption "the Immich photo library (modules/services/immich.nix)";
 
     home-assistant.enable = lib.mkEnableOption "Home Assistant and its Apple Home bridge (modules/services/home-assistant.nix)";
 
-    music-assistant.enable = lib.mkEnableOption "Music Assistant and the Sendspin Bluetooth bridge (modules/services/music-assistant.nix)";
+    music-assistant = {
+      enable = lib.mkEnableOption "Music Assistant and the Sendspin Bluetooth bridge (modules/services/music-assistant.nix)";
+      ma-port = lib.mkOption {
+        type = lib.types.port;
+        default = 8095;
+        readOnly = true;
+        description = "Music Assistant default web UI port. The NixOS module exposes no listener port setting, so this only records it.";
+      };
+      sendspin-port = lib.mkOption {
+        type = lib.types.port;
+        default = 8098;
+        description = "Sendspin Bluetooth bridge web UI port.";
+      };
+    };
 
     paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
 

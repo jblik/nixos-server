@@ -10,7 +10,7 @@ let
     builtins.toJSON {
       SENDSPIN_SERVER = "127.0.0.1";
       SENDSPIN_PORT = 8927;
-      MA_API_URL = "http://127.0.0.1:8095";
+      MA_API_URL = "http://127.0.0.1:${toString config.host.music-assistant.ma-port}";
       TZ = config.host.timezone;
     }
   );
@@ -104,7 +104,7 @@ in
         ];
         environment = {
           TZ = config.host.timezone;
-          WEB_PORT = "8098";
+          WEB_PORT = toString config.host.music-assistant.sendspin-port;
           BASE_LISTEN_PORT = "8928";
           CONFIG_DIR = "/var/lib/sendspin";
           PULSE_SERVER = "unix:/run/pulse/native";

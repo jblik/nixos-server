@@ -10,7 +10,7 @@ in
       group = "users";
       server = {
         enable = true;
-        webUIPort = 8265;
+        webUIPort = config.host.media.tdarr.port;
         serverPort = 8266;
       };
       nodes = {
