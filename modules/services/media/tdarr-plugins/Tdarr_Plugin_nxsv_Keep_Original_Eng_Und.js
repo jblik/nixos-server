@@ -15,9 +15,9 @@ const details = () => ({
         {
             name: 'sonarr_url',
             type: 'string',
-            defaultValue: 'http://127.0.0.1:8989',
+            defaultValue: 'http://127.0.0.1:@sonarrPort@',
             inputUI: {type: 'text'},
-            tooltip: 'Sonarr url, e.g. http://127.0.0.1:8989',
+            tooltip: 'Sonarr url, e.g. http://127.0.0.1:@sonarrPort@',
         },
         {
             name: 'sonarr_api_key',
@@ -29,9 +29,9 @@ const details = () => ({
         {
             name: 'radarr_url',
             type: 'string',
-            defaultValue: 'http://127.0.0.1:7878',
+            defaultValue: 'http://127.0.0.1:@radarrPort@',
             inputUI: {type: 'text'},
-            tooltip: 'Radarr url, e.g. http://127.0.0.1:7878',
+            tooltip: 'Radarr url, e.g. http://127.0.0.1:@radarrPort@',
         },
         {
             name: 'radarr_api_key',

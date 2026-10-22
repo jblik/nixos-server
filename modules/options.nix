@@ -56,16 +56,83 @@ in
     };
     fans.keepCoolSchedule = window config.host.maintenanceWindow;
 
+    networking = {
+      dnsPort = lib.mkOption {
+        type = lib.types.port;
+        default = 53;
+        readOnly = true;
+        description = "Standard DNS resolver port.";
+      };
+      mdnsPort = lib.mkOption {
+        type = lib.types.port;
+        default = 5353;
+        readOnly = true;
+        description = "Standard multicast DNS port.";
+      };
+      wakeOnLanPort = lib.mkOption {
+        type = lib.types.port;
+        default = 9;
+        readOnly = true;
+        description = "Wake-on-LAN UDP port accepted by the firewall.";
+      };
+      smtpPort = lib.mkOption {
+        type = lib.types.port;
+        default = 587;
+        description = "SMTP submission port used by Paperless and Alertmanager.";
+      };
+    };
+
     media = {
       enable = lib.mkEnableOption "Plex and the *arr stack (modules/services/media)";
 
       qbittorrent.seedingSchedule = window config.host.maintenanceWindow;
+      qbittorrent.port = lib.mkOption {
+        type = lib.types.port;
+        default = 8080;
+        description = "qBittorrent web UI port.";
+      };
+      qbittorrent.vpnPort = lib.mkOption {
+        type = lib.types.port;
+        default = 51820;
+        readOnly = true;
+        description = "NordVPN WireGuard endpoint port.";
+      };
+      sonarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 8989;
+        description = "Sonarr web UI port.";
+      };
+      radarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 7878;
+        description = "Radarr web UI port.";
+      };
+      bazarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 6767;
+        description = "Bazarr web UI port.";
+      };
+      jackett.port = lib.mkOption {
+        type = lib.types.port;
+        default = 9117;
+        description = "Jackett web UI port.";
+      };
+      flaresolverr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 8191;
+        description = "FlareSolverr API port.";
+      };
       tdarr.port = lib.mkOption {
         type = lib.types.port;
         default = 8265;
         description = "Tdarr web UI port.";
       };
       tdarr.nodeSchedule = window config.host.maintenanceWindow;
+      tdarr.serverPort = lib.mkOption {
+        type = lib.types.port;
+        default = 8266;
+        description = "Tdarr server API port.";
+      };
       mediaPreviewGenerator = {
         port = lib.mkOption {
           type = lib.types.port;
@@ -118,11 +185,37 @@ in
         default = 3000;
         description = "Forgejo web UI port.";
       };
+      sshPort = lib.mkOption {
+        type = lib.types.port;
+        default = 2222;
+        description = "Forgejo SSH port. Also update the dashboard input URL in flake.nix when changing it.";
+      };
     };
 
     immich.enable = lib.mkEnableOption "the Immich photo library (modules/services/immich.nix)";
+    immich.machineLearningPort = lib.mkOption {
+      type = lib.types.port;
+      default = 3004;
+      description = "Immich machine learning API port.";
+    };
 
     home-assistant.enable = lib.mkEnableOption "Home Assistant and its Apple Home bridge (modules/services/home-assistant.nix)";
+    home-assistant.port = lib.mkOption {
+      type = lib.types.port;
+      default = 8123;
+      description = "Home Assistant HTTP port.";
+    };
+    home-assistant.homekitPort = lib.mkOption {
+      type = lib.types.port;
+      default = 21063;
+      description = "Home Assistant HomeKit bridge port.";
+    };
+    home-assistant.matterPort = lib.mkOption {
+      type = lib.types.port;
+      default = 5540;
+      readOnly = true;
+      description = "Standard Matter UDP port.";
+    };
 
     music-assistant = {
       enable = lib.mkEnableOption "Music Assistant and the Sendspin Bluetooth bridge (modules/services/music-assistant.nix)";
@@ -137,9 +230,45 @@ in
         default = 8098;
         description = "Sendspin Bluetooth bridge web UI port.";
       };
+      streamPort = lib.mkOption {
+        type = lib.types.port;
+        default = 8097;
+        readOnly = true;
+        description = "Music Assistant default stream port; managed through its UI.";
+      };
+      sendspinServerPort = lib.mkOption {
+        type = lib.types.port;
+        default = 8927;
+        readOnly = true;
+        description = "Music Assistant default Sendspin server port; managed through its UI.";
+      };
+      sendspinBasePort = lib.mkOption {
+        type = lib.types.port;
+        default = 8928;
+        description = "Base listener port for Sendspin Bluetooth bridge players.";
+      };
+      spotifyPortRange = {
+        from = lib.mkOption {
+          type = lib.types.port;
+          default = 32768;
+          readOnly = true;
+          description = "Start of the host ephemeral TCP range used by Spotify Connect.";
+        };
+        to = lib.mkOption {
+          type = lib.types.port;
+          default = 60999;
+          readOnly = true;
+          description = "End of the host ephemeral TCP range used by Spotify Connect.";
+        };
+      };
     };
 
     paperless.enable = lib.mkEnableOption "the Paperless-ngx document archive (modules/services/paperless.nix)";
+    paperless.gotenbergPort = lib.mkOption {
+      type = lib.types.port;
+      default = 3001;
+      description = "Gotenberg document conversion API port.";
+    };
 
     microbin = {
       enable = lib.mkEnableOption "the MicroBin paste bin (modules/services/microbin.nix)";
@@ -151,6 +280,11 @@ in
     };
 
     dashboard.enable = lib.mkEnableOption "the dashboard on server.steenblik.ch (modules/services/dashboard.nix)";
+    dashboard.grafanaPort = lib.mkOption {
+      type = lib.types.port;
+      default = 3002;
+      description = "Grafana HTTP port.";
+    };
 
     fans.port = lib.mkOption {
       type = lib.types.port;

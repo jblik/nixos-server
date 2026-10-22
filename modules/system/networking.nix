@@ -19,8 +19,8 @@
     nftables.enable = true;
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 22 ];
-      allowedUDPPorts = [ 9 ];
+      allowedTCPPorts = config.services.openssh.ports;
+      allowedUDPPorts = [ config.host.networking.wakeOnLanPort ];
     };
   };
 }

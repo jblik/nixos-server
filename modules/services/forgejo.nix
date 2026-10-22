@@ -6,7 +6,7 @@
 }:
 let
   domain = "git.steenblik.ch";
-  sshPort = 2222;
+  sshPort = config.host.forgejo.sshPort;
   runnerLabel = "docker:docker://ghcr.io/catthehacker/ubuntu:act-22.04";
   runnerConfig = (pkgs.formats.yaml { }).generate "forgejo-runner.yaml" {
     runner.capacity = 1;

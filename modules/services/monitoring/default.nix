@@ -115,7 +115,7 @@ in
               {
                 to = "jacob@steenblik.ch";
                 from = "noreply@steenblik.ch";
-                smarthost = "smtp.mail.me.com:587";
+                smarthost = "smtp.mail.me.com:${toString host.networking.smtpPort}";
                 auth_username = "$PAPERLESS_EMAIL_HOST_USER";
                 auth_password = "$PAPERLESS_EMAIL_HOST_PASSWORD";
                 send_resolved = true;

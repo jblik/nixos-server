@@ -79,7 +79,7 @@ in
         extraLegoFlags = [
           "--dns.propagation-disable-ans"
           "--dns.propagation-rns"
-          "--dns.resolvers=1.1.1.1:53"
+          "--dns.resolvers=1.1.1.1:${toString config.host.networking.dnsPort}"
         ];
       };
       certs.${internalDomain} = {
@@ -127,7 +127,7 @@ in
       ) publicServices;
     };
 
-    networking.firewall.allowedTCPPorts = [ 443 ];
+    networking.firewall.allowedTCPPorts = [ s.nginx.defaultSSLListenPort ];
 
     services.cloudflare-dyndns = {
       enable = true;

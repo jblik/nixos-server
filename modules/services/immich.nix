@@ -12,7 +12,7 @@ let
     "library"
     "upload"
   ];
-  mlPort = 3004;
+  mlPort = config.host.immich.machineLearningPort;
 in
 {
   config = lib.mkIf config.host.immich.enable {

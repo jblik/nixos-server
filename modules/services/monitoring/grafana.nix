@@ -411,8 +411,7 @@ in
       settings = {
         server = {
           http_addr = "127.0.0.1";
-          # Forgejo has 3000 and Gotenberg 3001.
-          http_port = 3002;
+          http_port = host.dashboard.grafanaPort;
           domain = "grafana.internal.steenblik.ch";
           root_url = "https://grafana.internal.steenblik.ch";
         };

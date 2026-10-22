@@ -9,7 +9,7 @@ let
   bridgeConfig = pkgs.writeText "sendspin-config.json" (
     builtins.toJSON {
       SENDSPIN_SERVER = "127.0.0.1";
-      SENDSPIN_PORT = 8927;
+      SENDSPIN_PORT = config.host.music-assistant.sendspinServerPort;
       MA_API_URL = "http://127.0.0.1:${toString config.host.music-assistant.ma-port}";
       TZ = config.host.timezone;
     }
@@ -105,7 +105,7 @@ in
         environment = {
           TZ = config.host.timezone;
           WEB_PORT = toString config.host.music-assistant.sendspin-port;
-          BASE_LISTEN_PORT = "8928";
+          BASE_LISTEN_PORT = toString config.host.music-assistant.sendspinBasePort;
           CONFIG_DIR = "/var/lib/sendspin";
           PULSE_SERVER = "unix:/run/pulse/native";
           PIPEWIRE_RUNTIME_DIR = "/run/pipewire";
@@ -126,10 +126,10 @@ in
     ];
 
     networking.firewall.extraInputRules = ''
-      ip saddr ${config.host.lanCidr} tcp dport { 8097, 8927 } accept
+      ip saddr ${config.host.lanCidr} tcp dport { ${toString config.host.music-assistant.streamPort}, ${toString config.host.music-assistant.sendspinServerPort} } accept
       # Spotify Connect chooses a new listener port from the host's ephemeral range.
-      ip saddr ${config.host.lanCidr} tcp dport 32768-60999 accept
-      ip saddr ${config.host.lanCidr} udp dport 5353 accept
+      ip saddr ${config.host.lanCidr} tcp dport ${toString config.host.music-assistant.spotifyPortRange.from}-${toString config.host.music-assistant.spotifyPortRange.to} accept
+      ip saddr ${config.host.lanCidr} udp dport ${toString config.host.networking.mdnsPort} accept
     '';
   };
 }

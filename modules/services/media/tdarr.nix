@@ -1,6 +1,20 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   inherit (config.host.storage) bulkMount scratchDir;
+  languagePlugin = pkgs.writeText "Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js" (
+    lib.replaceStrings
+      [ "@sonarrPort@" "@radarrPort@" ]
+      [
+        (toString config.services.sonarr.settings.server.port)
+        (toString config.services.radarr.settings.server.port)
+      ]
+      (builtins.readFile ./tdarr-plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js)
+  );
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -11,7 +25,7 @@ in
       server = {
         enable = true;
         webUIPort = config.host.media.tdarr.port;
-        serverPort = 8266;
+        serverPort = config.host.media.tdarr.serverPort;
       };
       nodes = {
         main = {
@@ -30,7 +44,7 @@ in
       "d ${config.services.tdarr.dataDir}/nodes 0750 ${config.services.tdarr.user} users -"
       "d ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local 0750 ${config.services.tdarr.user} users -"
       # Copied rather than symlinked so the server never serves a dangling store path after GC.
-      "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${./tdarr-plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js}"
+      "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${languagePlugin}"
     ];
 
     # The Tdarr module only lets it write to its own state; it has to replace

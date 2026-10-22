@@ -25,14 +25,14 @@
         automation = "!include automations.yaml";
         homeassistant.time_zone = config.host.timezone;
         http = {
-          server_port = 8123;
+          server_port = config.host.home-assistant.port;
           use_x_forwarded_for = true;
           trusted_proxies = [ "127.0.0.1" ];
         };
         homekit = [
           {
             name = "Home Assistant";
-            port = 21063;
+            port = config.host.home-assistant.homekitPort;
             filter.include_domains = [
               "button.rocky_all_but_shower"
               "button.button.rocky_kitchen"
@@ -46,8 +46,8 @@
     };
 
     networking.firewall.extraInputRules = ''
-      ip saddr ${config.host.lanCidr} tcp dport { 8123, 21063 } accept
-      ip saddr ${config.host.lanCidr} udp dport { 5353, 5540 } accept
+      ip saddr ${config.host.lanCidr} tcp dport { ${toString config.services.home-assistant.config.http.server_port}, ${toString config.host.home-assistant.homekitPort} } accept
+      ip saddr ${config.host.lanCidr} udp dport { ${toString config.host.networking.mdnsPort}, ${toString config.host.home-assistant.matterPort} } accept
     '';
   };
 }

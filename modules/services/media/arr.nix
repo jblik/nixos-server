@@ -8,25 +8,25 @@
     services.sonarr = {
       enable = true;
       group = "users";
-      settings.server.port = 8989;
+      settings.server.port = config.host.media.sonarr.port;
     };
     services.radarr = {
       enable = true;
       group = "users";
-      settings.server.port = 7878;
+      settings.server.port = config.host.media.radarr.port;
     };
     services.bazarr = {
       enable = true;
       group = "users";
-      listenPort = 6767;
+      listenPort = config.host.media.bazarr.port;
     };
     services.jackett = {
       enable = true;
-      port = 9117;
+      port = config.host.media.jackett.port;
     };
     services.flaresolverr = {
       enable = true;
-      port = 8191;
+      port = config.host.media.flaresolverr.port;
     };
 
     # Not a StateDirectory, so nothing else stops Jackett from running without its dataset.

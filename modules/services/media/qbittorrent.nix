@@ -32,7 +32,7 @@ in
     services.qbittorrent = {
       enable = true;
       group = "users";
-      webuiPort = 8080;
+      webuiPort = config.host.media.qbittorrent.port;
     };
 
     sops.secrets.nordvpn-wireguard-key = {
@@ -66,7 +66,7 @@ in
         # WireGuard's encrypted UDP socket stays in the host namespace after moving the interface.
         ip link add ${interface} type wireguard
         wg set ${interface} private-key ${config.sops.secrets.nordvpn-wireguard-key.path} \
-          peer "$publicKey" endpoint "$endpoint:51820" allowed-ips 0.0.0.0/0 persistent-keepalive 25
+          peer "$publicKey" endpoint "$endpoint:${toString config.host.media.qbittorrent.vpnPort}" allowed-ips 0.0.0.0/0 persistent-keepalive 25
         ip link set ${interface} netns ${namespace}
         ip -n ${namespace} address add 10.5.0.2/32 dev ${interface}
         ip -n ${namespace} link set lo up

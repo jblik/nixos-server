@@ -30,7 +30,7 @@ in
         PAPERLESS_FILENAME_FORMAT = "{{ created }}-{{ correspondent }}-{{ title }}";
         PAPERLESS_TRUSTED_PROXIES = "127.0.0.1";
         PAPERLESS_EMAIL_HOST = "smtp.mail.me.com";
-        PAPERLESS_EMAIL_PORT = 587;
+        PAPERLESS_EMAIL_PORT = config.host.networking.smtpPort;
         PAPERLESS_EMAIL_FROM = "noreply@steenblik.ch";
         PAPERLESS_EMAIL_USE_TLS = true;
         PAPERLESS_POST_CONSUME_SCRIPT = "${pkgs.writers.writePython3 "paperless-post-consume" {
@@ -64,8 +64,7 @@ in
     systemd.services.paperless-consumer.unitConfig.RequiresMountsFor = [ thumbnails ];
     systemd.services.paperless-web.unitConfig.RequiresMountsFor = [ thumbnails ];
 
-    # Its default 3000 is Forgejo's HTTP port.
-    services.gotenberg.port = 3001;
+    services.gotenberg.port = config.host.paperless.gotenbergPort;
 
     services.nginx.virtualHosts.${domain}.extraConfig = ''
       client_max_body_size 512M;
