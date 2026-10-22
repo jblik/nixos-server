@@ -21,6 +21,7 @@ in
         description = "Apply the ${
           if tdarr then "Tdarr node" else "preview CPU worker"
         } maintenance window";
+        unitConfig.StartLimitIntervalSec = 0;
         wantedBy = [
           (if tdarr then "tdarr-node-main.service" else "podman-media-preview-generator.service")
         ];

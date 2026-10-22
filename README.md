@@ -120,9 +120,10 @@ preview GPU workers stay available. The preview API's CPU count control requires
 CPU worker group; split or mixed CPU/GPU groups must be adjusted in the preview application's Workers settings.
 The scheduler reads the preview application's existing `auth.json` token locally, without exposing it
 to the dashboard. qBittorrent resumes only torrents it stopped; manual stops and ratio/time limits
-remain respected. Nix configures qBittorrent's torrent-finished external program to restart the
-seeding check, including torrents that are still moving after completion. The hook has permission
-to restart only that service and does not interpolate torrent names or paths. Keep cool retains
+remain respected. Nix configures qBittorrent's torrent-finished external program to write a marker
+in its existing profile directory. A systemd path watch triggers the seeding check, including
+torrents that are still moving after completion. The hook does not interpolate torrent names or
+paths and needs no additional sandbox permissions. Keep cool retains
 manual fan-mode ownership. Manual task changes between boundaries remain until another schedule,
 application-startup, or completion event reapplies the window.
 

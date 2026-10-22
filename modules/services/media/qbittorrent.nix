@@ -23,8 +23,9 @@ let
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./qbittorrent-seeding-schedule.py);
   maintenanceCommand = import ../maintenance-command.nix { inherit config lib pkgs; };
+  completionFile = "${config.services.qbittorrent.profileDir}/maintenance-finished";
   completed = pkgs.writeShellScript "qbittorrent-maintenance-finished" ''
-    exec ${pkgs.systemd}/bin/systemctl --no-block restart qbittorrent-seeding-schedule.service
+    printf '%s\n' finished > ${lib.escapeShellArg completionFile}
   '';
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
@@ -160,6 +161,8 @@ in
 
     systemd.services.qbittorrent-seeding-schedule = {
       description = "Restrict completed torrents to their maintenance window";
+      # Completion bursts must not disable the path watch through the service start limit.
+      unitConfig.StartLimitIntervalSec = 0;
       wantedBy = [ "qbittorrent.service" ];
       partOf = [ "qbittorrent.service" ];
       requisite = [ "qbittorrent.service" ];
@@ -181,16 +184,13 @@ in
       };
     };
 
-    security.polkit.extraConfig = ''
-      polkit.addRule(function(action, subject) {
-        if (action.id == "org.freedesktop.systemd1.manage-units" &&
-            action.lookup("unit") == "qbittorrent-seeding-schedule.service" &&
-            action.lookup("verb") == "restart" &&
-            subject.user == ${builtins.toJSON config.services.qbittorrent.user}) {
-          return polkit.Result.YES;
-        }
-      });
-    '';
+    systemd.paths.qbittorrent-seeding-schedule = {
+      wantedBy = [ "multi-user.target" ];
+      pathConfig = {
+        PathChanged = completionFile;
+        Unit = "qbittorrent-seeding-schedule.service";
+      };
+    };
 
     systemd.sockets.qbittorrent-webui = {
       description = "qBittorrent WebUI on the host";
