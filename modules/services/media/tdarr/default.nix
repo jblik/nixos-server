@@ -33,7 +33,7 @@ in
           startPaused = true;
           workers.transcodeCPU = 0;
           workers.healthcheckCPU = 0;
-          workers.transcodeGPU = 2;
+          workers.transcodeGPU = 1;
           workers.healthcheckGPU = 1;
         };
       };
