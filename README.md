@@ -260,12 +260,17 @@ asset hash separately.
 ### Chromebook dashboard
 
 Nix installs Kiosk Mode and adds two automations for the Companion app device
-`chromebook_tablet`. Above 20 lux for five seconds, `script.chromebook_wake` wakes
+`chromebook_tablet`. When both `device_tracker.not_connected` and
+`device_tracker.dumbo` are outside the home zone, the display is allowed to time
+out regardless of the light level. When either device is home, above 20 lux for
+five seconds, `script.chromebook_wake` wakes
 the display and keeps it on while the dashboard is open. Below 10 lux for one
 minute, `script.chromebook_sleep` sets a 30-second screen timeout and releases
 keep-screen-on. The release command also wakes the screen briefly before it
 times out. Between 10 and 20 lux, the previous behavior is retained. Home Assistant
-startup also applies the current bright/dark state if the sensor is available.
+startup also applies the current presence and light state. Leaving home releases
+keep-screen-on when the second device leaves; arriving home wakes the display
+immediately if the light level is above 20 lux.
 The existing UI-managed `automations.yaml` remains included.
 
 After deploying:

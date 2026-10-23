@@ -60,11 +60,23 @@
                 "for" = "00:00:05";
               }
               {
+                trigger = "state";
+                entity_id = [
+                  "device_tracker.not_connected"
+                  "device_tracker.dumbo"
+                ];
+                to = "home";
+              }
+              {
                 trigger = "homeassistant";
                 event = "start";
               }
             ];
             conditions = [
+              {
+                condition = "template";
+                value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
+              }
               {
                 condition = "numeric_state";
                 entity_id = "sensor.chromebook_tablet_light_sensor";
@@ -75,7 +87,7 @@
           }
           {
             id = "chromebook_sleep_when_room_is_dark";
-            alias = "Chromebook: sleep when room is dark";
+            alias = "Chromebook: sleep when away or room is dark";
             triggers = [
               {
                 trigger = "numeric_state";
@@ -84,15 +96,28 @@
                 "for" = "00:01:00";
               }
               {
+                trigger = "template";
+                value_template = "{{ not is_state('device_tracker.not_connected', 'home') and not is_state('device_tracker.dumbo', 'home') }}";
+              }
+              {
                 trigger = "homeassistant";
                 event = "start";
               }
             ];
             conditions = [
               {
-                condition = "numeric_state";
-                entity_id = "sensor.chromebook_tablet_light_sensor";
-                below = 10;
+                condition = "or";
+                conditions = [
+                  {
+                    condition = "template";
+                    value_template = "{{ not is_state('device_tracker.not_connected', 'home') and not is_state('device_tracker.dumbo', 'home') }}";
+                  }
+                  {
+                    condition = "numeric_state";
+                    entity_id = "sensor.chromebook_tablet_light_sensor";
+                    below = 10;
+                  }
+                ];
               }
             ];
             actions = [ { action = "script.chromebook_sleep"; } ];
