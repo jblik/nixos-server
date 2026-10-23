@@ -67,6 +67,7 @@ in
         path = [ pkgs.pulseaudio ];
         # Python's ctypes loader does not use nix-ld's library search path.
         environment.LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.libpulseaudio ];
+        environment.MASS_APP_VAR_SPOTIFY_CLIENT_ID = "c67a8da207254820bae292c897ba677c";
         # DynamicUser's private state mount otherwise prevents Soloist from executing.
         serviceConfig.ExecPaths = [ "/var/lib/music-assistant" ];
         # Spotify's audio capture and Sendspin use local Unix sockets.
