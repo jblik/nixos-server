@@ -226,6 +226,37 @@ link-local and unique-local addresses for Thread devices. Keep the server, hubs
 and iPhone on the same LAN for pairing; Thread devices need IPv6 connectivity
 through a Thread border router.
 
+### Dashboard cards
+
+Home Assistant and its custom integrations use the independently locked
+`nixpkgs-home-assistant` unstable input. Nix installs Atomic Calendar Revive,
+Flightradar24 Card, and Music Assistant Player Card, plus the Flightradar24 and
+Music Assistant Queue Actions integrations. Music Assistant Player Card is packaged
+from its pinned release asset in `packages/mass-player-card.nix`; the others come
+from Nixpkgs. HACS is not needed.
+
+After deploying with the command above:
+
+1. In **Settings → Devices & services → Add integration**, add **Flightradar24**
+   and configure the centre and radius of the monitored area.
+2. Configure the official **Music Assistant** integration as described below.
+   Accept discovery of **Music Assistant Queue Actions**, or add it through
+   **Add integration** if it is not discovered.
+3. Configure your calendar provider in Home Assistant so a `calendar.*` entity
+   exists. Providers with additional Python dependencies also need their integration
+   name in `services.home-assistant.extraComponents`.
+4. Reload the browser, edit your dashboard and select **Add card**. Search for
+   **Atomic Calendar Revive**, **Flightradar24 Card**, or **Music Assistant Player Card**.
+   Select your calendar, the Flightradar24 current-in-area sensor, or a Music Assistant
+   player entity respectively. The music card includes a queue tab and queue controls.
+
+Nix registers JavaScript resources under `/local/nixos-lovelace-modules/` and manages
+them in YAML; dashboard layouts remain editable in the UI. Add resource declarations
+in Nix rather than the Resources UI, and avoid installing duplicate copies through
+HACS. Update the packaged integrations and cards with
+`nix flake update nixpkgs-home-assistant`; update the local music card's version and
+asset hash separately.
+
 ## Music Assistant and Bluetooth audio
 
 `host.music-assistant.enable` starts native systemd services for Music Assistant
