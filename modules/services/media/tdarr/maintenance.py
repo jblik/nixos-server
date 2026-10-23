@@ -7,20 +7,22 @@ def main():
     active = os.environ["MAINTENANCE_ACTIVE"] == "true"
     session = requests.Session()
     session.trust_env = False
-    url = os.environ["TDARR_URL"] + "/api/v2/cruddb"
-    data = {
-        "collection": "NodeJSONDB",
-        "mode": "getById",
-        "docID": os.environ["TDARR_NODE"],
-    }
-    response = session.post(url, json={"data": data}, timeout=10)
+    url = os.environ["TDARR_URL"] + "/api/v2"
+    response = session.get(url + "/get-nodes", timeout=10)
     response.raise_for_status()
-    node = response.json()
-    if not node:
+    for node_id, node in response.json().items():
+        if node["nodeName"] == os.environ["TDARR_NODE"]:
+            break
+    else:
         raise RuntimeError("Tdarr node has not registered yet")
     if node.get("nodePaused") != (not active):
-        data.update(mode="update", obj={"nodePaused": not active})
-        response = session.post(url, json={"data": data}, timeout=10)
+        data = {
+            "nodeID": node_id,
+            "nodeUpdates": {"nodePaused": not active},
+        }
+        response = session.post(
+            url + "/update-node", json={"data": data}, timeout=10
+        )
         response.raise_for_status()
 
 
