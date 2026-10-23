@@ -257,6 +257,51 @@ HACS. Update the packaged integrations and cards with
 `nix flake update nixpkgs-home-assistant`; update the local music card's version and
 asset hash separately.
 
+### Chromebook dashboard
+
+Nix installs Kiosk Mode and adds two automations for the Companion app device
+`chromebook_tablet`. Above 20 lux for five seconds, `script.chromebook_wake` wakes
+the display and keeps it on while the dashboard is open. Below 10 lux for one
+minute, `script.chromebook_sleep` sets a 30-second screen timeout and releases
+keep-screen-on. The release command also wakes the screen briefly before it
+times out. Between 10 and 20 lux, the previous behavior is retained. Home Assistant
+startup also applies the current bright/dark state if the sensor is available.
+The existing UI-managed `automations.yaml` remains included.
+
+After deploying:
+
+1. On the Chromebook, open **Settings → Companion app**. Enable **Full screen**
+   under the display/theme settings and set **Persistent connection → Always**
+   for local command delivery. Allow notification and modify-system-settings
+   permissions when requested by the app.
+2. Open the dashboard and press the Chromebook's fullscreen key (the rectangle
+   with outward arrows). Maximizing a window alone may leave its title bar.
+3. In Home Assistant's **Developer tools → Actions**, confirm
+   `notify.mobile_app_chromebook_tablet` exists. The `notify.chromebook_tablet`
+   entity is not the notification command action. Adjust the two scripts in Nix
+   if the registered mobile-app action has a different name.
+4. Run `script.chromebook_sleep`, leave the Chromebook untouched for 30 seconds,
+   then run `script.chromebook_wake` from another device. Check that actual screen
+   power changes; ChromeOS may not honor Android's screen commands or timeout.
+5. Check `sensor.chromebook_tablet_light_sensor` with the room lights on and off,
+   and after the display sleeps. Tune the 20/10 lux thresholds in
+   `modules/services/home-assistant.nix` to those readings. Light-based wake needs
+   sensor updates while the display is off. If updates stop, use a separate room
+   light/presence sensor as the automation trigger.
+
+For Home Assistant's own header and sidebar, edit the dedicated dashboard's raw
+configuration and add this alongside its existing `views:` key:
+
+```yaml
+kiosk_mode:
+  hide_header: true
+  hide_sidebar: true
+```
+
+Reload the dashboard afterward. Use `?disable_km` on its URL to restore the
+controls temporarily. Kiosk Mode is supplied by Nix; do not install another copy
+through HACS. Dashboard layouts remain managed in the UI.
+
 ## Music Assistant and Bluetooth audio
 
 `host.music-assistant.enable` starts native systemd services for Music Assistant

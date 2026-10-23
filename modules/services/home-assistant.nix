@@ -29,6 +29,7 @@
       customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
         atomic-calendar-revive
         flightradar24
+        kiosk-mode
         mass-player-card
       ];
       extraComponents = [
@@ -47,6 +48,89 @@
       config = {
         default_config = { };
         automation = "!include automations.yaml";
+        "automation chromebook" = [
+          {
+            id = "chromebook_wake_when_room_is_bright";
+            alias = "Chromebook: wake when room is bright";
+            triggers = [
+              {
+                trigger = "numeric_state";
+                entity_id = "sensor.chromebook_tablet_light_sensor";
+                above = 20;
+                "for" = "00:00:05";
+              }
+              {
+                trigger = "homeassistant";
+                event = "start";
+              }
+            ];
+            conditions = [
+              {
+                condition = "numeric_state";
+                entity_id = "sensor.chromebook_tablet_light_sensor";
+                above = 20;
+              }
+            ];
+            actions = [ { action = "script.chromebook_wake"; } ];
+          }
+          {
+            id = "chromebook_sleep_when_room_is_dark";
+            alias = "Chromebook: sleep when room is dark";
+            triggers = [
+              {
+                trigger = "numeric_state";
+                entity_id = "sensor.chromebook_tablet_light_sensor";
+                below = 10;
+                "for" = "00:01:00";
+              }
+              {
+                trigger = "homeassistant";
+                event = "start";
+              }
+            ];
+            conditions = [
+              {
+                condition = "numeric_state";
+                entity_id = "sensor.chromebook_tablet_light_sensor";
+                below = 10;
+              }
+            ];
+            actions = [ { action = "script.chromebook_sleep"; } ];
+          }
+        ];
+        script = {
+          chromebook_wake = {
+            alias = "Chromebook: wake";
+            sequence = [
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
+                  message = "command_screen_on";
+                  data.command = "keep_screen_on";
+                };
+              }
+            ];
+          };
+          chromebook_sleep = {
+            alias = "Chromebook: sleep";
+            sequence = [
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
+                  message = "command_screen_off_timeout";
+                  data.command = 30000;
+                };
+              }
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
+                  # A screen-on command without keep_screen_on releases the wake lock.
+                  message = "command_screen_on";
+                };
+              }
+            ];
+          };
+        };
         calendar = [
           {
             platform = "caldav";
