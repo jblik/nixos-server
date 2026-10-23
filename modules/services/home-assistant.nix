@@ -124,8 +124,9 @@
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  # A screen-on command without keep_screen_on releases the wake lock.
+                  # An absent command leaves keep-screen-on unchanged in the Android app.
                   message = "command_screen_on";
+                  data.command = "turn_off";
                 };
               }
             ];
