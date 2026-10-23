@@ -45,6 +45,14 @@ in
   cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   home-assistant = applicationPkgs.home-assistant.home-assistant;
+  home-assistant-custom-components = applicationPkgs.home-assistant.home-assistant-custom-components;
+  home-assistant-custom-lovelace-modules =
+    applicationPkgs.home-assistant.home-assistant-custom-lovelace-modules.extend
+      (
+        _: _: {
+          mass-player-card = final.callPackage ./packages/mass-player-card.nix { };
+        }
+      );
   python-matter-server = applicationPkgs.matter-server.python-matter-server;
   music-assistant = applicationPkgs.music-assistant.music-assistant;
   go-librespot = applicationPkgs.music-assistant.go-librespot;

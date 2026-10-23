@@ -12,7 +12,7 @@
     nixpkgs-forgejo.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-forgejo-runner.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-grafana.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-home-assistant.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-home-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-jackett.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-matter-server.url = "github:NixOS/nixpkgs/nixos-26.05";

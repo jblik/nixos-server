@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   config = lib.mkIf config.host.home-assistant.enable {
     services.matter-server = {
@@ -8,6 +13,15 @@
 
     services.home-assistant = {
       enable = true;
+      customComponents = with pkgs.home-assistant-custom-components; [
+        flightradar24
+        mass-queue
+      ];
+      customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
+        atomic-calendar-revive
+        flightradar24
+        mass-player-card
+      ];
       extraComponents = [
         "apple_tv"
         "default_config"
