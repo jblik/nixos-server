@@ -46,6 +46,10 @@ in
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   home-assistant = applicationPkgs.home-assistant.home-assistant.override {
     packageOverrides = _: prev: {
+      niquests = prev.niquests.overridePythonAttrs (old: {
+        # The proxy test resolves an external hostname inside the network sandbox.
+        disabledTests = (old.disabledTests or [ ]) ++ [ "test_use_proxy_from_environment" ];
+      });
       urllib3-future = prev.urllib3-future.overridePythonAttrs (_: {
         doCheck = false;
       });
