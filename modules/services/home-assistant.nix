@@ -6,6 +6,15 @@
 }:
 {
   config = lib.mkIf config.host.home-assistant.enable {
+    sops.secrets.apple-username = {
+      owner = "hass";
+      restartUnits = [ "home-assistant.service" ];
+    };
+    sops.secrets.apple-token = {
+      owner = "hass";
+      restartUnits = [ "home-assistant.service" ];
+    };
+
     services.matter-server = {
       enable = true;
       extraArgs.listen-address = "127.0.0.1";
@@ -24,6 +33,7 @@
       ];
       extraComponents = [
         "apple_tv"
+        "caldav"
         "default_config"
         "homekit_controller"
         "hue"
@@ -37,6 +47,14 @@
       config = {
         default_config = { };
         automation = "!include automations.yaml";
+        calendar = [
+          {
+            platform = "caldav";
+            url = "https://caldav.icloud.com/";
+            username = "!include ${config.sops.secrets.apple-username.path}";
+            password = "!include ${config.sops.secrets.apple-token.path}";
+          }
+        ];
         homeassistant.time_zone = config.host.timezone;
         http = {
           server_port = config.host.home-assistant.port;
