@@ -271,9 +271,10 @@ The existing UI-managed `automations.yaml` remains included.
 After deploying:
 
 1. On the Chromebook, open **Settings → Companion app**. Enable **Full screen**
-   under the display/theme settings and set **Persistent connection → Always**
-   for local command delivery. Allow notification and modify-system-settings
-   permissions when requested by the app.
+   under the display/theme settings. Tap the server entry at the top of Companion
+   app settings, then set **Persistent connection → Always** for local command
+   delivery. Allow notification and modify-system-settings permissions when
+   requested by the app.
 2. Open the dashboard and press the Chromebook's fullscreen key (the rectangle
    with outward arrows). Maximizing a window alone may leave its title bar.
 3. In Home Assistant's **Developer tools → Actions**, confirm
@@ -301,6 +302,12 @@ kiosk_mode:
 Reload the dashboard afterward. Use `?disable_km` on its URL to restore the
 controls temporarily. Kiosk Mode is supplied by Nix; do not install another copy
 through HACS. Dashboard layouts remain managed in the UI.
+
+To make this dashboard the default, sign in on the Chromebook with a dedicated
+Home Assistant user, then open **User profile → Appearance → Dashboard** and
+select it. This preference applies to the user across devices. In the Companion
+app settings, enable **Always show first view on app start** to return to its
+first view when opening the app.
 
 ## Music Assistant and Bluetooth audio
 
