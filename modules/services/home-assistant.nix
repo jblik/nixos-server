@@ -29,6 +29,7 @@
       ];
       customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
         atomic-calendar-revive
+        card-mod
         flightradar24
         kiosk-mode
         mass-player-card

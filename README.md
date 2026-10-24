@@ -298,6 +298,19 @@ and [Roborock Custom Map](https://github.com/Python-roborock/RoborockCustomMap)
 describe the map integration and controls. Dashboard layouts remain managed in
 the UI; HACS installation is not needed.
 
+Nix also installs Card Mod. To hide the lock and zoom controls while keeping map
+panning and zooming enabled, add this at the top level of the map card's YAML:
+
+```yaml
+map_locked: false
+card_mod:
+  style: |
+    .standalone-icon-on-map,
+    .map-zoom-icons {
+      display: none !important;
+    }
+```
+
 ### Chromebook dashboard
 
 Nix installs Kiosk Mode and adds two automations for the Companion app device
