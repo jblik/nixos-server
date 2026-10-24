@@ -25,12 +25,14 @@
       customComponents = with pkgs.home-assistant-custom-components; [
         flightradar24
         mass-queue
+        roborock_custom_map
       ];
       customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
         atomic-calendar-revive
         flightradar24
         kiosk-mode
         mass-player-card
+        xiaomi-vacuum-map-card
       ];
       extraComponents = [
         "apple_tv"

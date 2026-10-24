@@ -257,6 +257,47 @@ HACS. Update the packaged integrations and cards with
 `nix flake update nixpkgs-home-assistant`; update the local music card's version and
 asset hash separately.
 
+### Roborock map cleaning
+
+Nix installs Xiaomi Vacuum Map Card and Roborock Custom Map from the locked
+Home Assistant Nixpkgs input. The official Roborock integration continues to
+control Rocky; the custom integration supplies map coordinates and room outlines.
+
+After deploying:
+
+1. Confirm the official **Roborock** integration is loaded. In **Settings →
+   Devices & services → Add integration**, add **Roborock Custom Map**.
+2. Enable the official Roborock map image entities if disabled. The custom
+   integration creates an additional image for each map with an entity ID ending
+   in `_custom`. If these do not appear, reload Roborock Custom Map after the
+   official integration has loaded.
+3. Reload the browser, edit your dashboard and add a **Manual** card using the
+   YAML below. Replace both example entity IDs with Rocky's actual vacuum entity
+   and the custom image entity for the floor you want to clean.
+4. Select zone cleaning on the card, draw a rectangle on the map, then press its
+   clean button. For selectable rooms, open the card editor and choose
+   **Generate Room Configs**.
+
+```yaml
+type: custom:xiaomi-vacuum-map-card
+vacuum_platform: Roborock
+entity: vacuum.rocky
+map_source:
+  camera: image.rocky_map_custom
+calibration_source:
+  camera: true
+map_modes:
+  - template: vacuum_clean_zone
+  - template: vacuum_goto
+```
+
+The standard spot-clean button cleans around the robot's current location.
+Use zone cleaning to send it to a chosen patch of floor. The card's
+[Roborock setup guide](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/blob/master/docs/templates/Roborock.md)
+and [Roborock Custom Map](https://github.com/Python-roborock/RoborockCustomMap)
+describe the map integration and controls. Dashboard layouts remain managed in
+the UI; HACS installation is not needed.
+
 ### Chromebook dashboard
 
 Nix installs Kiosk Mode and adds two automations for the Companion app device
