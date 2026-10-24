@@ -130,7 +130,7 @@ in
           triggers = [
             {
               trigger = "time_pattern";
-              minutes = "/5";
+              minutes = "/10";
             }
             {
               trigger = "state";
@@ -148,6 +148,10 @@ in
               condition = "template";
               value_template = "{{ 0 < as_timestamp(state_attr('binary_sensor.${route.id}_commute', 'event_start'), 0) - as_timestamp(now()) <= 10800 }}";
             }
+            {
+              condition = "template";
+              value_template = "{{ as_timestamp(now()) - as_timestamp(this.attributes.last_triggered, 0) >= 600 }}";
+            }
           ];
           actions = [
             {
@@ -156,6 +160,28 @@ in
             }
           ];
         }) routes;
+        "automation station departures" = [
+          {
+            id = "station_departures_poll";
+            alias = "Station: refresh departures";
+            triggers = [
+              {
+                trigger = "time_pattern";
+                minutes = "/3";
+              }
+              {
+                trigger = "homeassistant";
+                event = "start";
+              }
+            ];
+            actions = [
+              {
+                action = "homeassistant.update_entity";
+                target.entity_id = "sensor.station_departure";
+              }
+            ];
+          }
+        ];
         "automation chromebook" = [
           {
             id = "chromebook_wake_when_room_is_bright";
