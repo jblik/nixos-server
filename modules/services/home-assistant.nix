@@ -169,7 +169,7 @@ in
             triggers = [
               {
                 trigger = "time_pattern";
-                minutes = "/3";
+                minutes = "/2";
               }
               {
                 trigger = "homeassistant";
