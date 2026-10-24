@@ -65,6 +65,7 @@ in
       );
   python-matter-server = applicationPkgs.matter-server.python-matter-server;
   music-assistant = applicationPkgs.music-assistant.music-assistant;
+  airplay-cli = applicationPkgs.music-assistant.airplay-cli;
   go-librespot = applicationPkgs.music-assistant.go-librespot;
   sendspin-bt-bridge = applicationPkgs.sendspin.callPackage ./packages/sendspin-bt-bridge.nix { };
 

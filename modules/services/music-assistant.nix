@@ -51,6 +51,7 @@ in
     services.music-assistant = {
       enable = true;
       providers = [
+        "airplay"
         "spotify"
         "spotify_connect"
       ];
@@ -127,6 +128,9 @@ in
     ];
 
     networking.firewall.extraInputRules = ''
+      ip saddr ${config.host.lanCidr} tcp dport { 5000, 7000 } accept
+      # AirPlay allocates random high UDP ports for audio and timing.
+      ip saddr ${config.host.lanCidr} udp dport 32768-65535 accept
       ip saddr ${config.host.lanCidr} tcp dport { ${toString config.host.music-assistant.streamPort}, ${toString config.host.music-assistant.sendspinServerPort} } accept
       # Spotify Connect chooses a new listener port from the host's ephemeral range.
       ip saddr ${config.host.lanCidr} tcp dport ${toString config.host.music-assistant.spotifyPortRange.from}-${toString config.host.music-assistant.spotifyPortRange.to} accept
