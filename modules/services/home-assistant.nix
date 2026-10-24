@@ -4,6 +4,31 @@
   pkgs,
   ...
 }:
+let
+  routes = [
+    {
+      id = "sophie_work";
+      name = "Sophie Work";
+      calendar = "calendar.sophie";
+      match = "work";
+      travelMinutes = 20;
+    }
+    {
+      id = "jacob_work";
+      name = "Jacob Work";
+      calendar = "calendar.jacob";
+      match = "work";
+      travelMinutes = 60;
+    }
+    {
+      id = "jacob_uni";
+      name = "Jacob Uni";
+      calendar = "calendar.jacob";
+      match = "uni";
+      travelMinutes = 60;
+    }
+  ];
+in
 {
   config = lib.mkIf config.host.home-assistant.enable {
     sops.secrets.apple-username = {
@@ -51,6 +76,86 @@
       config = {
         default_config = { };
         automation = "!include automations.yaml";
+        template = map (route: {
+          triggers = [
+            {
+              trigger = "time_pattern";
+              minutes = "/1";
+            }
+            {
+              trigger = "homeassistant";
+              event = "start";
+            }
+          ];
+          actions = [
+            {
+              action = "calendar.get_events";
+              target.entity_id = route.calendar;
+              data.duration.hours = 3;
+              response_variable = "agenda";
+            }
+            {
+              variables.event_start = ''
+                {% set ns = namespace(start=none, timestamp=none) %}
+                {% for event in agenda['${route.calendar}']['events'] %}
+                  {% set start = as_timestamp(event.start) %}
+                  {% if event.start | length > 10
+                      and '${route.match}' in event.summary | lower
+                      and as_timestamp(now()) < start <= as_timestamp(now()) + 10800
+                      and (ns.timestamp is none or start < ns.timestamp) %}
+                    {% set ns.start = event.start %}
+                    {% set ns.timestamp = start %}
+                  {% endif %}
+                {% endfor %}
+                {{ ns.start }}
+              '';
+            }
+          ];
+          binary_sensor = [
+            {
+              name = "${route.name} commute";
+              unique_id = "${route.id}_commute";
+              default_entity_id = "binary_sensor.${route.id}_commute";
+              state = "{{ 0 < as_timestamp(event_start, 0) - as_timestamp(now()) <= 10800 }}";
+              attributes = {
+                event_start = "{{ event_start }}";
+                leave_by = "{{ (as_datetime(event_start) - timedelta(minutes=${toString route.travelMinutes})).isoformat() if event_start is not none else none }}";
+              };
+            }
+          ];
+        }) routes;
+        "automation commute" = map (route: {
+          id = "${route.id}_commute_poll";
+          alias = "${route.name}: refresh commute before event";
+          triggers = [
+            {
+              trigger = "time_pattern";
+              minutes = "/5";
+            }
+            {
+              trigger = "state";
+              entity_id = "binary_sensor.${route.id}_commute";
+              to = "on";
+            }
+          ];
+          conditions = [
+            {
+              condition = "state";
+              entity_id = "binary_sensor.${route.id}_commute";
+              state = "on";
+            }
+            {
+              condition = "template";
+              value_template = "{{ 0 < as_timestamp(state_attr('binary_sensor.${route.id}_commute', 'event_start'), 0) - as_timestamp(now()) <= 10800 }}";
+            }
+          ];
+          actions = [
+            {
+              action = "homeassistant.update_entity";
+              target.entity_id = "sensor.${route.id}_departure";
+            }
+          ];
+        }) routes;
         "automation chromebook" = [
           {
             id = "chromebook_wake_when_room_is_bright";

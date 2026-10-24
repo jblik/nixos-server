@@ -156,29 +156,29 @@ flake input continues to reference the published dashboard revision.
 
 ## Services
 
-| Service                                    | Port                       | Runs as                                         |
-|--------------------------------------------|----------------------------|-------------------------------------------------|
-| Plex                                       | 32400                      | native                                          |
-| Media Preview Generator                    | 8280                       | Podman, NVIDIA GPU                              |
-| Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                          |
-| Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                          |
-| qBittorrent                                | 8080                       | native                                          |
-| Tdarr                                      | 8265 (UI), 8266 (server)   | native, GPU node                                |
-| Cleanuparr                                 | 11011                      | podman container                                |
-| Pulsarr                                    | 3003                       | podman container                                |
-| Maintainerr                                | 6246                       | podman container                                |
-| Immich (photos.steenblik.ch)               | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container   |
-| Paperless-ngx (documents.steenblik.ch)     | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL |
-| Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                          |
-| Forgejo runner                            | —                          | native, Podman jobs with per-job Docker-in-Docker |
-| MicroBin (notes.steenblik.ch)              | 8081 (localhost)           | native                                          |
-| CoolerControl                              | 11987 (localhost)          | native                                          |
-| Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake       |
-| node_exporter                              | 9100 (localhost)           | native                                          |
-| Prometheus / Alertmanager (mails alerts)   | 9090 / 9093 (localhost)    | native                                          |
-| Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                          |
-| Tailscale (exit node)                      | —                          | native                                          |
-| Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                  |
+| Service                                    | Port                       | Runs as                                           |
+|--------------------------------------------|----------------------------|---------------------------------------------------|
+| Plex                                       | 32400                      | native                                            |
+| Media Preview Generator                    | 8280                       | Podman, NVIDIA GPU                                |
+| Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                            |
+| Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                            |
+| qBittorrent                                | 8080                       | native                                            |
+| Tdarr                                      | 8265 (UI), 8266 (server)   | native, GPU node                                  |
+| Cleanuparr                                 | 11011                      | podman container                                  |
+| Pulsarr                                    | 3003                       | podman container                                  |
+| Maintainerr                                | 6246                       | podman container                                  |
+| Immich (photos.steenblik.ch)               | 2283 (localhost)           | native, ML on 3004 as a podman CUDA container     |
+| Paperless-ngx (documents.steenblik.ch)     | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL   |
+| Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                            |
+| Forgejo runner                             | —                          | native, Podman jobs with per-job Docker-in-Docker |
+| MicroBin (notes.steenblik.ch)              | 8081 (localhost)           | native                                            |
+| CoolerControl                              | 11987 (localhost)          | native                                            |
+| Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake         |
+| node_exporter                              | 9100 (localhost)           | native                                            |
+| Prometheus / Alertmanager (mails alerts)   | 9090 / 9093 (localhost)    | native                                            |
+| Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                            |
+| Tailscale (exit node)                      | —                          | native                                            |
+| Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                    |
 
 ## VPN and torrent monitoring
 
@@ -240,13 +240,12 @@ After deploying with the command above:
 1. In **Settings → Devices & services → Add integration**, add **Flightradar24**
    and configure the centre and radius of the monitored area.
 2. Configure the official **Music Assistant** integration as described below.
-   Accept discovery of **Music Assistant Queue Actions**, or add it through
-   **Add integration** if it is not discovered.
+   Accept discovery of **Music Assistant Queue Actions**, or add it through **Add integration** if it is not discovered.
 3. Configure your calendar provider in Home Assistant so a `calendar.*` entity
    exists. Providers with additional Python dependencies also need their integration
    name in `services.home-assistant.extraComponents`.
-4. Reload the browser, edit your dashboard and select **Add card**. Search for
-   **Atomic Calendar Revive**, **Flightradar24 Card**, or **Music Assistant Player Card**.
+4. Reload the browser, edit your dashboard and select **Add card**. Search for **Atomic Calendar Revive**,
+   **Flightradar24 Card**, or **Music Assistant Player Card**.
    Select your calendar, the Flightradar24 current-in-area sensor, or a Music Assistant
    player entity respectively. The music card includes a queue tab and queue controls.
 
@@ -275,20 +274,19 @@ After deploying:
    YAML below. Replace both example entity IDs with Rocky's actual vacuum entity
    and the custom image entity for the floor you want to clean.
 4. Select zone cleaning on the card, draw a rectangle on the map, then press its
-   clean button. For selectable rooms, open the card editor and choose
-   **Generate Room Configs**.
+   clean button. For selectable rooms, open the card editor and choose **Generate Room Configs**.
 
 ```yaml
 type: custom:xiaomi-vacuum-map-card
 vacuum_platform: Roborock
 entity: vacuum.rocky
 map_source:
-  camera: image.rocky_map_custom
+    camera: image.rocky_map_custom
 calibration_source:
-  camera: true
+    camera: true
 map_modes:
-  - template: vacuum_clean_zone
-  - template: vacuum_goto
+    -   template: vacuum_clean_zone
+    -   template: vacuum_goto
 ```
 
 The standard spot-clean button cleans around the robot's current location.
@@ -304,11 +302,11 @@ panning and zooming enabled, add this at the top level of the map card's YAML:
 ```yaml
 map_locked: false
 card_mod:
-  style: |
-    .standalone-icon-on-map,
-    .map-zoom-icons {
-      display: none !important;
-    }
+    style: |
+        .standalone-icon-on-map,
+        .map-zoom-icons {
+          display: none !important;
+        }
 ```
 
 ### Chromebook dashboard
@@ -354,8 +352,8 @@ configuration and add this alongside its existing `views:` key:
 
 ```yaml
 kiosk_mode:
-  hide_header: true
-  hide_sidebar: true
+    hide_header: true
+    hide_sidebar: true
 ```
 
 Reload the dashboard afterward. Use `?disable_km` on its URL to restore the
@@ -494,7 +492,7 @@ Add this top-level YAML key in the editor, then save and close:
 
 ```yaml
 forgejo-runner.env: |
-  TOKEN=<runner-token>
+    TOKEN=<runner-token>
 ```
 
 The value is an environment file, not a bare token. Use the UUID and token from
@@ -526,35 +524,36 @@ is reachable only through the job network; it publishes no host ports.
 ```yaml
 name: Build image
 on:
-  push:
-    branches: [master]
+    push:
+        branches: [ master ]
 jobs:
-  image:
-    runs-on: docker
-    services:
-      docker:
-        image: docker.io/library/docker:28-dind
+    image:
+        runs-on: docker
+        services:
+            docker:
+                image: docker.io/library/docker:28-dind
+                env:
+                    DOCKER_TLS_CERTDIR: ""
         env:
-          DOCKER_TLS_CERTDIR: ""
-    env:
-      DOCKER_HOST: tcp://docker:2375
-      IMAGE: git.steenblik.ch/jblik/my-app
-    steps:
-      - uses: https://data.forgejo.org/actions/checkout@v4
-      - name: Wait for Docker
-        run: timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
-      - name: Build and push
-        env:
-          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
-          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
-        run: |
-          printf '%s' "$REGISTRY_TOKEN" | docker login git.steenblik.ch --username "$REGISTRY_USER" --password-stdin
-          docker build --tag "$IMAGE:$GITHUB_SHA" .
-          docker push "$IMAGE:$GITHUB_SHA"
+            DOCKER_HOST: tcp://docker:2375
+            IMAGE: git.steenblik.ch/jblik/my-app
+        steps:
+            -   uses: https://data.forgejo.org/actions/checkout@v4
+            -   name: Wait for Docker
+                run: timeout 60 sh -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+            -   name: Build and push
+                env:
+                    REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+                    REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+                run: |
+                    printf '%s' "$REGISTRY_TOKEN" | docker login git.steenblik.ch --username "$REGISTRY_USER" --password-stdin
+                    docker build --tag "$IMAGE:$GITHUB_SHA" .
+                    docker push "$IMAGE:$GITHUB_SHA"
 ```
 
 The runner supports other jobs without a Docker service too; those jobs have no
-Docker daemon. See the [Forgejo service-container reference](https://forgejo.org/docs/latest/user/actions/reference/#jobsjob_idservices)
+Docker daemon. See
+the [Forgejo service-container reference](https://forgejo.org/docs/latest/user/actions/reference/#jobsjob_idservices)
 and [Docker-in-Docker guidance](https://forgejo.org/docs/latest/admin/actions/docker-access/).
 
 ## AI
