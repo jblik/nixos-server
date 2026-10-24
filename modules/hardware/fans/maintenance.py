@@ -1,5 +1,4 @@
 import argparse
-from datetime import datetime, time, timedelta
 import fcntl
 import json
 import os
@@ -10,23 +9,11 @@ import requests
 
 
 def reconcile(state):
-    enabled = os.environ["MAINTENANCE_ENABLED"] == "true"
-    start = os.environ["MAINTENANCE_START"]
-    end = os.environ["MAINTENANCE_END"]
-    window = [enabled, start, end]
-    if state.get("window") != window:
-        state["handled"] = None
-    state["window"] = window
-
     active = os.environ["MAINTENANCE_ACTIVE"] == "true"
-    now = datetime.now()
-    beginning = datetime.combine(now.date(), time.fromisoformat(start))
-    if now < beginning:
-        beginning -= timedelta(days=1)
-    occurrence = beginning.isoformat()
-    starting = active and state.get("handled") != occurrence
+    starting = active and not state.get("active", False)
     finishing = not active and state.get("scheduled_on", False)
     if not starting and not finishing:
+        state["active"] = active
         return
 
     session = requests.Session()
@@ -50,13 +37,13 @@ def reconcile(state):
         response.raise_for_status()
 
     if starting:
-        state["handled"] = occurrence
         # A mode already enabled by hand remains owned by the user.
         state["scheduled_on"] = (
             state.get("scheduled_on", False) or current != on
         )
     else:
         state["scheduled_on"] = False
+    state["active"] = active
 
 
 def main():

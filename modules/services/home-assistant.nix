@@ -30,6 +30,8 @@ let
   ];
 in
 {
+  imports = [ ./maintenance/home-assistant.nix ];
+
   config = lib.mkIf config.host.home-assistant.enable {
     sops.secrets.apple-username = {
       owner = "hass";

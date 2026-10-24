@@ -202,9 +202,7 @@ in
     security.polkit.extraConfig = ''
       polkit.addRule(function(action, subject) {
         if (action.id == "org.freedesktop.systemd1.manage-units" &&
-            ["speedtest.service", "qbittorrent-seeding-schedule.service",
-             "tdarr-maintenance.service", "previews-maintenance.service",
-             "coolercontrol-maintenance.service", "coolercontrol-maintenance-manual.service"].indexOf(action.lookup("unit")) !== -1 &&
+            ["speedtest.service", "coolercontrol-maintenance-manual.service"].indexOf(action.lookup("unit")) !== -1 &&
             action.lookup("verb") == "start" &&
             subject.user == "server-dashboard") {
           return polkit.Result.YES;
@@ -224,55 +222,6 @@ in
           KeepCoolMode = "Keep cool";
           KeepCoolOffMode = "Quiet";
           KeepCoolManualUnit = "coolercontrol-maintenance-manual.service";
-          KeepCoolWindowStart = host.maintenance.window.start;
-          KeepCoolWindowEnd = host.maintenance.window.end;
-          MaintenanceTasks =
-            map
-              (
-                task:
-                task
-                // {
-                  Inherit = task.Start == host.maintenance.window.start && task.End == host.maintenance.window.end;
-                }
-              )
-              (
-                [
-                  {
-                    Id = "keep-cool";
-                    Name = "Keep cool";
-                    Unit = "coolercontrol-maintenance.service";
-                    Enabled = host.maintenance.keepCool.enable;
-                    Start = host.maintenance.keepCool.window.start;
-                    End = host.maintenance.keepCool.window.end;
-                  }
-                ]
-                ++ lib.optionals host.media.enable [
-                  {
-                    Id = "seeding";
-                    Name = "qBittorrent seeding";
-                    Unit = "qbittorrent-seeding-schedule.service";
-                    Enabled = host.maintenance.qbittorrent.enable;
-                    Start = host.maintenance.qbittorrent.window.start;
-                    End = host.maintenance.qbittorrent.window.end;
-                  }
-                  {
-                    Id = "tdarr";
-                    Name = "Tdarr node";
-                    Unit = "tdarr-maintenance.service";
-                    Enabled = host.maintenance.tdarr.enable;
-                    Start = host.maintenance.tdarr.window.start;
-                    End = host.maintenance.tdarr.window.end;
-                  }
-                  {
-                    Id = "previews";
-                    Name = "Preview CPU workers";
-                    Unit = "previews-maintenance.service";
-                    Enabled = host.maintenance.mediaPreviewGenerator.enable;
-                    Start = host.maintenance.mediaPreviewGenerator.window.start;
-                    End = host.maintenance.mediaPreviewGenerator.window.end;
-                  }
-                ]
-              );
           # Written by modules/services/speedtest.nix.
           Speedtest = true;
           SpeedtestUnit = "speedtest.service";

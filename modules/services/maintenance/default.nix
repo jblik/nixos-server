@@ -4,30 +4,16 @@
   pkgs,
 }:
 let
-  host = config.host;
-  taskDefaults = task: task.window // { enabled = task.enable; };
-  defaults = pkgs.writeText "maintenance-defaults.json" (
-    builtins.toJSON {
-      Tasks = {
-        keep-cool = taskDefaults host.maintenance.keepCool;
-        seeding = taskDefaults host.maintenance.qbittorrent;
-        tdarr = taskDefaults host.maintenance.tdarr;
-        previews = taskDefaults host.maintenance.mediaPreviewGenerator;
-      };
-    }
-  );
-  pythonModule = pkgs.python3Packages.toPythonModule (
-    pkgs.runCommand "maintenance-python" { propagatedBuildInputs = [ ]; } ''
-      install -Dm644 ${./window.py} "$out/${pkgs.python3.sitePackages}/maintenance.py"
-    ''
-  );
+  enabled = {
+    keep-cool = config.host.maintenance.keepCool.enable;
+    seeding = config.host.maintenance.qbittorrent.enable;
+    tdarr = config.host.maintenance.tdarr.enable;
+    previews = config.host.maintenance.mediaPreviewGenerator.enable;
+  };
   script =
     name: path:
     pkgs.writers.writePython3 name {
-      libraries = [
-        pkgs.python3Packages.requests
-        pythonModule
-      ];
+      libraries = [ pkgs.python3Packages.requests ];
     } (builtins.readFile path);
   runner = script "maintenance-command" ./command.py;
 in
@@ -37,15 +23,8 @@ in
   command =
     task: command:
     pkgs.writeShellScript "maintenance-${task}" ''
-      export MAINTENANCE_DEFAULTS=${defaults}
-      ${lib.optionalString host.dashboard.enable ''
-        export MAINTENANCE_URL=http://127.0.0.1:${toString config.services.server-dashboard.internalPort}/maintenance-windows
-      ''}
-      exec ${runner} ${
-        lib.escapeShellArgs [
-          task
-          command
-        ]
-      }
+      export MAINTENANCE_ENABLED=${lib.boolToString enabled.${task}}
+      export MAINTENANCE_STATE=/var/lib/server-maintenance/${task}
+      exec ${runner} ${lib.escapeShellArg command}
     '';
 }

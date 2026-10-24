@@ -1,15 +1,11 @@
 import argparse
 import configparser
-from datetime import datetime
 import fcntl
 import json
 import os
 from pathlib import Path
-import sys
 
 import requests
-
-from maintenance import active
 
 
 def arguments():
@@ -18,11 +14,6 @@ def arguments():
         "--profile", default=os.environ.get("QBITTORRENT_PROFILE")
     )
     parser.add_argument("--url", default=os.environ.get("QBITTORRENT_URL"))
-    parser.add_argument(
-        "--enabled", default=os.environ.get("MAINTENANCE_ENABLED")
-    )
-    parser.add_argument("--start", default=os.environ.get("MAINTENANCE_START"))
-    parser.add_argument("--end", default=os.environ.get("MAINTENANCE_END"))
     return parser.parse_args()
 
 
@@ -36,30 +27,13 @@ def reconcile(args, state):
     url = args.url + "/api/v2/torrents/"
     stopped = set(json.loads(state.read_text())) if state.exists() else set()
 
-    if os.environ.get("QBITTORRENT_UPDATE_HOOK") == "true":
-        command = (
-            f'"{sys.argv[0]}" --profile "{args.profile}" --url "{args.url}" '
-            f'--enabled {args.enabled} --start {args.start} --end {args.end}'
-        )
-        response = session.post(
-            args.url + "/api/v2/app/setPreferences",
-            data={"json": json.dumps({
-                "autorun_enabled": True, "autorun_program": command,
-            })}, timeout=10,
-        )
-        response.raise_for_status()
-
     response = session.get(url + "info", timeout=10)
     response.raise_for_status()
     torrents = {torrent["hash"]: torrent for torrent in response.json()}
     stopped.intersection_update(torrents)
-    nighttime = active({
-        "enabled": args.enabled == "true",
-        "start": args.start,
-        "end": args.end,
-    }, datetime.now().time())
+    active = os.environ["MAINTENANCE_ACTIVE"] == "true"
 
-    if nighttime:
+    if active:
         hashes = [
             torrent_hash for torrent_hash in stopped
             if torrents[torrent_hash]["state"] == "stoppedUP"
@@ -100,7 +74,7 @@ def reconcile(args, state):
         )
         response.raise_for_status()
         print(f"{action}: {len(hashes)} completed torrents")
-    if nighttime:
+    if active:
         temporary.write_text("[]")
         temporary.replace(state)
 

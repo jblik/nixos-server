@@ -21,14 +21,11 @@ let
   profile = "${config.services.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf";
   maintenance = import ../../maintenance { inherit config lib pkgs; };
   seedingSchedule = maintenance.script "qbittorrent-seeding-schedule" ./maintenance.py;
-  completed = lib.concatStringsSep " " [
-    seedingSchedule
-    "--profile ${profile}"
-    "--url http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}"
-    "--enabled ${lib.boolToString config.host.maintenance.qbittorrent.enable}"
-    "--start ${config.host.maintenance.qbittorrent.window.start}"
-    "--end ${config.host.maintenance.qbittorrent.window.end}"
-  ];
+  completed = pkgs.writeShellScript "qbittorrent-completed" ''
+    export QBITTORRENT_PROFILE=${lib.escapeShellArg profile}
+    export QBITTORRENT_URL=http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}
+    exec ${maintenance.command "seeding" seedingSchedule}
+  '';
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./metrics.py);
@@ -172,7 +169,6 @@ in
         QBITTORRENT_PROFILE = profile;
         QBITTORRENT_URL = "http://127.0.0.1:${toString config.services.qbittorrent.webuiPort}";
         TZ = config.time.timeZone;
-        QBITTORRENT_UPDATE_HOOK = "true";
       };
       serviceConfig = {
         Type = "oneshot";
