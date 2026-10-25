@@ -46,6 +46,10 @@ in
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   home-assistant = applicationPkgs.home-assistant.home-assistant.override {
     packageOverrides = _: prev: {
+      caldav = prev.caldav.overridePythonAttrs (_: {
+        # The upstream suite took over eight minutes on the server.
+        doCheck = false;
+      });
       niquests = prev.niquests.overridePythonAttrs (old: {
         # The proxy test resolves an external hostname inside the network sandbox.
         disabledTests = (old.disabledTests or [ ]) ++ [ "test_use_proxy_from_environment" ];
@@ -82,6 +86,10 @@ in
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
   # Until https://github.com/run-llama/llama_index/pull/22468 lands, per-call think=False is dropped.
   paperless-ngx = applicationPkgs.paperless.paperless-ngx.overrideAttrs (old: {
+    disabledTests = (old.disabledTests or [ ]) ++ [
+      # Took 225 seconds on the server; embeddings use Ollama, not Hugging Face.
+      "test_get_embedding_model_huggingface"
+    ];
     postPatch = (old.postPatch or "") + ''
       cp ${./modules/services/paperless/custom_fields.py} src/documents/workflows/custom_fields.py
       substituteInPlace src/documents/tasks.py \
