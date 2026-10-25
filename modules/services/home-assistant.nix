@@ -195,7 +195,7 @@ in
               {
                 trigger = "numeric_state";
                 entity_id = "sensor.chromebook_tablet_light_sensor";
-                above = 20;
+                above = 15;
                 "for" = "00:00:05";
               }
               {
@@ -219,7 +219,7 @@ in
               {
                 condition = "numeric_state";
                 entity_id = "sensor.chromebook_tablet_light_sensor";
-                above = 20;
+                above = 15;
               }
             ];
             actions = [ { action = "script.chromebook_wake"; } ];
@@ -273,6 +273,13 @@ in
                   data.command = "keep_screen_on";
                 };
               }
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
+                  message = "command_screen_brightness_level";
+                  data.command = 255;
+                };
+              }
             ];
           };
           chromebook_sleep = {
@@ -281,16 +288,15 @@ in
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  message = "command_screen_off_timeout";
-                  data.command = 30000;
+                  message = "command_screen_on";
+                  data.command = "keep_screen_on";
                 };
               }
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  # An absent command leaves keep-screen-on unchanged in the Android app.
-                  message = "command_screen_on";
-                  data.command = "turn_off";
+                  message = "command_screen_brightness_level";
+                  data.command = 0;
                 };
               }
             ];

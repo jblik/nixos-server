@@ -264,6 +264,18 @@ entity: weather.meteoswiss_home
 Replace the example entity with your actual MeteoSwiss weather entity. Update the
 version and file hash in `packages/meteoswiss-card.nix` together when upgrading.
 
+### Chromebook display
+
+The Chromebook automations keep the Companion app awake and control visibility
+through screen brightness. Below 10 lux for one minute, or when everyone leaves
+home, `script.chromebook_sleep` sets brightness to 0. Above 15 lux for five
+seconds while someone is home, `script.chromebook_wake` restores brightness to
+255 (100%). Between 10 and 15 lux, brightness stays unchanged. Startup and
+presence changes also apply the existing light and presence conditions.
+
+Disable automatic brightness on the Chromebook. Both scripts enable
+keep-screen-on; neither changes the screen timeout or locks the device.
+
 ### Dashboard cards
 
 Home Assistant and its custom integrations use the independently locked
