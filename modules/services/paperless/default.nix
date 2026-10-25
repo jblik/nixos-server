@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   inputs,
   ...
 }:
@@ -33,13 +32,6 @@ in
         PAPERLESS_EMAIL_PORT = config.host.networking.smtpPort;
         PAPERLESS_EMAIL_FROM = "noreply@steenblik.ch";
         PAPERLESS_EMAIL_USE_TLS = true;
-        PAPERLESS_POST_CONSUME_SCRIPT = "${pkgs.writers.writePython3 "paperless-post-consume" {
-          libraries = [ pkgs.python3Packages.requests ];
-          flakeIgnore = [
-            "E241"
-            "E501"
-          ];
-        } (builtins.readFile ./post_consume.py)}";
       }
       // lib.optionalAttrs config.host.ai.enable {
         PAPERLESS_AI_ENABLED = true;
@@ -51,9 +43,12 @@ in
       };
     };
 
-    # Consumption, and so the post-consume script, runs in the Celery worker.
-    systemd.services.paperless-task-queue.environment.POST_CONSUME_API_URL =
-      "http://${config.services.paperless.address}:${toString config.services.paperless.port}";
+    # Run after the module's migrations, before consumers start accepting documents.
+    systemd.services.paperless-scheduler.preStart = lib.mkIf config.host.ai.enable (
+      lib.mkAfter ''
+        ${lib.getExe config.services.paperless.package} shell < ${./ai_workflow.py}
+      ''
+    );
 
     # The media dir, originals included, stays on the fast tier: opening or editing a document
     # stats its original, so nothing of Paperless' may sit on the array or it wakes the disks.

@@ -578,8 +578,17 @@ One Ollama serves every model, to:
   `/v1/responses`, `/v1/embeddings`, `/v1/models`) and
   Anthropic-compatible (`/v1/messages`). It needs the `ai-api-key` secret, as
   `Authorization: Bearer <key>` or `x-api-key: <key>`.
-- **Paperless**: tag/correspondent suggestions and chat with documents, on the `chat` model;
-  its search index (`embedding` model) is rebuilt nightly at 02:10.
+- **Paperless**: automatically applies AI suggestions after consumption, on the `chat`
+  model, and supports chat with documents. Its search index (`embedding` model) is
+  rebuilt nightly at 02:10.
+
+Paperless startup installs the **Apply AI suggestions after consumption** workflow
+when AI is enabled. For newly added documents it queues suggestions in the background
+and applies title, tags, correspondent, document type, storage path and created date,
+overwriting existing values. It uses existing categories only; suggested tags are
+added to existing tags, preserving todo/inbox flags until you review the document.
+Existing documents are not processed retroactively. The workflow is managed by Nix;
+startup restores its AI action settings.
 
 Immich keeps its own machine learning container: its CLIP search and face recognition need
 vision models that Ollama doesn't serve.
