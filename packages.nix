@@ -44,21 +44,28 @@ in
   nginxStable = applicationPkgs.nginx.nginxStable;
   cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
-  home-assistant = applicationPkgs.home-assistant.home-assistant.override {
-    packageOverrides = _: prev: {
-      caldav = prev.caldav.overridePythonAttrs (_: {
-        # The upstream suite took over eight minutes on the server.
-        doCheck = false;
+  home-assistant =
+    (applicationPkgs.home-assistant.home-assistant.override {
+      packageOverrides = _: prev: {
+        caldav = prev.caldav.overridePythonAttrs (_: {
+          # The upstream suite took over eight minutes on the server.
+          doCheck = false;
+        });
+        niquests = prev.niquests.overridePythonAttrs (old: {
+          # The proxy test resolves an external hostname inside the network sandbox.
+          disabledTests = (old.disabledTests or [ ]) ++ [ "test_use_proxy_from_environment" ];
+        });
+        urllib3-future = prev.urllib3-future.overridePythonAttrs (_: {
+          doCheck = false;
+        });
+      };
+    }).overrideAttrs
+      (old: {
+        patches = (old.patches or [ ]) ++ [ ./modules/services/home-assistant/transport.patch ];
+        postPatch = (old.postPatch or "") + ''
+          cp ${./modules/services/home-assistant/transport.py} homeassistant/components/swiss_public_transport/transport.py
+        '';
       });
-      niquests = prev.niquests.overridePythonAttrs (old: {
-        # The proxy test resolves an external hostname inside the network sandbox.
-        disabledTests = (old.disabledTests or [ ]) ++ [ "test_use_proxy_from_environment" ];
-      });
-      urllib3-future = prev.urllib3-future.overridePythonAttrs (_: {
-        doCheck = false;
-      });
-    };
-  };
   home-assistant-custom-components =
     applicationPkgs.home-assistant.home-assistant-custom-components.extend
       (

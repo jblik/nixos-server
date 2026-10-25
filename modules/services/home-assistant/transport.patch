@@ -1,0 +1,79 @@
+--- a/homeassistant/components/swiss_public_transport/__init__.py
++++ b/homeassistant/components/swiss_public_transport/__init__.py
+@@ -2,7 +2,6 @@
+ 
+ import logging
+ 
+-from opendata_transport import OpendataTransport
+ from opendata_transport.exceptions import (
+     OpendataTransportConnectionError,
+     OpendataTransportError,
+@@ -36,6 +35,7 @@
+ )
+ from .helper import offset_opendata, unique_id_from_config
+ from .services import async_setup_services
++from .transport import OpendataTransport
+ 
+ _LOGGER = logging.getLogger(__name__)
+ 
+--- a/homeassistant/components/swiss_public_transport/coordinator.py
++++ b/homeassistant/components/swiss_public_transport/coordinator.py
+@@ -39,6 +39,9 @@
+     transfers: int
+     delay: int
+     line: str
++    category: str | None
++    service_number: str | None
++    raw: dict
+ 
+ 
+ def calculate_duration_in_seconds(duration_text: str) -> int | None:
+@@ -84,7 +87,7 @@
+ 
+     @override
+     async def _async_update_data(self) -> list[DataConnection]:
+-        return await self.fetch_connections(limit=CONNECTIONS_COUNT)
++        return await self.fetch_connections(limit=16)
+ 
+     async def fetch_connections(self, limit: int) -> list[DataConnection]:
+         """Fetch connections using the opendata api."""
+@@ -115,8 +118,11 @@
+                 remaining_time=str(self.remaining_time(connections[i]["departure"])),
+                 delay=connections[i]["delay"],
+                 line=connections[i].get("line"),
++                category=connections[i].get("category"),
++                service_number=connections[i].get("service_number"),
++                raw=connections[i]["raw"],
+             )
+-            for i in range(limit)
++            for i in range(len(connections))
+             if len(connections) > i and connections[i] is not None
+         ]
+ 
+--- a/homeassistant/components/swiss_public_transport/sensor.py
++++ b/homeassistant/components/swiss_public_transport/sensor.py
+@@ -131,6 +131,24 @@
+     @override
+     def native_value(self) -> StateType | datetime:
+         """Return the state of the sensor."""
++        if self.entity_description.index >= len(self.coordinator.data):
++            return None
+         return self.entity_description.value_fn(
+             self.coordinator.data[self.entity_description.index]
+         )
++
++    @property
++    def extra_state_attributes(self):
++        if self.entity_description.key != "departure":
++            return None
++        return {
++            "connections": [
++                {
++                    **connection,
++                    "departure": connection["departure"].isoformat()
++                    if connection["departure"]
++                    else None,
++                }
++                for connection in self.coordinator.data
++            ]
++        }
