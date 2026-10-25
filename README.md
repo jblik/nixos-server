@@ -238,6 +238,18 @@ link-local and unique-local addresses for Thread devices. Keep the server, hubs
 and iPhone on the same LAN for pairing; Thread devices need IPv6 connectivity
 through a Thread border router.
 
+### MeteoSwiss weather
+
+Nix installs [MeteoSwiss](https://github.com/LNKtwo/ha-meteoswiss) from release
+8.1.2, pinned in `packages/meteoswiss.nix`. HACS is not needed.
+
+After deploying, open **Settings → Devices & services → Add integration**, search
+for **MeteoSwiss**, and choose a weather station or enter your postal code.
+Forecasts and pollen use the Home Assistant installation location; check it in
+**Settings → System → General**. Observations use the selected weather station.
+Update the version and source hash in `packages/meteoswiss.nix` together when
+upgrading.
+
 ### Dashboard cards
 
 Home Assistant and its custom integrations use the independently locked

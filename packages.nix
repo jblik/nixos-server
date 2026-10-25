@@ -59,7 +59,13 @@ in
       });
     };
   };
-  home-assistant-custom-components = applicationPkgs.home-assistant.home-assistant-custom-components;
+  home-assistant-custom-components =
+    applicationPkgs.home-assistant.home-assistant-custom-components.extend
+      (
+        _: _: {
+          meteoswiss = applicationPkgs.home-assistant.callPackage ./packages/meteoswiss.nix { };
+        }
+      );
   home-assistant-custom-lovelace-modules =
     applicationPkgs.home-assistant.home-assistant-custom-lovelace-modules.extend
       (

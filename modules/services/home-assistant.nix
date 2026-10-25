@@ -53,6 +53,7 @@ in
         browser-mod
         flightradar24
         mass-queue
+        meteoswiss
         roborock_custom_map
       ];
       customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
