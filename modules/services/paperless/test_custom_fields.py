@@ -1,3 +1,4 @@
+import builtins
 import importlib.util
 import json
 import unittest
@@ -39,7 +40,7 @@ class DocumentFieldsTest(unittest.TestCase):
     def setUp(self):
         self.module.CustomField.reset_mock()
         self.module.CustomFieldInstance.reset_mock()
-        self.module.AIClient.reset_mock()
+        self.dependencies["paperless_ai.client"].AIClient.reset_mock()
         self.module.Document.reset_mock()
         self.module.clear_document_caches.reset_mock()
         self.module.AIConfig.return_value.ai_enabled = True
@@ -58,8 +59,22 @@ class DocumentFieldsTest(unittest.TestCase):
         self.module.CustomFieldInstance.objects.get_or_create.side_effect = [
             (self.owner, True), (self.due, True),
         ]
-        self.client = self.module.AIClient.return_value
+        self.client = self.dependencies["paperless_ai.client"].AIClient.return_value
         self.client._normalize_errors.side_effect = lambda: nullcontext()
+
+    def test_task_discovery_does_not_import_ai_libraries(self):
+        original_import = builtins.__import__
+
+        def check_import(name, *args, **kwargs):
+            if name.startswith("llama_index") or name == "paperless_ai.client":
+                self.fail(f"Task discovery imported {name}")
+            return original_import(name, *args, **kwargs)
+
+        spec = importlib.util.spec_from_file_location(
+            "document_custom_fields_lazy", Path(__file__).with_name("custom_fields.py"),
+        )
+        with patch("builtins.__import__", side_effect=check_import):
+            spec.loader.exec_module(importlib.util.module_from_spec(spec))
 
     def run_extraction(self, recipient="Sophie", requires_payment=True, due="2026-11-15", **extra):
         self.client.llm.chat.return_value.message.content = json.dumps({

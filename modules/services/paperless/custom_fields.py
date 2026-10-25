@@ -3,13 +3,11 @@ from typing import Literal
 
 from celery import shared_task
 from django.db.models import Q
-from llama_index.core.llms import ChatMessage
 from pydantic import BaseModel, Field
 
 from documents.caching import clear_document_caches
 from documents.models import CustomField, CustomFieldInstance, Document
 from paperless.config import AIConfig
-from paperless_ai.client import AIClient
 from paperless_ai.db import db_connection_released
 from paperless_ai.exceptions import LLMTimeoutError
 from paperless_ai.indexing import truncate_content
@@ -80,6 +78,11 @@ def populate_document_fields(document_id):
     due_date = None
     fields = None
     if document.content.strip():
+        # Task discovery must not load the AI stack into every Paperless process.
+        from llama_index.core.llms import ChatMessage
+
+        from paperless_ai.client import AIClient
+
         client = AIClient()
         content = truncate_content(document.content)
         prompt = (
