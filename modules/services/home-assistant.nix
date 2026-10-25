@@ -196,7 +196,12 @@ in
                 trigger = "numeric_state";
                 entity_id = "sensor.chromebook_tablet_light_sensor";
                 above = 15;
-                "for" = "00:00:05";
+                "for" = "00:00:02";
+              }
+              {
+                trigger = "state";
+                entity_id = "light.monkey";
+                to = "on";
               }
               {
                 trigger = "state";
@@ -213,13 +218,28 @@ in
             ];
             conditions = [
               {
-                condition = "template";
-                value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
-              }
-              {
-                condition = "numeric_state";
-                entity_id = "sensor.chromebook_tablet_light_sensor";
-                above = 15;
+                condition = "or";
+                conditions = [
+                  {
+                    condition = "state";
+                    entity_id = "light.monkey";
+                    state = "on";
+                  }
+                  {
+                    condition = "and";
+                    conditions = [
+                      {
+                        condition = "template";
+                        value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
+                      }
+                      {
+                        condition = "numeric_state";
+                        entity_id = "sensor.chromebook_tablet_light_sensor";
+                        above = 15;
+                      }
+                    ];
+                  }
+                ];
               }
             ];
             actions = [ { action = "script.chromebook_wake"; } ];
@@ -232,7 +252,12 @@ in
                 trigger = "numeric_state";
                 entity_id = "sensor.chromebook_tablet_light_sensor";
                 below = 10;
-                "for" = "00:01:00";
+                "for" = "00:00:10";
+              }
+              {
+                trigger = "state";
+                entity_id = "light.monkey";
+                to = "off";
               }
               {
                 trigger = "template";
@@ -244,6 +269,16 @@ in
               }
             ];
             conditions = [
+              {
+                condition = "not";
+                conditions = [
+                  {
+                    condition = "state";
+                    entity_id = "light.monkey";
+                    state = "on";
+                  }
+                ];
+              }
               {
                 condition = "or";
                 conditions = [

@@ -267,11 +267,13 @@ version and file hash in `packages/meteoswiss-card.nix` together when upgrading.
 ### Chromebook display
 
 The Chromebook automations keep the Companion app awake and control visibility
-through screen brightness. Below 10 lux for one minute, or when everyone leaves
-home, `script.chromebook_sleep` sets brightness to 0. Above 15 lux for five
+through screen brightness. Below 10 lux for ten seconds, or when everyone leaves
+home, `script.chromebook_sleep` sets brightness to 0. Above 15 lux for two
 seconds while someone is home, `script.chromebook_wake` restores brightness to
 255 (100%). Between 10 and 15 lux, brightness stays unchanged. Startup and
 presence changes also apply the existing light and presence conditions.
+When `light.monkey` is on, brightness is always 100%, regardless of presence or
+light level. Turning Monkey off reapplies the dark-room and away conditions.
 
 Disable automatic brightness on the Chromebook. Both scripts enable
 keep-screen-on; neither changes the screen timeout or locks the device.
