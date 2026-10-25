@@ -250,14 +250,28 @@ Forecasts and pollen use the Home Assistant installation location; check it in
 Update the version and source hash in `packages/meteoswiss.nix` together when
 upgrading.
 
+Nix also installs [MeteoSwiss Weather Card](https://github.com/LNKtwo/ha-meteoswiss-card)
+2.4.8, pinned in `packages/meteoswiss-card.nix`, and registers its JavaScript resource.
+After deploying, reload the browser, edit your dashboard, select **Add card**, and
+search for **MeteoSwiss**. Select the weather entity created by the integration.
+For a manual card, use:
+
+```yaml
+type: custom:meteoswiss-card
+entity: weather.meteoswiss_home
+```
+
+Replace the example entity with your actual MeteoSwiss weather entity. Update the
+version and file hash in `packages/meteoswiss-card.nix` together when upgrading.
+
 ### Dashboard cards
 
 Home Assistant and its custom integrations use the independently locked
 `nixpkgs-home-assistant` unstable input. Nix installs Atomic Calendar Revive,
 Flightradar24 Card, and Music Assistant Player Card, plus the Flightradar24 and
 Music Assistant Queue Actions integrations. Music Assistant Player Card is packaged
-from its pinned release asset in `packages/mass-player-card.nix`; the others come
-from Nixpkgs. HACS is not needed.
+from its pinned release asset in `packages/mass-player-card.nix`; the other cards
+above come from Nixpkgs. HACS is not needed.
 
 After deploying with the command above:
 
