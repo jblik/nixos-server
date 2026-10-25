@@ -599,6 +599,12 @@ Startup attaches these fields to existing documents and queues extraction for
 documents missing either field or an Owner value. New documents are processed
 after consumption. Todo/inbox tags remain for review.
 
+Documents classified as **Coupons** also get **Coupon Expiry Date** and
+**Coupon Code**. Extraction runs after AI classification, fills the expiry date
+and redemption code when present, and leaves unknown values blank. Existing
+filled values are preserved. Startup attaches these fields to existing Coupons
+documents and queues extraction when either field is newly attached.
+
 Immich keeps its own machine learning container: its CLIP search and face recognition need
 vision models that Ollama doesn't serve.
 

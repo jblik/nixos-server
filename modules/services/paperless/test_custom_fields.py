@@ -44,6 +44,7 @@ class DocumentFieldsTest(unittest.TestCase):
         self.module.clear_document_caches.reset_mock()
         self.module.AIConfig.return_value.ai_enabled = True
         self.document = self.module.Document.objects.get.return_value
+        self.document.document_type = None
         self.document.content = "Invoice addressed to Sophie. Pay by 2026-11-15."
         owner_field = MagicMock()
         owner_field.extra_data = {"select_options": [
@@ -60,13 +61,80 @@ class DocumentFieldsTest(unittest.TestCase):
         self.client = self.module.AIClient.return_value
         self.client._normalize_errors.side_effect = lambda: nullcontext()
 
-    def run_extraction(self, recipient="Sophie", requires_payment=True, due="2026-11-15"):
+    def run_extraction(self, recipient="Sophie", requires_payment=True, due="2026-11-15", **extra):
         self.client.llm.chat.return_value.message.content = json.dumps({
             "recipient": recipient,
             "requires_payment": requires_payment,
             "payment_due_date": due,
+            **extra,
         })
         self.module.populate_document_fields(42)
+
+    def prepare_coupon(self):
+        self.document.document_type = MagicMock()
+        self.document.document_type.name = "Coupons"
+        owner_field = self.module.CustomField.objects.get.side_effect
+        self.module.CustomField.objects.get.side_effect = [
+            next(owner_field), next(owner_field), MagicMock(), MagicMock(),
+        ]
+        self.expiry = MagicMock(pk=3, value_date=None)
+        self.code = MagicMock(pk=4, value_text=None)
+        self.module.CustomFieldInstance.objects.get_or_create.side_effect = [
+            (self.owner, False), (self.due, False),
+            (self.expiry, True), (self.code, True),
+        ]
+
+    def test_coupon_extracts_date_and_exact_code_with_owner_already_filled(self):
+        self.prepare_coupon()
+        self.owner.value_select = "sophie-option"
+        self.due.value_date = date(2026, 11, 15)
+        self.run_extraction(
+            requires_payment=False, coupon_expiry_date="2026-12-31",
+            coupon_code="Save-20!",
+        )
+        self.assertEqual(self.module.CustomFieldInstance.objects.get_or_create.call_count, 4)
+        self.module.CustomField.objects.get.assert_any_call(name="Coupon Expiry Date")
+        self.module.CustomField.objects.get.assert_any_call(name="Coupon Code")
+        self.module.CustomFieldInstance.objects.filter.assert_any_call(
+            pk=3, value_date__isnull=True,
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+            value_date=date(2026, 12, 31),
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_any_call(
+            value_text="Save-20!",
+        )
+        schema = self.client.llm.chat.call_args.kwargs["format"]
+        self.assertIn("coupon_expiry_date", schema["properties"])
+        self.assertIn("coupon_code", schema["properties"])
+
+    def test_coupon_unknown_values_stay_blank(self):
+        self.prepare_coupon()
+        self.run_extraction(
+            requires_payment=False, coupon_expiry_date=None, coupon_code=None,
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_called_once_with(
+            value_select="sophie-option",
+        )
+
+    def test_filled_coupon_fields_skip_extraction(self):
+        self.prepare_coupon()
+        self.owner.value_select = "sophie-option"
+        self.due.value_date = date(2026, 11, 15)
+        self.expiry.value_date = date(2026, 12, 31)
+        self.code.value_text = "MANUAL"
+        self.run_extraction()
+        self.client.llm.chat.assert_not_called()
+        self.module.CustomFieldInstance.objects.filter.assert_not_called()
+
+    def test_other_types_do_not_attach_or_request_coupon_fields(self):
+        self.document.document_type = MagicMock()
+        self.document.document_type.name = "Invoices"
+        self.run_extraction()
+        self.assertEqual(self.module.CustomFieldInstance.objects.get_or_create.call_count, 2)
+        schema = self.client.llm.chat.call_args.kwargs["format"]
+        self.assertNotIn("coupon_code", schema["properties"])
 
     def test_adds_both_fields_and_extracts_each_recipient(self):
         for recipient, option in [("Sophie", "sophie-option"), ("Jacob", "jacob-option")]:
