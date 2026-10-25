@@ -25,7 +25,7 @@ in
       environmentFile = config.sops.secrets."paperless.env".path;
       settings = {
         PAPERLESS_APP_TITLE = "Bear Docs";
-        PAPERLESS_OCR_LANGUAGE = "eng+deu+ita";
+        PAPERLESS_OCR_LANGUAGE = "eng+deu+ita+fin";
         PAPERLESS_FILENAME_FORMAT = "{{ created }}-{{ correspondent }}-{{ title }}";
         PAPERLESS_TRUSTED_PROXIES = "127.0.0.1";
         PAPERLESS_EMAIL_HOST = "smtp.mail.me.com";
