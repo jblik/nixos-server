@@ -83,6 +83,12 @@ in
   # Until https://github.com/run-llama/llama_index/pull/22468 lands, per-call think=False is dropped.
   paperless-ngx = applicationPkgs.paperless.paperless-ngx.overrideAttrs (old: {
     postPatch = (old.postPatch or "") + ''
+      cp ${./modules/services/paperless/custom_fields.py} src/documents/workflows/custom_fields.py
+      substituteInPlace src/documents/tasks.py \
+        --replace-fail 'from documents import sanity_checker' 'from documents import sanity_checker
+      from documents.workflows.custom_fields import populate_document_fields' \
+        --replace-fail '    if not apply_ai_suggestions_to_document(action, document):' '    transaction.on_commit(lambda: populate_document_fields.delay(document_id))
+          if not apply_ai_suggestions_to_document(action, document):'
       substituteInPlace src/paperless_ai/client.py \
         --replace-fail 'return Ollama(' 'return Ollama(thinking=False,'
       substituteInPlace src/paperless_ai/tests/test_client.py \

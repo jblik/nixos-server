@@ -590,6 +590,15 @@ added to existing tags, preserving todo/inbox flags until you review the documen
 Existing documents are not processed retroactively. The workflow is managed by Nix;
 startup restores its AI action settings.
 
+Every document also gets the **Owner** and **Payment Due Date** custom fields.
+The same local model reads the addressee to choose Sophie or Jacob; documents
+addressed to both, neither, or an unclear recipient use Shared Bears. Payment Due
+Date is filled only for payment requests with an explicit deadline or calculable
+payment terms; otherwise it stays blank. Existing filled values are preserved.
+Startup attaches these fields to existing documents and queues extraction for
+documents missing either field or an Owner value. New documents are processed
+after consumption. Todo/inbox tags remain for review.
+
 Immich keeps its own machine learning container: its CLIP search and face recognition need
 vision models that Ollama doesn't serve.
 
