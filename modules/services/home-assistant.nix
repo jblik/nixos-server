@@ -50,6 +50,7 @@ in
     services.home-assistant = {
       enable = true;
       customComponents = with pkgs.home-assistant-custom-components; [
+        browser-mod
         flightradar24
         mass-queue
         roborock_custom_map

@@ -321,6 +321,154 @@ card_mod:
         }
 ```
 
+### Rocky popup card
+
+Nix installs Browser Mod for dashboard popups. After deploying, add **Browser Mod**
+in **Settings → Devices & services → Add integration**, restart Home Assistant,
+then reload the browser. Browser Mod loads its own frontend resource; no HACS or
+manual resource entry is needed. See its
+[installation instructions](https://github.com/thomasloven/hass-browser_mod#installation-instructions).
+
+In a **Sections** dashboard, add a **Manual** card and paste the YAML below. The
+button occupies six columns and two rows, with a small vacuum icon and `rocky`
+underneath. Tapping opens the map and controls only in the browser that was tapped,
+using a Browser Mod
+[browser call](https://github.com/thomasloven/hass-browser_mod/blob/master/documentation/services.md#calling-services---server-call-vs-browser-call).
+The supplied map, room selections, cleaning mode, suction menu and dock action
+are kept inside the popup.
+
+Icon colors: cleaning green (`#4caf50`), returning blue (`#2196f3`), docked teal
+(`#009688`), paused amber (`#ffc107`), idle purple (`#9c27b0`), error red
+(`#f44336`), and unknown/unavailable (or any other state) grey (`#9e9e9e`).
+
+```yaml
+type: button
+entity: vacuum.rocky
+name: rocky
+icon: mdi:robot-vacuum
+icon_height: 32px
+show_name: true
+show_icon: true
+show_state: false
+grid_options:
+    columns: 6
+    rows: 2
+card_mod:
+    style: |
+        ha-state-icon {
+          color: {{ {
+            'cleaning': '#4caf50',
+            'returning': '#2196f3',
+            'docked': '#009688',
+            'paused': '#ffc107',
+            'idle': '#9c27b0',
+            'error': '#f44336'
+          }.get(states('vacuum.rocky'), '#9e9e9e') }} !important;
+        }
+tap_action:
+    action: fire-dom-event
+    browser_mod:
+        service: browser_mod.popup
+        data:
+            title: Rocky
+            content:
+                type: custom:xiaomi-vacuum-map-card
+                vacuum_platform: Roborock
+                entity: vacuum.rocky
+                map_source:
+                    camera: image.rocky_map_0_custom
+                calibration_source:
+                    camera: true
+                tiles: []
+                icons:
+                    -   type: menu
+                        menu_id: rocky_cleaning_mode
+                        icon_id: rocky_cleaning_mode
+                        icon: mdi:vacuum
+                        tooltip: Cleaning mode
+                        entity: select.living_room_rocky_cleaning_mode
+                        available_values_attribute: options
+                        tap_action:
+                            action: call-service
+                            service: select.select_option
+                            service_data:
+                                entity_id: select.living_room_rocky_cleaning_mode
+                                option: '[[value]]'
+                    -   type: menu
+                        menu_id: rocky_fan_speed
+                        icon_id: rocky_fan_speed
+                        icon: mdi:fan
+                        tooltip: Suction strength
+                        entity: vacuum.rocky
+                        current_value_attribute: fan_speed
+                        available_values_attribute: fan_speed_list
+                        tap_action:
+                            action: call-service
+                            service: vacuum.set_fan_speed
+                            service_data:
+                                entity_id: vacuum.rocky
+                                fan_speed: '[[value]]'
+                    -   icon: mdi:home-import-outline
+                        tooltip: Return to dock
+                        tap_action:
+                            action: call-service
+                            service: vacuum.return_to_base
+                            service_data:
+                                entity_id: vacuum.rocky
+                map_modes:
+                    -   template: vacuum_clean_segment
+                        predefined_selections:
+                            -   id: 2
+                                outline:
+                                    - [22150, 16700]
+                                    - [26550, 16700]
+                                    - [26550, 20250]
+                                    - [22150, 20250]
+                                label:
+                                    text: Bedroom
+                                    x: 24350
+                                    'y': 18475
+                            -   id: 3
+                                outline:
+                                    - [26800, 18050]
+                                    - [27650, 18050]
+                                    - [27650, 19750]
+                                    - [26800, 19750]
+                                label:
+                                    text: Shower
+                                    x: 27225
+                                    'y': 18900
+                            -   id: 4
+                                outline:
+                                    - [27600, 18700]
+                                    - [29350, 18700]
+                                    - [29350, 20400]
+                                    - [27600, 20400]
+                                label:
+                                    text: Bathroom
+                                    x: 28475
+                                    'y': 19550
+                            -   id: 1
+                                outline:
+                                    - [22150, 20000]
+                                    - [29600, 20000]
+                                    - [29600, 26350]
+                                    - [22150, 26350]
+                                label:
+                                    text: Living room
+                                    x: 25875
+                                    'y': 23175
+                    -   template: vacuum_clean_zone
+                grid_options:
+                    columns: 12
+                card_mod:
+                    style: |
+                        .standalone-icon-on-map,
+                        .map-zoom-icons {
+                          display: none !important;
+                        }
+```
+
 ### Chromebook dashboard
 
 Nix installs Kiosk Mode and adds two automations for the Companion app device
