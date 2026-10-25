@@ -71,6 +71,7 @@ in
       (
         _: _: {
           mass-player-card = final.callPackage ./packages/mass-player-card.nix { };
+          meteoswiss-card = final.callPackage ./packages/meteoswiss-card.nix { };
         }
       );
   python-matter-server = applicationPkgs.matter-server.python-matter-server;

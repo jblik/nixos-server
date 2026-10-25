@@ -62,6 +62,7 @@ in
         flightradar24
         kiosk-mode
         mass-player-card
+        meteoswiss-card
         xiaomi-vacuum-map-card
       ];
       extraComponents = [
