@@ -68,15 +68,22 @@ in
       extraComponents = [
         "apple_tv"
         "caldav"
+        "co2signal"
         "default_config"
+        "google_translate"
         "homekit_controller"
         "hue"
+        "hue_ble"
+        "ibeacon"
+        "kegtron"
+        "local_calendar"
         "matter"
         "ollama"
         "plex"
         "roborock"
         "swiss_public_transport"
         "switchbot"
+        "xiaomi_ble"
       ];
       config = {
         default_config = { };
@@ -90,6 +97,12 @@ in
             {
               trigger = "homeassistant";
               event = "start";
+            }
+          ];
+          conditions = [
+            {
+              condition = "template";
+              value_template = "{{ states('${route.calendar}') in ['on', 'off'] }}";
             }
           ];
           actions = [
@@ -121,10 +134,10 @@ in
               name = "${route.name} commute";
               unique_id = "${route.id}_commute";
               default_entity_id = "binary_sensor.${route.id}_commute";
-              state = "{{ 0 < as_timestamp(event_start, 0) - as_timestamp(now()) <= 10800 }}";
+              state = "{{ 0 < as_timestamp(event_start | default(none), 0) - as_timestamp(now()) <= 10800 }}";
               attributes = {
-                event_start = "{{ event_start }}";
-                leave_by = "{{ (as_datetime(event_start) - timedelta(minutes=${toString route.travelMinutes})).isoformat() if event_start is not none else none }}";
+                event_start = "{{ event_start | default(none) }}";
+                leave_by = "{% set start = as_datetime(event_start | default(none), none) %}{{ (start - timedelta(minutes=${toString route.travelMinutes})).isoformat() if start is not none else none }}";
               };
             }
           ];
