@@ -47,9 +47,15 @@ in
   home-assistant =
     (applicationPkgs.home-assistant.home-assistant.override {
       packageOverrides = _: prev: {
-        caldav = prev.caldav.overridePythonAttrs (_: {
+        caldav = prev.caldav.overridePythonAttrs (old: {
           # The upstream suite took over eight minutes on the server.
           doCheck = false;
+          # iCloud's HTTP/3 connections time out after sitting idle.
+          postPatch = (old.postPatch or "") + ''
+            substituteInPlace caldav/davclient.py \
+              --replace-fail 'requests.Session(multiplexed=multiplexed)' \
+                'requests.Session(multiplexed=multiplexed, disable_http3=True)'
+          '';
         });
         niquests = prev.niquests.overridePythonAttrs (old: {
           # The proxy test resolves an external hostname inside the network sandbox.
