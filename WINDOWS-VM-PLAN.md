@@ -5,6 +5,11 @@
 Prepare a Windows 11 VM for Microsoft Flight Simulator 2024, using the server's
 RTX 3060 and a Logitech G Flight Yoke System connected directly to the server.
 NixOS remains the host. GPU-dependent services may be unavailable during gaming.
+Use a monitor connected directly to the RTX 3060 by HDMI or DisplayPort for both
+Windows installation and gaming. This avoids video streaming, encoding/decoding
+and network latency; CPU and device virtualization overhead still remains.
+Remote guest display, streaming and remote guest control are outside scope.
+Keep existing SSH access for NixOS administration and recovery.
 
 Implement the repository changes autonomously, following the working agreement.
 Keep changes local and commit completed, verified subtasks with `jj commit` and
@@ -71,7 +76,8 @@ not deploy it as part of implementation.
 
 Enable KVM/libvirt, supported UEFI firmware, Secure Boot capability and software
 TPM 2.0 for Windows 11. Use the pinned packages' supported configuration. Keep
-libvirt management local/over SSH; do not expose an unauthenticated listener.
+libvirt management on the server's local socket; administer it with commands run
+on the server over existing SSH. Do not add remote libvirt listeners or clients.
 Grant `jblik` only the access required for normal VM management, following the
 existing password-protected sudo policy. Do not enable VM autostart.
 
@@ -90,12 +96,15 @@ Use one guest named `windows-flight-sim` with these initial settings:
 - VirtIO storage and network devices with matching Windows driver installation
   media; a private libvirt NAT network that does not alter `enp5s0`, existing LAN
   addressing, the qBittorrent VPN namespace or production network rules.
-- A virtual display for Windows installation and recovery, reachable through an
-  SSH tunnel or libvirt remote connection, with no public VNC/SPICE listener.
-- Both GPU PCI functions as managed host devices in the gaming configuration.
-  Provide an explicit installation configuration without GPU assignment so the
-  later Windows installation can happen before the first handoff. These are two
-  configurations of the same guest and disk, not two concurrent VMs.
+- Both GPU PCI functions as managed host devices, with the RTX 3060 as the guest's
+  display from the first Windows installer boot. Do not add an emulated graphics
+  adapter, SPICE/VNC server or remote display tunnel. Firmware/installer output
+  on the physical monitor must be checked during the later live session; document
+  blank-screen recovery through host SSH without assuming guest display access.
+- Explicit USB passthrough for a keyboard and mouse connected to the server so
+  Windows setup is usable before the yoke is configured. Discover their actual
+  identities like the yoke; do not assign a whole USB controller or all HID
+  devices. Preserve any input devices needed for host recovery.
 
 Keep the domain definition reproducible from tracked templates/Nix output.
 Provide an explicit, idempotent provisioning command that creates missing disk
@@ -189,12 +198,11 @@ individually. A throttle attached through the yoke may not enumerate separately.
 
 Write the later guest installation runbook: Windows setup, VirtIO drivers, NVIDIA
 driver, Windows updates, Flight Simulator, then `joy.cpl` and simulator bindings.
-Use a directly connected monitor/yoke as the initial path. Include Sunshine on
-Windows and Moonlight on the Mac as an optional streaming path, with a display or
-documented headless-display requirement. Networking for streaming must be explicit:
-for example Tailscale inside Windows to reach a NAT guest, without public port
-forwarding. Do not imply Moonlight forwards a flight yoke plugged into the Mac.
-USB forwarding from the Mac and VR are outside this implementation.
+Use the directly connected monitor, keyboard, mouse and yoke throughout. Do not
+install Sunshine, Moonlight, guest Tailscale, RDP or other remote-access services,
+or add streaming ports, port forwards, virtual displays or headless-display
+drivers. Keep guest NAT networking for Windows updates, sign-in and simulator
+content. USB forwarding from the Mac and VR are outside this implementation.
 
 ### 7. Perform static verification and finish the handoff
 
@@ -207,12 +215,13 @@ editing machine is a Mac; a remote build must not activate the result.
 
 Review generated definitions and hook ordering against the locked libvirt module.
 Review all failure paths for service ownership, cooling and driver restoration.
-Check that the installation configuration cannot accidentally trigger GPU handoff.
+Check that all guest starts, including Windows installation, use the same GPU
+handoff and recovery sequence, and that no remote guest listeners are introduced.
 Document commands actually run and limitations, including private flake input or
 remote build access failures. Commit implementation subtasks after these checks.
 
 Update README with a short overview and link to an operator runbook alongside the
-implementation. Include provisioning, installation/gaming definition selection,
+implementation. Include provisioning, installer-media attachment and detachment,
 start, graceful shutdown, status, recovery, storage limits and service downtime.
 Do not add dashboard controls, Home Assistant gaming automations, backups or new
 monitoring infrastructure as part of this task.
@@ -313,11 +322,13 @@ installed VM merely to verify the cleanup implementation.
 Document these steps for the later testing session; do not execute them now:
 
 1. Build/deploy the configuration in an agreed service window; provision the disk
-   and install Windows using the virtual display, then install guest drivers.
+   and connect the monitor to the RTX 3060, plus the passed-through USB inputs.
 2. Confirm the cooling policy and affected service stop sequence before detaching
    the GPU. Keep a separate SSH connection and an operator recovery path available.
-3. Start the gaming configuration; verify NVIDIA driver operation, rendering,
-   direct display or streaming, and yoke axes/buttons in Windows and the simulator.
+   Start the Windows installer on the physical display, install Windows and guest
+   drivers, then detach installer media from the inactive guest definition.
+3. Verify NVIDIA driver operation, rendering on the directly connected monitor,
+   and yoke axes/buttons in Windows and the simulator.
 4. Shut down Windows normally; verify Linux driver ownership, NVIDIA container
    access, an Ollama request, GPU transcoding and restored fan/maintenance behavior.
 5. Repeat several complete cycles without rebooting the host. Separately exercise
