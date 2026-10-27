@@ -47,6 +47,18 @@ in
       extraArgs.listen-address = "127.0.0.1";
     };
 
+    systemd.services.home-assistant.preStart = ''
+      browser_mod_store="${config.services.home-assistant.configDir}/.storage/browser_mod.storage"
+      if [ -f "$browser_mod_store" ]; then
+        ${pkgs.jq}/bin/jq --arg browser browser_mod_ffea8a29_c9455451 '
+          if .data.browsers[$browser].registered == true then
+            .data.browsers[$browser].settings.hideInteractIcon = true
+          else . end
+        ' "$browser_mod_store" > "$browser_mod_store.tmp"
+        mv "$browser_mod_store.tmp" "$browser_mod_store"
+      fi
+    '';
+
     services.home-assistant = {
       enable = true;
       customComponents = with pkgs.home-assistant-custom-components; [
@@ -216,6 +228,11 @@ in
             ];
           }
         ];
+        input_boolean.chromebook_dashboard_mode = {
+          name = "Chromebook dashboard mode";
+          icon = "mdi:monitor-dashboard";
+          initial = true;
+        };
         "automation chromebook" = [
           {
             id = "chromebook_wake_when_room_is_bright";
@@ -238,6 +255,11 @@ in
               }
             ];
             conditions = [
+              {
+                condition = "state";
+                entity_id = "input_boolean.chromebook_dashboard_mode";
+                state = "on";
+              }
               {
                 condition = "template";
                 value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
@@ -286,6 +308,11 @@ in
             ];
             conditions = [
               {
+                condition = "state";
+                entity_id = "input_boolean.chromebook_dashboard_mode";
+                state = "on";
+              }
+              {
                 condition = "or";
                 conditions = [
                   {
@@ -317,11 +344,69 @@ in
             ];
             actions = [ { action = "script.chromebook_sleep"; } ];
           }
+          {
+            id = "chromebook_restore_dashboard";
+            alias = "Chromebook: restore dashboard";
+            triggers = [
+              {
+                trigger = "state";
+                entity_id = "sensor.chromebook_tablet_last_used_app";
+                "for" = "00:00:15";
+              }
+              {
+                trigger = "time_pattern";
+                minutes = "/1";
+              }
+              {
+                trigger = "state";
+                entity_id = "input_boolean.chromebook_dashboard_mode";
+                to = "on";
+              }
+            ];
+            conditions = [
+              {
+                condition = "state";
+                entity_id = "input_boolean.chromebook_dashboard_mode";
+                state = "on";
+              }
+              {
+                condition = "template";
+                value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
+              }
+              {
+                condition = "or";
+                conditions = [
+                  {
+                    condition = "state";
+                    entity_id = "light.monkey";
+                    state = "on";
+                  }
+                  {
+                    condition = "numeric_state";
+                    entity_id = "sensor.chromebook_tablet_light_sensor";
+                    above = 15;
+                  }
+                ];
+              }
+              {
+                condition = "template";
+                value_template = "{{ is_state('binary_sensor.chromebook_tablet_interactive', 'off') or states('sensor.chromebook_tablet_last_used_app') not in ['unknown', 'unavailable', 'io.homeassistant.companion.android'] }}";
+              }
+            ];
+            actions = [ { action = "script.chromebook_wake"; } ];
+          }
         ];
         script = {
           chromebook_wake = {
             alias = "Chromebook: wake";
             sequence = [
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
+                  message = "command_webview";
+                  data.command = "/dashboard-tablet";
+                };
+              }
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
