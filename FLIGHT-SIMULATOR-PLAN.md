@@ -24,6 +24,17 @@ Record verification limitations and runtime inputs rather than guessing them.
 Steam/Microsoft sign-in, purchases and game installation are later user actions;
 never embed account credentials, automate purchases or weaken account security.
 
+## Implementation progress
+
+The first local configuration milestone is implemented in
+`modules/system/gaming/default.nix`: Steam, manual Openbox/X11 startup, PipeWire,
+32-bit graphics/audio support, diagnostic tools and the dedicated NVMe library.
+`host.gaming.enable` is enabled in the checked-in host configuration. No switch
+or live acceptance action has been performed. See the
+[operator runbook](modules/system/gaming/README.md) for verification and inspection
+findings. The lifecycle, workload coordination/recovery and cleanup tools remain
+to be implemented before this feature is ready to deploy or test with a game.
+
 ## Assumptions and observed hardware
 
 The user explicitly permits assuming that maintenance mode will not be triggered

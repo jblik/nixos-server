@@ -92,6 +92,15 @@ Plex/Tdarr transcode cache.
 Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
 HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port 8280.
 
+## Local gaming preparation
+
+`host.gaming.enable` prepares Steam, a manually started Openbox X11 session,
+PipeWire audio and `/var/lib/flight-simulator/library` on NVMe. It is enabled in
+the checked-in host configuration but has not been deployed. Workload lifecycle
+and cleanup commands are still pending; manually starting Steam does not pause
+server work. See the [operator runbook and implementation status](modules/system/gaming/README.md)
+before deployment or local setup.
+
 ## Maintenance Window
 
 The host explicitly sets `host.maintenance.window = { start = "01:45"; end = "05:30"; };`
