@@ -29,7 +29,7 @@ never embed account credentials, automate purchases or weaken account security.
 The user explicitly permits assuming that maintenance mode will not be triggered
 while gaming. Do not build a new maintenance-trigger suppression system, rewrite
 Home Assistant automations, or introduce a cross-service maintenance lock merely
-to handle that excluded case. Still pause work already running at session start
+to handle that excluded case. Still pause (or cancel and requeue) work already running at session start
 and restore normal behavior afterward. Existing service-start hooks and retries
 need inspection so they do not accidentally undo the implemented pause.
 
@@ -151,9 +151,29 @@ mechanisms; never expose API keys or tokens in command output or committed files
 | Preview generation | Drain current work and stop the container, covering GPU workers as well as CPU workers |
 | Ollama | Stop inference service to release VRAM; Open WebUI may remain available but inference is unavailable |
 | Immich | Stop ML container and the server process if required to prevent GPU transcoding; photo service downtime is acceptable |
-| Plex | Stop during gaming for the initial implementation; this avoids implementing selective transcode restrictions |
+| Plex | Keep the server running; disable GPU transcoding during play and restore session-owned changes afterward; retain Direct Play, Direct Stream and CPU transcoding |
 | qBittorrent | Apply existing inactive-maintenance seeding behavior, preserving manual stops and ratio/time limits; downloads and VPN can stay running |
 | Fan maintenance | End only the maintenance-owned Keep cool override, preserving manual ownership and normal temperature-driven curves |
+
+Plex currently runs as a native NixOS service, not a container with a removable
+GPU mapping. Prefer a reversible GPU-device restriction scoped to `plex.service`
+if inspection of the generated unit and installed systemd version establishes
+that it can be applied and removed without restarting Plex. Cover NVIDIA and DRM
+access paths used by Plex without changing global device permissions, unloading
+the driver or affecting the game and monitoring. Do not assume removing group
+membership or blocking new device opens releases an existing GPU transcode.
+
+If device restrictions cannot meet that requirement, use Plex's live
+`Use hardware acceleration when available` setting through an authenticated
+interface verified against the installed version. Disable hardware decoding as
+well as encoding; changing only the hardware-encoding setting is insufficient.
+Do not edit Plex's live preferences file or invent API endpoints. Record original
+settings/device policy and restore only session-owned changes on exit, failed
+start and recovery. Keep Plex running throughout; an already-stopped Plex service
+must remain stopped. Before launching the game, prevent new GPU transcodes and
+wait for existing Plex GPU work to finish within the bounded preparation timeout;
+otherwise fail preparation and restore state. CPU transcoding remains available
+and may compete with the game for CPU resources; do not add CPU limits here.
 
 Determine Tdarr/preview job-drain detection from their actual supported APIs and
 current configuration. Do not invent endpoint names or assume process existence
@@ -182,7 +202,8 @@ before their maintenance API can be called.
 
 Leave SSH, Tailscale, databases, storage, Home Assistant, Forgejo, files and other
 unrelated services running. Heavy unrelated jobs are not newly controlled here.
-Document resulting service downtime rather than adding CPU-only fallback modes.
+Document resulting service downtime and Plex's CPU-transcoding behavior; do not
+add CPU-only fallback modes for the stopped services.
 
 ## 5. Keep normal cooling and GPU monitoring
 
@@ -273,8 +294,10 @@ Do not execute these during implementation:
 
 1. Deploy in an agreed window; verify normal headless services and SSH still work.
 2. Start gaming with active and inactive maintenance requests separately. Verify
-   current work drains, Tdarr stays paused, previews/inference/transcoding stop,
+   current work drains, Tdarr stays paused, previews/inference/GPU transcoding stop,
    seeding ownership is respected and fan telemetry/curves remain functional.
+   Verify Plex stays running, Direct Play/Direct Stream remain available, new
+   Plex transcodes cannot use the GPU, and existing Plex GPU work has drained.
    No new maintenance activation is expected during either gaming session.
 3. Log into the physical display; verify NVIDIA Vulkan, audio, Steam/Microsoft
    login, game installation and a complete flight with working yoke/throttle axes.
@@ -282,6 +305,8 @@ Do not execute these during implementation:
    actual service-start hooks/retries cannot undo the intended workload pause.
 5. Exit normally and verify the correct previously active services return, tasks
    follow the current maintenance window, and manual stops/pauses remain respected.
+   Verify Plex's original GPU access/settings return only when changed by gaming,
+   including when hardware acceleration was already disabled before entry.
 6. Exercise failed start, session crash, repeated recovery and host reboot with
    disposable state; verify no permanent service inhibition or automatic gaming.
 7. Observe VRAM/RAM pressure, performance, cooling and NVMe/scratch headroom. Check
@@ -298,3 +323,6 @@ unproven until this live phase.
 - [Valve Proton](https://github.com/ValveSoftware/Proton)
 - [Flight Simulator 2024 Proton compatibility reports](https://github.com/ValveSoftware/Proton/issues/8255)
 - [Microsoft Flight Simulator 2024 requirements](https://flightsimulator.zendesk.com/hc/en-us/articles/12702272798364-Microsoft-Flight-Simulator-2024-FAQ)
+- [Plex transcoder settings](https://support.plex.tv/articles/transcoder/)
+- [Plex hardware acceleration and live settings changes](https://support.plex.tv/articles/115002178853-using-hardware-accelerated-streaming/)
+- [systemd service device access controls](https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html#DeviceAllow=)
