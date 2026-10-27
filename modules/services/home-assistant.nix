@@ -404,13 +404,6 @@ in
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  message = "command_webview";
-                  data.command = "/dashboard-tablet";
-                };
-              }
-              {
-                action = "notify.mobile_app_chromebook_tablet";
-                data = {
                   message = "command_screen_on";
                   data.command = "keep_screen_on";
                 };
