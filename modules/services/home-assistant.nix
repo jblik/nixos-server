@@ -101,18 +101,9 @@ in
       config = {
         default_config = { };
         recorder.exclude = {
-          domains = [
-            "sun"
-            "weather"
-          ];
           entity_globs = [
-            "binary_sensor.meteoswiss_*"
-            "sensor.calculated_weather_metrics_*"
             "sensor.flightradar24_*"
-            "sensor.meteoswiss_*"
-            "sensor.open_meteo_air_quality_pollen_*"
             "sensor.station_*"
-            "sensor.sun_*"
           ]
           ++ map (route: "sensor.${route.id}_*") routes;
         };
