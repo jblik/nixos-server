@@ -87,6 +87,10 @@ in
       ];
       config = {
         default_config = { };
+        recorder.exclude.entities = [
+          "sensor.station_departure"
+        ]
+        ++ map (route: "sensor.${route.id}_departure") routes;
         automation = "!include automations.yaml";
         template = map (route: {
           triggers = [
