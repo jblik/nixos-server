@@ -233,19 +233,15 @@ in
                 to = "on";
               }
               {
-                trigger = "state";
-                entity_id = [
-                  "device_tracker.not_connected"
-                  "device_tracker.dumbo"
-                ];
-                to = "home";
-              }
-              {
                 trigger = "homeassistant";
                 event = "start";
               }
             ];
             conditions = [
+              {
+                condition = "template";
+                value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
+              }
               {
                 condition = "or";
                 conditions = [
@@ -255,18 +251,9 @@ in
                     state = "on";
                   }
                   {
-                    condition = "and";
-                    conditions = [
-                      {
-                        condition = "template";
-                        value_template = "{{ is_state('device_tracker.not_connected', 'home') or is_state('device_tracker.dumbo', 'home') }}";
-                      }
-                      {
-                        condition = "numeric_state";
-                        entity_id = "sensor.chromebook_tablet_light_sensor";
-                        above = 15;
-                      }
-                    ];
+                    condition = "numeric_state";
+                    entity_id = "sensor.chromebook_tablet_light_sensor";
+                    above = 15;
                   }
                 ];
               }
@@ -299,16 +286,6 @@ in
             ];
             conditions = [
               {
-                condition = "not";
-                conditions = [
-                  {
-                    condition = "state";
-                    entity_id = "light.monkey";
-                    state = "on";
-                  }
-                ];
-              }
-              {
                 condition = "or";
                 conditions = [
                   {
@@ -316,9 +293,24 @@ in
                     value_template = "{{ not is_state('device_tracker.not_connected', 'home') and not is_state('device_tracker.dumbo', 'home') }}";
                   }
                   {
-                    condition = "numeric_state";
-                    entity_id = "sensor.chromebook_tablet_light_sensor";
-                    below = 10;
+                    condition = "and";
+                    conditions = [
+                      {
+                        condition = "not";
+                        conditions = [
+                          {
+                            condition = "state";
+                            entity_id = "light.monkey";
+                            state = "on";
+                          }
+                        ];
+                      }
+                      {
+                        condition = "numeric_state";
+                        entity_id = "sensor.chromebook_tablet_light_sensor";
+                        below = 10;
+                      }
+                    ];
                   }
                 ];
               }
@@ -340,8 +332,8 @@ in
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  message = "command_screen_brightness_level";
-                  data.command = 255;
+                  message = "command_auto_screen_brightness";
+                  data.command = "turn_on";
                 };
               }
             ];
@@ -352,8 +344,8 @@ in
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
-                  message = "command_screen_on";
-                  data.command = "keep_screen_on";
+                  message = "command_auto_screen_brightness";
+                  data.command = "turn_off";
                 };
               }
               {
