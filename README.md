@@ -23,7 +23,8 @@ or over Tailscale (`tailscale0` is trusted).
 nginx serves every UI at `https://<app>.internal.steenblik.ch`: the wildcard record points
 at the tailnet IP and nginx only allows LAN and tailnet sources. Hosts in `public`
 (`modules/services/proxy.nix`: Forgejo as `git`, Immich as `photos`, Paperless as
-`documents`, MicroBin as `notes`, the dashboard as `server`, Open WebUI as `ai`) are at `https://<app>.steenblik.ch`,
+`documents`, MicroBin as `notes`, WebDAV as `files`, the dashboard as `server`, Open WebUI as `ai`) are at
+`https://<app>.steenblik.ch`,
 through 443 forwarded on the router; `cloudflare-dyndns` keeps their A records current.
 
 Certificates come from Let's Encrypt via Cloudflare DNS-01, so port 80 stays closed.
@@ -183,6 +184,7 @@ flake input continues to reference the published dashboard revision.
 | Paperless-ngx (documents.steenblik.ch)     | 28981 (localhost)          | native, + Tika 9998, Gotenberg 3001, PostgreSQL   |
 | Forgejo (git.steenblik.ch)                 | 3000 (localhost), SSH 2222 | native                                            |
 | Forgejo runner                             | —                          | native, Podman jobs with per-job Docker-in-Docker |
+| WebDAV (files.steenblik.ch)                | 8083 (localhost)           | rclone, fixed `files` system user                 |
 | MicroBin (notes.steenblik.ch)              | 8081 (localhost)           | native                                            |
 | CoolerControl                              | 11987 (localhost)          | native                                            |
 | Dashboard (server.steenblik.ch)            | 5180 / 5181 (localhost)    | native, from the `server-dashboard` flake         |
@@ -191,6 +193,125 @@ flake input continues to reference the published dashboard revision.
 | Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                            |
 | Tailscale (exit node)                      | —                          | native                                            |
 | Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                    |
+
+## Files (WebDAV)
+
+Use `https://files.steenblik.ch/` on both LAN and external networks, with public
+DNS and the router's existing TCP 443 forwarding/NAT loopback. The backend listens
+only on `127.0.0.1:8083`; there is no separate LAN hostname or VPN requirement.
+
+The WebDAV root is exclusively `/srv/files`, mounted from `fast/files`. The
+existing ZFS module mounts it and Sanoid retains 24 hourly, 14 daily and 3 monthly
+snapshots. Snapshots retain changed/deleted blocks; they are not independent backups.
+The service refuses startup unless the exact ZFS dataset is mounted, checks before
+changing ownership, and stops when its mount unit stops. Only the dataset root's
+permissions are initialized (`files:files`, `0700`), without recursive ownership changes.
+All WebDAV accounts share read/write access to this one share, including deletion.
+
+Rclone 1.75.2 comes from the independently locked `nixpkgs-rclone` input. Its
+[versioned authentication implementation](https://github.com/rclone/rclone/blob/v1.75.2/lib/http/auth.go)
+supports bcrypt htpasswd entries and authenticates all methods. Symlink following
+and link translation are disabled. A private filesystem root contains only rclone's
+runtime closure, the share, the authentication file and required runtime paths;
+other datasets and `/data` are outside it. No server-side transfer cache is enabled.
+Nginx streams uploads/downloads without buffering or a body-size ceiling, with
+one-hour idle timeouts; client limits and available storage still apply. Access
+logging is disabled for this hostname so Basic-auth usernames are not logged.
+
+### Accounts
+
+`secrets/secrets.yaml` contains one encrypted `files.htpasswd` string with all
+`username:bcrypt-hash` lines. It initially contains `jblik:!`, a locked placeholder
+that cannot authenticate. These accounts are separate from Unix users. SOPS exposes
+it as `/run/secrets/files.htpasswd`, readable only by `files`, and restarts
+`files.service` on changes so removed accounts and old passwords stop working on
+subsequent requests. Clients may retain already downloaded content.
+
+To replace the placeholder with your first account, run this in an interactive
+terminal from the repository (this replaces the **entire** account list):
+
+```sh
+nix shell nixpkgs#apacheHttpd nixpkgs#sops nixpkgs#python3
+set -o pipefail
+htpasswd -nB jblik |
+  python3 -c 'import json, sys; value = sys.stdin.read(); assert value.strip(); print(json.dumps(value))' |
+  sops set --value-stdin secrets/secrets.yaml '["files.htpasswd"]'
+```
+
+The password is prompted securely, and the hash passes through stdin directly into
+SOPS. Do not use `htpasswd -b`, put passwords in URLs/arguments, enable shell tracing,
+or write an unencrypted htpasswd file into the checkout. For multiple accounts,
+manage the complete newline-separated htpasswd string through SOPS; preserve the
+other entries when adding or rotating one, and remove a line to revoke an account.
+Keep editor swap/backup files out of the repository. Commit the encrypted changes
+and deploy through the procedure above; editing the encrypted file alone does not
+change the running server. Remove or update cached client credentials after rotation.
+
+### Client mounting
+
+**macOS Finder:** choose Go → Connect to Server (Command-K), enter
+`https://files.steenblik.ch/`, and connect as a registered user. Store the password
+in Keychain when prompted. To reconnect at login, add the mounted volume to System
+Settings → General → Login Items & Extensions → Open at Login. Reconnect manually
+if the network was unavailable at login.
+See [Apple's WebDAV instructions](https://support.apple.com/guide/mac-help/mchlp1546/mac).
+
+**Windows:** ensure the Windows WebClient service is available and running. In
+File Explorer → This PC → Add a network location, choose a custom location and
+enter `https://files.steenblik.ch/`; clear anonymous login and enter your WebDAV
+username. Save credentials through the Windows credential prompt/Credential Manager.
+For a drive letter, use Map network drive with `\\files.steenblik.ch@SSL\DavWWWRoot\`
+and select Reconnect at sign-in. Do not embed a password in a command or shortcut.
+Keep WebClient `BasicAuthLevel=1` (HTTPS only). Its `FileSizeLimitInBytes` defaults
+to 50,000,000 bytes and may need adjustment for larger files; this DWORD cannot
+represent a limit above 4 GiB minus one byte. Use a different WebDAV client for
+larger files.
+See [Microsoft's WebDAV redirector settings](https://learn.microsoft.com/iis/publish/using-webdav/using-the-webdav-redirector).
+
+**Linux davfs2:** install davfs2, create `/mnt/files`, and mount interactively with
+`sudo mount -t davfs https://files.steenblik.ch/ /mnt/files`. To mount as an ordinary
+user, follow the distribution's davfs2 group/setuid setup and add to `/etc/fstab`:
+
+```fstab
+https://files.steenblik.ch/ /mnt/files davfs rw,user,noauto,_netdev 0 0
+```
+
+Use `mount /mnt/files`. Save credentials in `~/.davfs2/secrets` as a line containing
+`https://files.steenblik.ch/`, the username and the quoted password, separated by
+spaces. Set the directory to `0700` and the file to `0600`; this file holds a
+recoverable password. For systemd automatic mounting on access, replace the fstab
+options with `rw,_netdev,nofail,x-systemd.automount,x-systemd.idle-timeout=300`, add
+`uid=YOUR_LOCAL_USER,gid=YOUR_LOCAL_GROUP`, and store credentials in root-owned
+`/etc/davfs2/secrets` with mode `0600`. Reload systemd and start `mnt-files.automount`.
+Root-triggered mounts do not read your personal secrets file. Davfs2 caches open
+files locally, so provide enough client disk space. See the
+[davfs2 manual](https://manpages.debian.org/trixie/davfs2/mount.davfs.8.en.html).
+
+### Deployment verification
+
+After the documented deployment, check `findmnt --mountpoint /srv/files` reports
+source `fast/files` and type `zfs`, `systemctl status files.service`, and
+`ss -ltn` shows only `127.0.0.1:8083` for the backend. Find Sanoid's `--configdir`
+with `systemctl cat sanoid.service` and confirm its `sanoid.conf` contains
+`fast/files`. Check `zfs list -t snapshot -r fast/files` for scheduled snapshots
+once Sanoid has run.
+
+Use a uniquely named disposable directory to check unauthenticated/wrong-password
+rejection, authenticated listing, upload/download, MKCOL, rename/move, deletion,
+and a large transfer verified by checksum. Check encoded parent paths and escaping
+file/directory symlinks cannot access external files or accept writes. Repeat after
+password rotation and account removal. Verify HTTPS from the LAN with public DNS
+and from an external network; actual Finder, Windows and davfs2 mounts need their
+respective client devices. Get approval before stopping the mount, inducing mount
+failure or rebooting; then verify storage failure prevents startup and reboot
+restores the mount/service. Do not unmount the pool or touch existing datasets.
+
+Paperless originals remain on their existing snapshotted dataset. Symlinks to them
+are intentionally inaccessible here. Sharing the same originals without a second
+live copy would require a separately scoped, preferably read-only bind mount and
+permission/mount dependencies; writable access could invalidate Paperless-managed
+files. Excluding originals from snapshots requires a separate dataset, not a
+symlink or a directory exclusion in the current Sanoid mapping.
 
 ## VPN and torrent monitoring
 
