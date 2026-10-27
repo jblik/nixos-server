@@ -1,6 +1,7 @@
 {
   imports = [
     ./boot.nix
+    ./gaming
     ./locale.nix
     ./networking.nix
     ./nix.nix

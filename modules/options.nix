@@ -70,6 +70,8 @@ in
       '';
     };
 
+    gaming.enable = lib.mkEnableOption "local Steam gaming (modules/system/gaming)";
+
     maintenance = {
       enable = lib.mkEnableOption "scheduled maintenance";
       window = window { };

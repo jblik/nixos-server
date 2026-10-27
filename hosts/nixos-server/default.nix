@@ -32,6 +32,7 @@ in
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
+    gaming.enable = true;
     maintenance = {
       enable = true;
       window = {
