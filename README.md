@@ -238,32 +238,6 @@ link-local and unique-local addresses for Thread devices. Keep the server, hubs
 and iPhone on the same LAN for pairing; Thread devices need IPv6 connectivity
 through a Thread border router.
 
-### MeteoSwiss weather
-
-Nix installs [MeteoSwiss](https://github.com/LNKtwo/ha-meteoswiss) from release
-8.1.2, pinned in `packages/meteoswiss.nix`. HACS is not needed.
-
-After deploying, open **Settings → Devices & services → Add integration**, search
-for **MeteoSwiss**, and choose a weather station or enter your postal code.
-Forecasts and pollen use the Home Assistant installation location; check it in
-**Settings → System → General**. Observations use the selected weather station.
-Update the version and source hash in `packages/meteoswiss.nix` together when
-upgrading.
-
-Nix also installs [MeteoSwiss Weather Card](https://github.com/LNKtwo/ha-meteoswiss-card)
-2.4.8, pinned in `packages/meteoswiss-card.nix`, and registers its JavaScript resource.
-After deploying, reload the browser, edit your dashboard, select **Add card**, and
-search for **MeteoSwiss**. Select the weather entity created by the integration.
-For a manual card, use:
-
-```yaml
-type: custom:meteoswiss-card
-entity: weather.meteoswiss_home
-```
-
-Replace the example entity with your actual MeteoSwiss weather entity. Update the
-version and file hash in `packages/meteoswiss-card.nix` together when upgrading.
-
 ### Chromebook display
 
 The Chromebook automations keep the Companion app awake and control visibility
