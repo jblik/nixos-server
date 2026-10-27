@@ -404,6 +404,13 @@ in
               {
                 action = "notify.mobile_app_chromebook_tablet";
                 data = {
+                  message = "command_screen_brightness_level";
+                  data.command = 80;
+                };
+              }  
+              {
+                action = "notify.mobile_app_chromebook_tablet";
+                data = {
                   message = "command_screen_on";
                   data.command = "keep_screen_on";
                 };
