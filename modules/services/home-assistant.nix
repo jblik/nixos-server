@@ -461,12 +461,21 @@ in
           {
             name = "Home Assistant";
             port = config.host.home-assistant.homekitPort;
-            filter.include_domains = [
-              "button.rocky_all_but_shower"
-              "button.button.rocky_kitchen"
-              "light"
-              "sensor"
-              "vacuum"
+            filter.include_entities = [
+              "light.bed"
+              "light.bedroom"
+              "light.couch"
+              "light.donut"
+              "light.kajplats_e27_cws_globe_1055lm"
+              "light.monkey"
+              "light.table"
+              "light.tv"
+              "sensor.alpstuga_air_quality_monitor_air_quality"
+              "sensor.alpstuga_air_quality_monitor_carbon_dioxide"
+              "sensor.alpstuga_air_quality_monitor_humidity"
+              "sensor.alpstuga_air_quality_monitor_pm2_5"
+              "sensor.alpstuga_air_quality_monitor_temperature"
+              "vacuum.rocky"
             ];
           }
         ];
