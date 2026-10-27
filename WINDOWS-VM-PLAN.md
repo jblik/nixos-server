@@ -18,7 +18,9 @@ required before committing code, using the existing tools. Record anything that
 cannot be checked; do not claim GPU handoff works before the later live tests.
 
 The completed implementation must provide the configuration, provisioning commands,
-GPU lifecycle handling and operator instructions needed for that later phase.
+GPU lifecycle handling, cleanup commands and operator instructions needed for that
+later phase. Cleanup is implemented now but executed only on an explicit later
+request; this plan does not authorize deleting files.
 
 ## Observed hardware and storage
 
@@ -83,7 +85,8 @@ Use one guest named `windows-flight-sim` with these initial settings:
 - Q35 machine type, UEFI, persistent writable NVRAM and persistent software TPM
   state. Do not regenerate these on rebuild or routine provisioning.
 - One 200 GiB virtual disk under `/var/lib/libvirt/images/windows-flight-sim/`
-  on the NVMe root filesystem, outside `/scratch` and the SATA SSD datasets.
+  on the NVMe root filesystem, outside `/scratch` and the SATA SSD datasets. Use
+  sparse qcow2 storage with supported guest discard/unmap for space reclamation.
 - VirtIO storage and network devices with matching Windows driver installation
   media; a private libvirt NAT network that does not alter `enp5s0`, existing LAN
   addressing, the qBittorrent VPN namespace or production network rules.
@@ -214,6 +217,97 @@ start, graceful shutdown, status, recovery, storage limits and service downtime.
 Do not add dashboard controls, Home Assistant gaming automations, backups or new
 monitoring infrastructure as part of this task.
 
+## Cleanup and space reclamation plan
+
+Implement cleanup alongside provisioning, so removing this experiment does not
+require reconstructing where files were written. The command names below describe
+the intended interface; they do not exist until the implementing agent adds them.
+Keep the implementation small and scoped to this guest.
+
+### Track owned files from the beginning
+
+Use one dedicated download directory, `/var/cache/windows-flight-sim/`, for newly
+downloaded Windows/VirtIO ISOs, standalone driver installers, partial downloads
+and temporary extraction files. Keep downloads out of the Nix store and unrelated
+service caches. Game downloads inside Windows live inside its virtual disk.
+
+Provisioning must record a root-owned inventory of the guest name/UUID, created
+disk paths, download paths, NVRAM, TPM state and any private network it creates.
+Update it as resources are created, so cleanup also works after partial setup.
+Record external inputs separately: an ISO supplied from elsewhere is not owned
+by this VM and must not be deleted automatically. Document installer copies made
+on the Mac and their exact locations for separate manual removal.
+
+Do not create snapshots, backing chains, copied VM disks or backup archives as an
+incidental provisioning step. If such artifacts are introduced later, record them
+explicitly because they can retain allocated storage after the main disk is gone.
+
+### Provide three explicit cleanup operations
+
+| Intended operation | Removes | Preserves |
+|---|---|---|
+| `gaming-vm cleanup-downloads` | Owned ISOs, installers, partial downloads and extraction files | Windows disk, guest definition, NVRAM and TPM state |
+| `gaming-vm reclaim-space` | No host files; reports guest TRIM instructions and host allocation | Windows, game and saved data |
+| `gaming-vm remove` | This guest's disk, downloaded files, definition and owned persistent/runtime state | All unrelated services, VMs, media and storage |
+
+Cleanup defaults to a dry-run inventory with canonical paths and actual allocated
+sizes. Require an explicit apply flag for downloaded-file deletion and an explicit
+guest-specific destructive confirmation for full removal. An agent must obtain
+the user's permission before destructive execution under the working agreement.
+Refuse unexpected paths, symlinks escaping owned directories, shared resources and
+ambiguous ownership. Repeated cleanup must tolerate already-absent owned files.
+
+For download-only cleanup, refuse files attached to any running guest. Once
+Windows is installed, document how to detach installation media from the inactive
+definition before deleting it. Preserve externally supplied or shared ISOs.
+
+For reclaiming space while keeping Windows, document uninstalling unwanted game
+content and clearing caches through Windows/the simulator, followed by Windows
+Optimize Drives/ReTrim with discard enabled on the VM disk. Deleting guest files
+alone may not reduce the host file's allocation. Do not shrink partitions or run
+`qemu-img` modification/conversion against an active disk. Offline compaction is
+an optional separately planned recovery step if TRIM fails, not the default path.
+
+### Full removal order
+
+1. Print the owned-resource inventory and warn that Windows, the installed game,
+   local saves, settings and guest credentials will be lost. Any requested export
+   happens before removal; do not assume cloud sync is a backup.
+2. Shut Windows down gracefully through the existing lifecycle path. Refuse
+   removal while it is running, paused, or GPU recovery is incomplete; do not
+   force-kill it as a side effect of cleanup.
+3. Restore GPU drivers, cooling, affected services and maintenance behavior. Keep
+   hooks and recovery helpers installed until this is complete.
+4. Capture the inactive domain's actual storage/NVRAM/TPM paths before undefining
+   it. Remove its definition and owned NVRAM, TPM, managed-save and snapshot state
+   using the pinned libvirt version's supported interfaces. Removing snapshot
+   metadata alone does not remove external disk images. Avoid indiscriminate
+   `--remove-all-storage`, which could include supplied/shared media.
+5. Delete only inventoried owned disk files and downloads, then owned handoff
+   state, temporary inhibitors and per-guest logs. Verify no process still holds
+   deleted VM files open. Remove a private network only if created exclusively
+   for this guest and unused; preserve shared libvirt networks and storage pools.
+6. Document disabling `host`'s gaming VM option and deploying that change after
+   data cleanup. This must not recreate the domain/disk or change normal NVIDIA
+   service configuration. Removing packages/configuration alone does not remove
+   VM data; retain the cleanup tools until data removal is complete.
+7. Report `df -h /` before/after and `du` allocated sizes for surviving owned
+   directories. Check for leftover images, downloads, snapshots and managed-save
+   files. Report each item that could not be removed rather than claiming success.
+
+The 200 GiB disk capacity is a logical maximum, not necessarily 200 GiB of host
+allocation. Full deletion returns its actual allocated blocks; guest RAM is
+released on shutdown. Routine global Nix garbage collection, old generation
+removal and global journal vacuuming are outside this cleanup because they affect
+other workloads. Note that shared packages may remain in the Nix store until the
+operator's normal generation-retention and garbage-collection policy releases them.
+
+Add cleanup commands, ownership locations and expected space accounting to the
+operator runbook. Verify cleanup statically during implementation; dry-run,
+download-only deletion, TRIM and full teardown of disposable test data belong to
+the later live acceptance session. Never exercise full removal against the user's
+installed VM merely to verify the cleanup implementation.
+
 ## Deferred live acceptance checks
 
 Document these steps for the later testing session; do not execute them now:
@@ -241,6 +335,8 @@ implementation success to assume away.
 
 - [Libvirt domain XML](https://libvirt.org/formatdomain.html)
 - [Libvirt hooks and API deadlock restrictions](https://libvirt.org/hooks.html)
+- [Libvirt removal flags and storage limitations](https://www.libvirt.org/manpages/virsh.html)
+- [QEMU discard/unmap behavior](https://www.qemu.org/docs/master/system/qemu-manpage.html)
 - [NixOS libvirt guide](https://wiki.nixos.org/wiki/Libvirt)
 - [NixOS PCI passthrough guide](https://wiki.nixos.org/wiki/PCI_passthrough)
 - [Microsoft Flight Simulator 2024 requirements](https://flightsimulator.zendesk.com/hc/en-us/articles/12702272798364-Microsoft-Flight-Simulator-2024-FAQ)
