@@ -400,6 +400,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-rclone": {
+      "locked": {
+        "lastModified": 1792503283,
+        "narHash": "sha256-vhe2jyvRCgufWPqDuDq1S3t3ypE+ka46IFutV02xKso=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "cd4ea8d57de16f4810bc5f14207bac45fbf19f67",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-redis": {
       "locked": {
         "lastModified": 1792503283,
@@ -523,6 +539,7 @@
         "nixpkgs-prometheus": "nixpkgs-prometheus",
         "nixpkgs-qbittorrent": "nixpkgs-qbittorrent",
         "nixpkgs-radarr": "nixpkgs-radarr",
+        "nixpkgs-rclone": "nixpkgs-rclone",
         "nixpkgs-redis": "nixpkgs-redis",
         "nixpkgs-sendspin": "nixpkgs-sendspin",
         "nixpkgs-sonarr": "nixpkgs-sonarr",

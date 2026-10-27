@@ -291,6 +291,15 @@ in
       description = "Gotenberg document conversion API port.";
     };
 
+    files = {
+      enable = lib.mkEnableOption "WebDAV on files.steenblik.ch (modules/services/files.nix)";
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 8083;
+        description = "WebDAV backend port (localhost).";
+      };
+    };
+
     microbin = {
       enable = lib.mkEnableOption "the MicroBin paste bin (modules/services/microbin.nix)";
       port = lib.mkOption {

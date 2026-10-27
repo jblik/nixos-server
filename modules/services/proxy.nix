@@ -8,6 +8,9 @@ let
     lib.optionalAttrs config.host.forgejo.enable {
       git = s.forgejo.settings.server.HTTP_PORT;
     }
+    // lib.optionalAttrs config.host.files.enable {
+      files = config.host.files.port;
+    }
     // lib.optionalAttrs config.host.immich.enable {
       photos = s.immich.port;
     }

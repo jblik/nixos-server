@@ -23,6 +23,7 @@ in
   bazarr = applicationPkgs.bazarr.bazarr;
   sonarr = applicationPkgs.sonarr.sonarr;
   radarr = applicationPkgs.radarr.radarr;
+  rclone = applicationPkgs.rclone.rclone;
   jackett = applicationPkgs.jackett.jackett;
   flaresolverr = applicationPkgs.flaresolverr.flaresolverr;
   qbittorrent-nox = applicationPkgs.qbittorrent.qbittorrent-nox;

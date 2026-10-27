@@ -2,6 +2,7 @@
   imports = [
     ./ai.nix
     ./dashboard.nix
+    ./files.nix
     ./forgejo.nix
     ./home-assistant.nix
     ./immich.nix

@@ -39,6 +39,7 @@ in
         end = "05:30";
       };
     };
+    files.enable = true;
     forgejo.enable = true;
     immich.enable = true;
     home-assistant.enable = true;
@@ -66,6 +67,7 @@ in
         snapshot = {
           bazarr = "/var/lib/bazarr";
           cleanuparr = "/var/lib/cleanuparr";
+          files = "/srv/files";
           forgejo = "/var/lib/forgejo";
           hass = "/var/lib/hass";
           immich = "/var/lib/immich";
