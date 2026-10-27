@@ -87,10 +87,22 @@ in
       ];
       config = {
         default_config = { };
-        recorder.exclude.entities = [
-          "sensor.station_departure"
-        ]
-        ++ map (route: "sensor.${route.id}_departure") routes;
+        recorder.exclude = {
+          domains = [
+            "sun"
+            "weather"
+          ];
+          entity_globs = [
+            "binary_sensor.meteoswiss_*"
+            "sensor.calculated_weather_metrics_*"
+            "sensor.flightradar24_*"
+            "sensor.meteoswiss_*"
+            "sensor.open_meteo_air_quality_pollen_*"
+            "sensor.station_*"
+            "sensor.sun_*"
+          ]
+          ++ map (route: "sensor.${route.id}_*") routes;
+        };
         automation = "!include automations.yaml";
         template = map (route: {
           triggers = [
