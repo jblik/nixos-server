@@ -77,6 +77,9 @@ in
       (
         _: _: {
           meteoswiss = applicationPkgs.home-assistant.callPackage ./packages/meteoswiss.nix { };
+          vzug = applicationPkgs.home-assistant.callPackage ./packages/vzug.nix {
+            inherit (applicationPkgs.home-assistant.home-assistant.python3Packages) json-repair;
+          };
         }
       );
   home-assistant-custom-lovelace-modules =

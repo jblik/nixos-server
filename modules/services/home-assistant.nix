@@ -67,6 +67,7 @@ in
         mass-queue
         meteoswiss
         roborock_custom_map
+        vzug
       ];
       customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
         atomic-calendar-revive
