@@ -50,6 +50,11 @@ in
       ];
     };
 
+    systemd.services.podman-immich-machine-learning = {
+      requires = [ "nvidia-container-toolkit-cdi-generator.service" ];
+      after = [ "nvidia-container-toolkit-cdi-generator.service" ];
+    };
+
     systemd.tmpfiles.rules = [
       "d ${originals} 0700 immich immich -"
       "d /var/cache/immich-machine-learning 0750 root root -"
