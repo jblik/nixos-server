@@ -5,6 +5,7 @@ jar="$RUNTIME_DIRECTORY/cookies"
 password=$(<"$PASSWORD_FILE")
 token_file="$STATE_DIR/dashboard-token"
 applied_file="$STATE_DIR/applied"
+devices_file="$STATE_DIR/devices"
 
 call() {
   local method=$1 path=$2
@@ -34,7 +35,11 @@ if ! { [[ -s $token_file ]] && curl -fsS -o /dev/null -H "Authorization: Bearer 
   mv "$token_file.new" "$token_file"
 fi
 
-if [[ "$(cat "$applied_file" 2>/dev/null)" == "$DEFAULTS" ]]; then
+devices=$(call GET /devices)
+device_ids=$(jq -c '[.devices[].uid] | sort' <<<"$devices")
+
+# PCI changes can change disk sensor UIDs without changing the declared profiles.
+if [[ "$(cat "$applied_file" 2>/dev/null)" == "$DEFAULTS" && "$(cat "$devices_file" 2>/dev/null)" == "$device_ids" ]]; then
   echo "Defaults unchanged since they were last applied"
   exit 0
 fi
@@ -105,5 +110,7 @@ jq -c '.modes[]' "$DEFAULTS" | while read -r mode; do
 done
 
 call POST "/modes-active/$(mode_uid "$(jq -r '.modes[0].name' "$DEFAULTS")")" >/dev/null
+device_ids=$(jq -c '[.devices[].uid] | sort' <<<"$devices")
+echo "$device_ids" >"$devices_file"
 echo "$DEFAULTS" >"$applied_file"
 echo "Applied $DEFAULTS"

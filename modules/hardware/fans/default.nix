@@ -87,6 +87,7 @@ let
         "gpu"
         "chipset"
         "motherboard"
+        "nic"
       ];
     };
     front-bottom = {
@@ -202,6 +203,15 @@ let
       "70" = 100;
       "100" = 100;
     };
+    caseNic = {
+      "0" = 0;
+      "60" = 0;
+      "61" = 35;
+      "65" = 50;
+      "70" = 70;
+      "75" = 100;
+      "100" = 100;
+    };
   };
 
   caseCurves = {
@@ -214,6 +224,7 @@ let
     sandisk = curves.caseSsd;
     peaq = curves.caseSsd;
     nvme = curves.caseNvme;
+    nic = curves.caseNic;
   };
 
   # The only exhaust must start with component cooling, before the intake triggers.
