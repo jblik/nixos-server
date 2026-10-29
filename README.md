@@ -41,8 +41,11 @@ Edit on the Mac and commit (the flake only sees committed files), then build and
 switch on the server:
 
 ```sh
-nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server --target-host nixos-server --build-host nixos-server --sudo --ask-sudo-password
+nix run nixpkgs#nixos-rebuild -- switch --flake .#nixos-server --target-host nixos-server --build-host nixos-server --use-substitutes --sudo --ask-sudo-password
 ```
+
+Adding substitutes doesn't remove the overhead of evaluating locally.
+Better would be to evaluate on the server and switch there.
 
 A bad generation can be rolled back with `sudo nixos-rebuild switch --rollback`, or by
 picking an older entry in the boot menu.

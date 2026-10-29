@@ -36,7 +36,18 @@ in
   grafana = applicationPkgs.grafana.grafana;
   tailscale = applicationPkgs.tailscale.tailscale;
   ollama-cuda = applicationPkgs.ollama.ollama-cuda;
-  open-webui = applicationPkgs.open-webui.open-webui;
+  open-webui = applicationPkgs.open-webui.open-webui.override {
+    python3Packages = applicationPkgs.open-webui.python3Packages.overrideScope (
+      _: prev: {
+        fpdf2 = prev.fpdf2.overridePythonAttrs (old: {
+          # todo: pillow upgrade upstream from 12.3.0 to 13.0.0 causes this
+          disabledTests = (old.disabledTests or [ ]) ++ [
+            "test_image_with_explicit_dimensions"
+          ];
+        });
+      }
+    );
+  };
   tika = applicationPkgs.paperless.tika;
   gotenberg = applicationPkgs.paperless.gotenberg;
   postgresql_17 = applicationPkgs.postgresql.postgresql_17;
