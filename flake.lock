@@ -32,7 +32,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-bazarr": {
+    "unstable-bazarr": {
       "locked": {
         "lastModified": 1790652569,
         "narHash": "sha256-641r7xrlSOHYoktL9/aArPIYNgZJ9eM5URzSEOtPJDY=",
@@ -144,7 +144,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-home-assistant": {
+    "unstable-home-assistant": {
       "locked": {
         "lastModified": 1792812153,
         "narHash": "sha256-T2+XBfNbf9pecLUWS4+RtuVNZ3W8K5taG5QdV71mWlk=",
@@ -160,7 +160,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-immich": {
+    "unstable-immich": {
       "locked": {
         "lastModified": 1790652569,
         "narHash": "sha256-641r7xrlSOHYoktL9/aArPIYNgZJ9eM5URzSEOtPJDY=",
@@ -224,7 +224,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-music-assistant": {
+    "unstable-music-assistant": {
       "locked": {
         "lastModified": 1792116957,
         "narHash": "sha256-EjZqHKObBfIOeHZnMRVV87HB3pPq/WBkmRJWyFxmZu8=",
@@ -272,7 +272,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-ollama": {
+    "unstable-ollama": {
       "locked": {
         "lastModified": 1792506237,
         "narHash": "sha256-Q/8KLB6jNfpaUN1HAedE/u/Et9feE/zYSsutBLKrCFk=",
@@ -304,7 +304,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-paperless": {
+    "unstable-paperless": {
       "locked": {
         "lastModified": 1791487292,
         "narHash": "sha256-tqM7xDEsaeK1p6VvRygeZ9LkQRpUUkbRT02BHv6hnTM=",
@@ -320,7 +320,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-plex": {
+    "unstable-plex": {
       "locked": {
         "lastModified": 1790652569,
         "narHash": "sha256-641r7xrlSOHYoktL9/aArPIYNgZJ9eM5URzSEOtPJDY=",
@@ -416,7 +416,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-sendspin": {
+    "unstable-sendspin": {
       "locked": {
         "lastModified": 1792116957,
         "narHash": "sha256-EjZqHKObBfIOeHZnMRVV87HB3pPq/WBkmRJWyFxmZu8=",
@@ -480,7 +480,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-tdarr": {
+    "unstable-tdarr": {
       "locked": {
         "lastModified": 1790652569,
         "narHash": "sha256-641r7xrlSOHYoktL9/aArPIYNgZJ9eM5URzSEOtPJDY=",
@@ -500,35 +500,35 @@
       "inputs": {
         "nixpkgs": "nixpkgs",
         "nixpkgs-alertmanager": "nixpkgs-alertmanager",
-        "nixpkgs-bazarr": "nixpkgs-bazarr",
+        "unstable-bazarr": "unstable-bazarr",
         "nixpkgs-cloudflare-dyndns": "nixpkgs-cloudflare-dyndns",
         "nixpkgs-coolercontrol": "nixpkgs-coolercontrol",
         "nixpkgs-flaresolverr": "nixpkgs-flaresolverr",
         "nixpkgs-forgejo": "nixpkgs-forgejo",
         "nixpkgs-forgejo-runner": "nixpkgs-forgejo-runner",
         "nixpkgs-grafana": "nixpkgs-grafana",
-        "nixpkgs-home-assistant": "nixpkgs-home-assistant",
-        "nixpkgs-immich": "nixpkgs-immich",
+        "unstable-home-assistant": "unstable-home-assistant",
+        "unstable-immich": "unstable-immich",
         "nixpkgs-jackett": "nixpkgs-jackett",
         "nixpkgs-matter-server": "nixpkgs-matter-server",
         "nixpkgs-microbin": "nixpkgs-microbin",
-        "nixpkgs-music-assistant": "nixpkgs-music-assistant",
+        "unstable-music-assistant": "unstable-music-assistant",
         "nixpkgs-nginx": "nixpkgs-nginx",
         "nixpkgs-node-exporter": "nixpkgs-node-exporter",
-        "nixpkgs-ollama": "nixpkgs-ollama",
+        "unstable-ollama": "unstable-ollama",
         "nixpkgs-open-webui": "nixpkgs-open-webui",
-        "nixpkgs-paperless": "nixpkgs-paperless",
-        "nixpkgs-plex": "nixpkgs-plex",
+        "unstable-paperless": "unstable-paperless",
+        "unstable-plex": "unstable-plex",
         "nixpkgs-postgresql": "nixpkgs-postgresql",
         "nixpkgs-prometheus": "nixpkgs-prometheus",
         "nixpkgs-qbittorrent": "nixpkgs-qbittorrent",
         "nixpkgs-radarr": "nixpkgs-radarr",
         "nixpkgs-redis": "nixpkgs-redis",
-        "nixpkgs-sendspin": "nixpkgs-sendspin",
+        "unstable-sendspin": "unstable-sendspin",
         "nixpkgs-sonarr": "nixpkgs-sonarr",
         "nixpkgs-speedtest": "nixpkgs-speedtest",
         "nixpkgs-tailscale": "nixpkgs-tailscale",
-        "nixpkgs-tdarr": "nixpkgs-tdarr",
+        "unstable-tdarr": "unstable-tdarr",
         "server-dashboard": "server-dashboard",
         "sops-nix": "sops-nix"
       }

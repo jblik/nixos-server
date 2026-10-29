@@ -229,7 +229,7 @@ snapshotted ZFS dataset.
 Matter Server runs natively alongside Home Assistant, with persistent pairings
 under `/var/lib/private/matter-server`. In Home Assistant's Matter integration,
 use `ws://127.0.0.1:5580/ws`. The WebSocket endpoint listens only on localhost.
-Home Assistant and Matter Server have independent `nixpkgs-home-assistant` and
+Home Assistant and Matter Server have independent `unstable-home-assistant` and
 `nixpkgs-matter-server` inputs.
 
 TCP 8123 (UI), TCP 21063 (HomeKit), UDP 5353 (mDNS discovery) and UDP 5540 (Matter)
@@ -255,7 +255,7 @@ keep-screen-on; neither changes the screen timeout or locks the device.
 ### Dashboard cards
 
 Home Assistant and its custom integrations use the independently locked
-`nixpkgs-home-assistant` unstable input. Nix installs Atomic Calendar Revive,
+`unstable-home-assistant` unstable input. Nix installs Atomic Calendar Revive,
 Flightradar24 Card, and Music Assistant Player Card, plus the Flightradar24 and
 Music Assistant Queue Actions integrations. Music Assistant Player Card is packaged
 from its pinned release asset in `packages/mass-player-card.nix`; the other cards
@@ -279,7 +279,7 @@ Nix registers JavaScript resources under `/local/nixos-lovelace-modules/` and ma
 them in YAML; dashboard layouts remain editable in the UI. Add resource declarations
 in Nix rather than the Resources UI, and avoid installing duplicate copies through
 HACS. Update the packaged integrations and cards with
-`nix flake update nixpkgs-home-assistant`; update the local music card's version and
+`nix flake update unstable-home-assistant`; update the local music card's version and
 asset hash separately.
 
 ### AI Models
@@ -319,7 +319,7 @@ follows its application version.
 Update only the application you choose:
 
 ```sh
-nix flake update nixpkgs-paperless
+nix flake update unstable-paperless
 nix eval --json .#versions | jq
 ```
 
@@ -328,7 +328,7 @@ while Gotenberg's Chromium and LibreOffice helpers use the system packages.
 PostgreSQL and Redis keep separate pins because they are shared with Immich. Once Paperless' locked
 revision includes the torchcodec test fix, remove the `extraPythonPackageOverrides`
 override in `packages.nix`. Immich and every other application keep their existing
-locks. Tdarr's server and node share `nixpkgs-tdarr`; their explicit version/hash
+locks. Tdarr's server and node share `unstable-tdarr`; their explicit version/hash
 overrides remain until that input provides at least 2.91.01.
 
 Use `nix flake update nixpkgs` to update the OS without advancing application pins.

@@ -5,35 +5,36 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
     nixpkgs-alertmanager.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-bazarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-cloudflare-dyndns.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-coolercontrol.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-flaresolverr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-forgejo.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-forgejo-runner.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-grafana.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-home-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nixpkgs-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-jackett.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-matter-server.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-microbin.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-music-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-nginx.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-node-exporter.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-ollama.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-open-webui.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-paperless.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
-    nixpkgs-plex.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-postgresql.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-prometheus.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-qbittorrent.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-sendspin.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
     nixpkgs-sonarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-speedtest.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-tailscale.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-tdarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+
+    unstable-bazarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-home-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    unstable-immich.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-music-assistant.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-ollama.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    unstable-paperless.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-plex.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-sendspin.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
+    unstable-tdarr.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # wait
 
     server-dashboard = {
       url = "git+ssh://forgejo@git.steenblik.ch:2222/jblik/server-dashboard.git";

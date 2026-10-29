@@ -12,7 +12,7 @@ in
 {
   # we run 3.x and the importer needs the same version; 26.05's module only handles 2.x.
   disabledModules = [ "services/misc/paperless.nix" ];
-  imports = [ "${inputs.nixpkgs-paperless}/nixos/modules/services/misc/paperless.nix" ];
+  imports = [ "${inputs.unstable-paperless}/nixos/modules/services/misc/paperless.nix" ];
 
   config = lib.mkIf config.host.paperless.enable {
     sops.secrets."paperless.env" = { };

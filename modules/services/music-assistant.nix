@@ -17,7 +17,7 @@ let
 in
 {
   disabledModules = [ "services/audio/music-assistant.nix" ];
-  imports = [ "${inputs.nixpkgs-music-assistant}/nixos/modules/services/audio/music-assistant.nix" ];
+  imports = [ "${inputs.unstable-music-assistant}/nixos/modules/services/audio/music-assistant.nix" ];
 
   config = lib.mkIf config.host.music-assistant.enable {
     hardware.bluetooth = {
