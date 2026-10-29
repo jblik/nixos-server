@@ -323,6 +323,12 @@ nix flake update unstable-paperless
 nix eval --json .#versions | jq
 ```
 
+Update with "wildcard":
+
+```sh
+jq -r '.nodes.root.inputs | keys[] | select(startswith("nixpkgs-"))' flake.lock | xargs nix flake update
+```
+
 Paperless' package, NixOS service module, Tika and Gotenberg use that same input,
 while Gotenberg's Chromium and LibreOffice helpers use the system packages.
 PostgreSQL and Redis keep separate pins because they are shared with Immich. Once Paperless' locked
