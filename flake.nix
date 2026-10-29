@@ -60,15 +60,24 @@
         "aarch64-darwin"
       ];
 
-      applicationPkgs = nixpkgs.lib.mapAttrs' (
-        name: input:
-        nixpkgs.lib.nameValuePair (nixpkgs.lib.removePrefix "nixpkgs-" name) (
-          import input {
-            inherit system;
-            config.allowUnfree = true;
-          }
-        )
-      ) (nixpkgs.lib.filterAttrs (name: _: nixpkgs.lib.hasPrefix "nixpkgs-" name) inputs);
+      applicationPkgs =
+        nixpkgs.lib.mapAttrs'
+          (
+            name: input:
+            nixpkgs.lib.nameValuePair
+              (nixpkgs.lib.removePrefix "unstable-" (nixpkgs.lib.removePrefix "nixpkgs-" name))
+              (
+                import input {
+                  inherit system;
+                  config.allowUnfree = true;
+                }
+              )
+          )
+          (
+            nixpkgs.lib.filterAttrs (
+              name: _: nixpkgs.lib.hasPrefix "nixpkgs-" name || nixpkgs.lib.hasPrefix "unstable-" name
+            ) inputs
+          );
 
       overlay = import ./packages.nix { inherit applicationPkgs; };
 
