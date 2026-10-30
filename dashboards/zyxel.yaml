@@ -147,16 +147,66 @@ views:
         action: more-info
       grid_options:
         columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_currentspeed
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') or 'kbit/s' %}
+        {% set factors = {'bit/s': 1, 'bps': 1, 'kbit/s': 1000, 'kbps': 1000,
+                          'Mbit/s': 1000000, 'Mbps': 1000000,
+                          'Gbit/s': 1000000000, 'Gbps': 1000000000} %}
+        {% if is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Current link speed
+      icon: mdi:speedometer
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_bitrate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') or 'kbit/s' %}
+        {% set factors = {'bit/s': 1, 'bps': 1, 'kbit/s': 1000, 'kbps': 1000,
+                          'Mbit/s': 1000000, 'Mbps': 1000000,
+                          'Gbit/s': 1000000000, 'Gbps': 1000000000} %}
+        {% if is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Bitrate
+      icon: mdi:swap-horizontal
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
     - type: entities
       title: Link details
       show_header_toggle: false
       entities:
       - entity: sensor.devices_router_zyxel_cardpage_wantype
         name: WAN type
-      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_currentspeed
-        name: Current link speed · raw
-      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_bitrate
-        name: Bitrate · raw
       - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_sfp_vendor
         name: Optical module vendor
       - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_sfp_model

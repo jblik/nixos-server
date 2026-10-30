@@ -73,8 +73,16 @@ ID as `<entry_id>_<flattened key>`; the key identifies the interface, for exampl
 empty interface name; do not assume they are WAN. Once verified, rename the
 Counter headings in this dashboard to match the actual interfaces.
 
+The overview's Current link speed and Bitrate cards also select kbit/s, Mbit/s,
+or Gbit/s automatically. Unitless GPON link values are treated as kbit/s:
+the supplied `9953280` displays as **9.95 Gbit/s**. This is an assumption based
+on the reported value matching a roughly 10 Gbit/s optical link; the integration
+does not document these fields' units. Confirm against the router UI. If an
+explicit bit-rate unit is present, the cards use that unit instead. These values
+describe the optical link, not measured internet throughput.
+
 Other supplied sensors are generic scalar values, without declared units or
-measurement classes. Optical readings, link speed, interface uptime, and status
+measurement classes. Optical readings, interface uptime, and status
 codes are displayed as reported. Confirm units/scaling in the router UI before
 interpreting optical readings as dBm or applying thresholds. The router uptime
 card follows the upstream example's seconds interpretation. CPU load is shown
