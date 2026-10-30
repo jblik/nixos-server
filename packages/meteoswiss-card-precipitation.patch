@@ -18,10 +18,10 @@
 -            >°C</span
 -          >
 +          ${this.show_precipitation ? c`
-+            <span>
-+              <span style="color:#db4a34">${this._t("config.chart_temperature")}</span>
-+              + <span style="color:#3498db">${this._t("config.chart_precipitation")}</span>
-+              <span style="display:block; font-size:12px; font-weight:normal; color:var(--secondary-text-color, #888);">
++            <span style="color:#fff">
++              <span>${this._t("config.chart_temperature")}</span>
++              &amp; <span>${this._t("config.chart_precipitation")}</span>
++              <span style="display:block; font-size:12px; font-weight:normal;">
 +                ${this._t("hourly_charts.forecast_hours", { hours: this.forecastHours })}
 +              </span>
 +            </span>
