@@ -1,0 +1,85 @@
+--- a/meteoswiss-weather-card.js
++++ b/meteoswiss-weather-card.js
+@@ -859,7 +859,7 @@
+ };
+ let Ce = class extends N {
+   constructor() {
+-    super(...arguments), this.hourlyForecast = [], this.forecastHours = 12, this.show_temperature = !0, this._measuredWidth = 0, this._measuredHeight = 0;
++    super(...arguments), this.hourlyForecast = [], this.forecastHours = 12, this.show_temperature = !0, this.show_precipitation = !1, this._measuredWidth = 0, this._measuredHeight = 0;
+   }
+   firstUpdated() {
+     const r = this.renderRoot.querySelector(".chart-svg-area");
+@@ -886,16 +886,16 @@
+           <ha-icon icon="mdi:thermometer"></ha-icon>
+           ${this._t("hourly_charts.temperature_hours", { hours: this.forecastHours })}
+           <span style="font-size:12px; font-weight:normal; color:var(--secondary-text-color, #888);"
+-            >°C</span
++            >°C ${this.show_precipitation ? c`<span style="color:#3498db"> / mm</span>` : ""}</span
+           >
+         </div>
+         <div class="chart-svg-area">
+           ${(() => {
+       if (t.length < 2) return c``;
+-      const i = e.length, n = this._measuredWidth > 0 ? this._measuredWidth : 600, s = this._measuredHeight > 0 ? this._measuredHeight : 100, o = 28, l = 6, a = 8, h = 18, d = n - o - l, p = s - a - h;
++      const i = e.length, n = this._measuredWidth > 0 ? this._measuredWidth : 600, s = this._measuredHeight > 0 ? this._measuredHeight : 100, o = 28, l = this.show_precipitation ? 28 : 6, a = 8, h = 18, d = n - o - l, p = s - a - h;
+       let g = Math.floor(Math.min(...t) / 5) * 5, f = Math.ceil(Math.max(...t) / 5) * 5;
+       g === f && (g -= 5, f += 5);
+-      const b = f - g, C = d / (i - 1), v = (k) => o + k * C, E = (k) => a + p - (k - g) / b * p, D = [];
++      const b = f - g, C = d / (this.show_precipitation ? i : i - 1), v = (k) => o + (this.show_precipitation ? C / 2 : 0) + k * C, E = (k) => a + p - (k - g) / b * p, D = [];
+       for (let k = g; k <= f; k += 5) {
+         const x = E(k), M = k % 10 === 0;
+         D.push(w`
+@@ -917,6 +917,27 @@
+                     ${O ? O.getHours() + "h" : ""}
+                   </text>
+                 `);
++      }
++      const precipitation = [];
++      if (this.show_precipitation) {
++        const forecast = this.hourlyForecast.slice(0, this.forecastHours),
++          amounts = forecast.map((hour) => typeof hour.precipitation === "number" && Number.isFinite(hour.precipitation) ? Math.max(0, hour.precipitation) : 0),
++          maximum = Math.max(5, Math.ceil(Math.max(...amounts))),
++          y = (amount) => a + p - amount / maximum * p,
++          width = C * 0.55;
++        for (const tick of [0, ...[1, 2, 3, 5, 8, 10, 15, 20].filter((value) => value < maximum), maximum]) {
++          precipitation.push(w`<text x="${n - l + 3}" y="${y(tick)}" text-anchor="start"
++            dominant-baseline="middle" font-size="8" fill="#3498db">${tick}</text>`);
++        }
++        forecast.forEach((hour, index) => {
++          const probability = typeof hour.precipitation_probability === "number" && Number.isFinite(hour.precipitation_probability) ? hour.precipitation_probability : 0,
++            probabilityHeight = probability / 100 * 5 / maximum * p,
++            height = amounts[index] / maximum * p;
++          if (probability > 0) precipitation.push(w`<rect x="${v(index) - width / 2}" y="${a + p - probabilityHeight}"
++            width="${width}" height="${probabilityHeight}" fill="#87898e" opacity="0.35" rx="1.5"/>`);
++          if (height > 0) precipitation.push(w`<rect x="${v(index) - width / 2}" y="${y(amounts[index])}"
++            width="${width}" height="${height}" fill="#3498db" opacity="0.7" rx="1.5"/>`);
++        });
+       }
+       const q = e.map((k, x) => k !== null ? `${v(x)},${E(k)}` : "").filter(Boolean).join(" "), W = e.map(
+         (k, x) => k !== null ? w`<circle cx="${v(x)}" cy="${E(k)}" r="2.5" fill="#db4a34"/>` : null
+@@ -930,6 +951,7 @@
+               <g filter="url(#hourly-temp-shadow)">
+               ${D}
+               ${P}
++              ${precipitation}
+               <polyline points="${q}" fill="none" stroke="#db4a34" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round"/>
+               ${W}
+@@ -992,6 +1014,9 @@
+ lt([
+   m({ type: Boolean })
+ ], Ce.prototype, "show_temperature", 2);
++lt([
++  m({ type: Boolean })
++], Ce.prototype, "show_precipitation", 2);
+ lt([
+   m({ type: Function })
+ ], Ce.prototype, "_t", 2);
+@@ -8663,6 +8688,7 @@
+           .hourlyForecast=${this._hourlyForecast}
+           .forecastHours=${e}
+           .show_temperature=${!0}
++          .show_precipitation=${this.config.show_precipitation === !0}
+           ._t=${u}
+         ></forecast-temperature-chart>
+       </div>

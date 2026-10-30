@@ -12,11 +12,19 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     hash = "sha256-25m1K03O6Q7f7J9jzPIDQmSD9yHPGGdUdK7lTqkd0Bk=";
   };
 
-  dontUnpack = true;
+  unpackPhase = ''
+    runHook preUnpack
+
+    cp $src meteoswiss-weather-card.js
+
+    runHook postUnpack
+  '';
+
+  patches = [ ./meteoswiss-card-precipitation.patch ];
   installPhase = ''
     runHook preInstall
 
-    install -Dm444 $src $out/meteoswiss-weather-card.js
+    install -Dm444 meteoswiss-weather-card.js $out/meteoswiss-weather-card.js
 
     runHook postInstall
   '';

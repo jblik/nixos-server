@@ -1,0 +1,4 @@
+type: custom:meteoswiss-temperature-card
+entity: weather.meteoswiss_zurich_affoltern
+forecast_hours: 16
+show_precipitation: true
