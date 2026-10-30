@@ -87,6 +87,7 @@ in
     applicationPkgs.home-assistant.home-assistant-custom-components.extend
       (
         _: _: {
+          ha-zyxel = applicationPkgs.home-assistant.callPackage ./packages/ha-zyxel.nix { };
           meteoswiss = applicationPkgs.home-assistant.callPackage ./packages/meteoswiss.nix { };
           vzug = applicationPkgs.home-assistant.callPackage ./packages/vzug.nix {
             inherit (applicationPkgs.home-assistant.home-assistant.python3Packages) json-repair;

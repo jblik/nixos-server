@@ -64,6 +64,7 @@ in
       customComponents = with pkgs.home-assistant-custom-components; [
         browser-mod
         flightradar24
+        ha-zyxel
         mass-queue
         meteoswiss
         roborock_custom_map
@@ -76,6 +77,7 @@ in
         kiosk-mode
         mass-player-card
         meteoswiss-card
+        mushroom
         xiaomi-vacuum-map-card
       ];
       extraComponents = [
