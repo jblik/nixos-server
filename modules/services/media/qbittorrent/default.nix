@@ -29,6 +29,14 @@ let
   metrics = pkgs.writers.writePython3 "qbittorrent-metrics" {
     libraries = [ pkgs.python3Packages.requests ];
   } (builtins.readFile ./metrics.py);
+  traffic = pkgs.writeShellApplication {
+    name = "nordvpn-traffic-metrics";
+    runtimeInputs = with pkgs; [
+      gawk
+      coreutils
+    ];
+    text = builtins.readFile ./traffic.sh;
+  };
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -146,6 +154,33 @@ in
         ExecStart = metrics;
         NetworkNamespacePath = namespacePath;
         UMask = "0022";
+      };
+    };
+
+    systemd.services.nordvpn-traffic = lib.mkIf config.host.dashboard.enable {
+      description = "Collect NordVPN traffic counters for Prometheus";
+      requisite = [ "qbittorrent-vpn.service" ];
+      after = [ "qbittorrent-vpn.service" ];
+      environment = {
+        NETWORK_INTERFACE = interface;
+        METRICS_DIRECTORY = "/run/prometheus-textfile";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = lib.getExe traffic;
+        NetworkNamespacePath = namespacePath;
+        User = "speedtest";
+        Group = "speedtest";
+        UMask = "0022";
+      };
+    };
+
+    systemd.timers.nordvpn-traffic = lib.mkIf config.host.dashboard.enable {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "30s";
+        OnUnitActiveSec = "5s";
+        AccuracySec = "1s";
       };
     };
 
