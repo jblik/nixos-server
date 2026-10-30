@@ -354,6 +354,7 @@ in
                   "Cpu"
                   "Gpu"
                   "Board"
+                  "Nic"
                   "Chipset"
                   "Hdd"
                   "Ssd"

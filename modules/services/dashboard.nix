@@ -135,6 +135,7 @@ let
     "Cpu"
     "Gpu"
     "Board"
+    "Nic"
     "Chipset"
     "Nvme"
     "Ssd"

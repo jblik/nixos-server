@@ -129,7 +129,7 @@ in
         name = "10 Gb NIC";
         device = "enp4s0";
         sensor = "temp1";
-        kind = "Board";
+        kind = "Nic";
       };
       sandisk = {
         name = "SSD (SanDisk)";
