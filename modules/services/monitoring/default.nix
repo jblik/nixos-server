@@ -17,6 +17,7 @@ let
     Cpu = 85;
     Gpu = 85;
     Board = 75;
+    Nic = 85;
     Chipset = 90;
     Hdd = 55;
     Ssd = 70;
