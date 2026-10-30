@@ -65,7 +65,7 @@ let
   };
 
   # 4.3 has no startup boost: stop-capable curves need restart duties, not running minima.
-  # The probe sustained top/middle/bottom/rear at 19/27/23/17%, but restarted at 37/73/53/33%.
+  # The probe sustained top/middle/bottom/rear at 19/27/20/17%, but restarted at 37/73/15/33%.
   caseFans = {
     front-top = {
       name = "Front top";
@@ -93,8 +93,8 @@ let
     front-bottom = {
       name = "Front bottom";
       channel = "fan4";
-      start = 55;
-      night = 60;
+      start = 29;
+      night = 46;
       sources = [
         "disk1"
         "disk2"
@@ -112,7 +112,7 @@ let
     };
   };
 
-  # Keys are °C; values are PWM %. Quiet has no always-on baseline.
+  # Keys are °C; values are PWM %.
   curves = {
     # The probe restarted at 31%; 33% leaves a small margin after stopping.
     cpu = {
@@ -240,7 +240,15 @@ let
       key:
       let
         temperatureCurve = (if uid == "rear" then rearCurves else caseCurves).${key};
-        points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) temperatureCurve;
+        points = lib.mapAttrs (
+          _: duty:
+          if uid == "front-bottom" then
+            lib.max fan.start duty
+          else if duty == 0 then
+            0
+          else
+            lib.max fan.start duty
+        ) temperatureCurve;
         tempSource =
           if uid == "rear" && key == "gpu" then
             {
