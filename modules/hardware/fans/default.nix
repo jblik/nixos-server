@@ -14,7 +14,7 @@
 # The board's NCT6798D is reached through ASUS WMI (nct6775 knows this board), so
 # no `acpi_enforce_resources=lax` is needed. Every header controls its fan in PWM
 # mode: the driver rejects DC mode on 2-7, and fan1 barely slows in DC.
-#   fan1 CHA_FAN1 (top), fan4 CHA_FAN3 (middle), fan3 CHA_FAN2 (bottom),
+#   fan1 CHA_FAN1 (top), fan3 CHA_FAN2 (middle), fan4 CHA_FAN3 (bottom),
 #   fan6 AIO_PUMP (rear exhaust),
 #   fan2 CPU_FAN, fan5 chipset, fan7 CPU_OPT (empty)
 # The GPU fans keep the card's own zero-rpm curve.
@@ -80,7 +80,7 @@ let
     };
     front-middle = {
       name = "Front middle";
-      channel = "fan4";
+      channel = "fan3";
       start = 75;
       night = 80;
       sources = [
@@ -92,7 +92,7 @@ let
     };
     front-bottom = {
       name = "Front bottom";
-      channel = "fan3";
+      channel = "fan4";
       start = 55;
       night = 60;
       sources = [
