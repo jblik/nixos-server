@@ -16,6 +16,8 @@ buildHomeAssistantComponent (finalAttrs: {
     hash = "sha256-8txPb5wfbUzxeUa4unu5fME4osPTa3MmRdKOOkiPBqM=";
   };
 
+  patches = [ ./meteoswiss-sunshine.patch ];
+
   # Home Assistant must manage the config entry context during options reloads.
   postPatch = ''
     substituteInPlace custom_components/meteoswiss/__init__.py \
