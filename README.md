@@ -208,15 +208,29 @@ journalctl -u speedtest-nordvpn -n 50
 ```
 
 Grafana's [NordVPN dashboard](https://grafana.internal.steenblik.ch/d/nordvpn)
-compares VPN and host speeds and shows VPN latency, jitter, packet loss, and the
-age of the last result.
+compares hourly VPN and host speedtest results and shows VPN latency, jitter,
+packet loss, and the age of the last result. The latest speedtest has its own
+card, separate from continuous traffic. The
+[Server dashboard](https://grafana.internal.steenblik.ch/d/server) also shows the
+latest host speedtest, its age, and the hourly result history.
+
+Both dashboards refresh every five seconds and include current traffic cards
+and continuous traffic graphs. Host traffic uses the existing node_exporter
+counters for physical Ethernet and Wi-Fi interfaces; it includes LAN transfers
+and encrypted VPN traffic, so it is not a measurement of internet-only traffic
+or available bandwidth. `nordvpn-traffic.timer` reads the VPN interface's byte
+counters inside qBittorrent's network namespace every five seconds, independently
+of the qBittorrent API. This adds a small local counter read, with no test traffic
+or additional network requests. Rates are averaged over Grafana's query interval.
+VPN traffic is hidden once collection is more than 30 seconds old; its collection
+age is shown separately. Speedtests continue to measure available bandwidth hourly.
 
 The [qBittorrent dashboard](https://grafana.internal.steenblik.ch/d/qbittorrent)
 shows transfer rates, session and all-time totals, share ratio, torrent counts by
 state, remaining downloads, free download space, peers, DHT nodes, and connection
 status. `qbittorrent-metrics.timer` collects every 30 seconds through the local
 API inside the VPN namespace, using the API key already managed in qBittorrent's
-profile. No additional credentials or public metrics port are needed. Both
+profile. No additional credentials or public metrics port are needed. The
 collectors publish through node_exporter's textfile collector. If a collection
 fails, its last successful result remains; check the age panels and service
 journals when interpreting old readings.

@@ -54,6 +54,32 @@ let
     };
   };
 
+  hostTrafficTargets = [
+    (target ''rate(node_network_receive_bytes_total{job="node",device=~"en.*|eth.*|wl.*"}[$__rate_interval]) * 8'' "{{device}} receive")
+    (target ''rate(node_network_transmit_bytes_total{job="node",device=~"en.*|eth.*|wl.*"}[$__rate_interval]) * 8'' "{{device}} send")
+  ];
+
+  nordvpnTrafficTargets = [
+    (target "rate(nordvpn_network_receive_bytes_total[$__rate_interval]) * 8 and on(job, instance) (time() - nordvpn_traffic_timestamp_seconds < 30)" "Down")
+    (target "rate(nordvpn_network_transmit_bytes_total[$__rate_interval]) * 8 and on(job, instance) (time() - nordvpn_traffic_timestamp_seconds < 30)" "Up")
+  ];
+
+  hostTraffic = lib.recursiveUpdate (unit "bps") {
+    description = "Actual traffic per physical host interface, including LAN transfers and encrypted VPN traffic. This measures usage, not available internet capacity. Counters are scraped every five seconds; rates are averaged over the query interval.";
+    fieldConfig.defaults = {
+      min = 0;
+      noValue = "Unknown";
+    };
+  };
+
+  nordvpnTraffic = lib.recursiveUpdate (unit "bps") {
+    description = "Actual traffic through the NordVPN interface in qBittorrent's network namespace. Counters are collected every five seconds; rates are averaged over the query interval. Readings disappear when collection is more than 30 seconds old.";
+    fieldConfig.defaults = {
+      min = 0;
+      noValue = "Unknown";
+    };
+  };
+
   # A spun-down Hdd reads 0 °C; leaving those out keeps the graph's scale.
   temperature =
     part:
@@ -187,7 +213,7 @@ let
     title = "Server";
     uid = "server";
     timezone = "browser";
-    refresh = "30s";
+    refresh = "5s";
     time = {
       from = "now-24h";
       to = "now";
@@ -226,10 +252,10 @@ let
         }
       )
       (panel "stat" "Uptime" 12 0 4 4 [ (target "time() - node_boot_time_seconds" "") ] (unit "s"))
-      (panel "stat" "Internet" 16 0 8 4 [
+      (panel "stat" "Last internet speedtest" 16 0 8 4 (map (t: t // { instant = true; }) [
         (target "speedtest_download_bytes_per_second * 8" "Down")
         (target "speedtest_upload_bytes_per_second * 8" "Up")
-      ] (unit "bps"))
+      ]) (unit "bps"))
       (panel "timeseries" "Temperatures" 0 4 12 9 (map temperature (lib.attrValues host.sensors)) (
         unit "celsius"
       ))
@@ -274,7 +300,7 @@ let
         (target "nvidia_smi_utilization_gpu_ratio" "Utilisation")
         (target "nvidia_smi_memory_used_bytes / nvidia_smi_memory_total_bytes" "Memory")
       ] percent)
-      (panel "timeseries" "Internet speed" 12 22 12 9 [
+      (panel "timeseries" "Hourly internet speedtests" 12 22 12 9 [
         (target "speedtest_download_bytes_per_second * 8" "Down")
         (target "speedtest_upload_bytes_per_second * 8" "Up")
       ] (unit "bps"))
@@ -294,6 +320,13 @@ let
       (panel "stat" "Fans — requested but not spinning" 12 31 12 9 (map (
         t: t // { instant = true; }
       ) fanStatusTargets) (fanStatus // { options.colorMode = "background"; }))
+      (panel "stat" "Host traffic now" 0 40 16 4 (map (
+        t: t // { instant = true; }
+      ) hostTrafficTargets) hostTraffic)
+      (panel "stat" "Last internet speedtest age" 16 40 8 4 [
+        ((target "time() - speedtest_timestamp_seconds" "Age") // { instant = true; })
+      ] (unit "s"))
+      (panel "timeseries" "Continuous host traffic" 0 44 24 8 hostTrafficTargets hostTraffic)
     ];
   };
 
@@ -301,21 +334,21 @@ let
     title = "NordVPN";
     uid = "nordvpn";
     timezone = "browser";
-    refresh = "30s";
+    refresh = "5s";
     time = {
       from = "now-24h";
       to = "now";
     };
     schemaVersion = 39;
     panels = [
-      (panel "stat" "NordVPN speed" 0 0 12 4 [
+      (panel "stat" "Last NordVPN speedtest" 0 0 12 4 (map (t: t // { instant = true; }) [
         (target "nordvpn_speedtest_download_bytes_per_second * 8" "Down")
         (target "nordvpn_speedtest_upload_bytes_per_second * 8" "Up")
-      ] (unit "bps"))
+      ]) (unit "bps"))
       (panel "stat" "Last speedtest age" 12 0 12 4 [
-        (target "time() - nordvpn_speedtest_timestamp_seconds" "Age")
+        ((target "time() - nordvpn_speedtest_timestamp_seconds" "Age") // { instant = true; })
       ] (unit "s"))
-      (panel "timeseries" "Speed — NordVPN and host" 0 4 24 8 [
+      (panel "timeseries" "Hourly speedtests — NordVPN and host" 0 4 24 8 [
         (target "nordvpn_speedtest_download_bytes_per_second * 8" "NordVPN down")
         (target "nordvpn_speedtest_upload_bytes_per_second * 8" "NordVPN up")
         (target "speedtest_download_bytes_per_second * 8" "Host down")
@@ -330,6 +363,13 @@ let
       (panel "timeseries" "NordVPN packet loss" 12 12 12 8 [
         (target "nordvpn_speedtest_packet_loss_ratio" "Loss")
       ] percent)
+      (panel "stat" "NordVPN traffic now" 0 20 12 4 (map (
+        t: t // { instant = true; }
+      ) nordvpnTrafficTargets) nordvpnTraffic)
+      (panel "stat" "Last traffic collection age" 12 20 12 4 [
+        ((target "time() - nordvpn_traffic_timestamp_seconds" "Age") // { instant = true; })
+      ] (unit "s"))
+      (panel "timeseries" "Continuous NordVPN traffic" 0 24 24 8 nordvpnTrafficTargets nordvpnTraffic)
     ];
   };
 
