@@ -85,6 +85,7 @@ in
         "caldav"
         "co2signal"
         "default_config"
+        "derivative"
         "google_translate"
         "homekit_controller"
         "hue"
@@ -110,6 +111,29 @@ in
           ++ map (route: "sensor.${route.id}_*") routes;
         };
         automation = "!include automations.yaml";
+        sensor = lib.concatMap (
+          counter:
+          map
+            (
+              direction:
+              let
+                suffix = if counter == 1 then "" else "_${toString counter}";
+              in
+              {
+                platform = "derivative";
+                source = "sensor.devices_router_zyxel_bytes_${direction}${suffix}";
+                name = "Zyxel counter ${toString counter} ${direction} rate";
+                unique_id = "zyxel_counter_${toString counter}_${direction}_rate";
+                unit_time = "s";
+                round = 3;
+                max_sub_interval = "00:01:00";
+              }
+            )
+            [
+              "received"
+              "sent"
+            ]
+        ) (lib.range 1 5);
         template = map (route: {
           triggers = [
             {

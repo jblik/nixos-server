@@ -1,0 +1,1021 @@
+title: Zyxel Network
+views:
+- title: Overview
+  path: overview
+  icon: mdi:router-network
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Router
+      heading_style: title
+      icon: mdi:router-wireless
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_lanhosts_waninfo_wanstatus
+      primary: '{{ states(entity) if has_value(entity) else ''Unavailable'' }}'
+      secondary: WAN status · router reported
+      icon: mdi:web
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_device_deviceinfo_uptime
+      primary: |-
+        {% set value = states(entity) %}
+        {% if is_number(value) %}
+          {% set s = value | int %}
+          {{ s // 86400 }}d {{ (s % 86400) // 3600 }}h {{ (s % 3600) // 60 }}m
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Router uptime
+      icon: mdi:clock-outline
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_device_systeminfo_cpuusage
+      primary: |-
+        {% if has_value(entity) %}
+          {{ states(entity) }} {{ state_attr(entity, 'unit_of_measurement') or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: CPU load · reported value
+      icon: mdi:chip
+      color: purple
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_device_systeminfo_free
+      primary: |-
+        {% set total = states('sensor.devices_router_zyxel_device_systeminfo_total') %}
+        {% set free = states('sensor.devices_router_zyxel_device_systeminfo_free') %}
+        {% if is_number(total) and is_number(free) and total | float > 0
+            and 0 <= free | float <= total | float %}
+          {{ (100 * (1 - free | float / total | float)) | round(1) }} %
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Memory used
+      icon: mdi:memory
+      color: purple
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: entities
+      title: Device
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_device_systeminfo_hostname
+        name: Hostname
+      - entity: sensor.devices_router_zyxel_device_deviceinfo_modelname
+        name: Model
+      - entity: sensor.devices_router_zyxel_device_deviceinfo_softwareversion
+        name: Firmware
+      - entity: sensor.devices_router_zyxel_device_deviceinfo_hardwareversion
+        name: Hardware
+      - entity: sensor.devices_router_zyxel_device_x_zyxel_interfaceuptime
+        name: Interface uptime · raw
+  - type: grid
+    cards:
+    - type: heading
+      heading: Fiber connection
+      heading_style: title
+      icon: mdi:fiber-optic
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_status
+      primary: '{{ states(entity) if has_value(entity) else ''Unavailable'' }}'
+      secondary: GPON status
+      icon: mdi:fiber-optic
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_temperature
+      primary: |-
+        {% if has_value(entity) %}
+          {{ states(entity) }} {{ state_attr(entity, 'unit_of_measurement') or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Optical module temperature
+      icon: mdi:thermometer
+      color: orange
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_rxpowersignal
+      primary: |-
+        {% if has_value(entity) %}
+          {{ states(entity) }} {{ state_attr(entity, 'unit_of_measurement') or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Optical receive power
+      icon: mdi:arrow-down-bold
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_txpowersignal
+      primary: |-
+        {% if has_value(entity) %}
+          {{ states(entity) }} {{ state_attr(entity, 'unit_of_measurement') or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Optical transmit power
+      icon: mdi:arrow-up-bold
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: entities
+      title: Link details
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_cardpage_wantype
+        name: WAN type
+      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_currentspeed
+        name: Current link speed · raw
+      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_bitrate
+        name: Bitrate · raw
+      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_sfp_vendor
+        name: Optical module vendor
+      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_sfp_model
+        name: Optical module model
+      - entity: sensor.devices_router_zyxel_cardpage_gponstatsinfo_lastchange
+        name: Last change · raw
+  - type: grid
+    cards:
+    - type: heading
+      heading: Local network
+      heading_style: title
+      icon: mdi:lan
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_lan_ipaddress
+      primary: '{{ states(entity) if has_value(entity) else ''Unavailable'' }}'
+      secondary: Router LAN address
+      icon: mdi:ip-network
+      color: blue
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_cardpage_dhcp4serpoolinfo_clientnumberofentries
+      primary: '{{ states(entity) if has_value(entity) else ''Unavailable'' }}'
+      secondary: DHCP client entries
+      icon: mdi:devices
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: entities
+      title: Addressing
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_lan_name
+        name: Network
+      - entity: sensor.devices_router_zyxel_lan_subnetmask
+        name: Subnet mask
+      - entity: sensor.devices_router_zyxel_cardpage_dhcp4serpoolinfo_status
+        name: DHCP status
+      - entity: sensor.devices_router_zyxel_lan_dhcp_minaddress
+        name: DHCP range start
+      - entity: sensor.devices_router_zyxel_lan_dhcp_maxaddress
+        name: DHCP range end
+      - entity: sensor.devices_router_zyxel_cardpage_dhcp4serpoolinfo_dnsservers
+        name: DNS servers
+    - type: entities
+      title: Protection
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_device_firewallinfo_enable
+        name: Firewall
+      - entity: sensor.devices_router_zyxel_device_firewallinfo_ipv4_enable
+        name: IPv4 firewall
+      - entity: sensor.devices_router_zyxel_device_firewallinfo_ipv6_enable
+        name: IPv6 firewall
+      - entity: sensor.devices_router_zyxel_device_firewallinfo_x_zyxel_dos_enable
+        name: DoS protection
+- title: Traffic
+  path: traffic
+  icon: mdi:chart-bar
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Traffic counters
+      heading_style: title
+      icon: mdi:chart-bar
+    - type: markdown
+      content: Received is **cyan**, sent is **teal**. Rates automatically use kbit/s, Mbit/s, or Gbit/s. Totals are interface counters, not monthly usage.
+        Charts show bytes transferred each hour. Counter numbers do not identify WAN or LAN; verify the
+        entity unique IDs before renaming. Do not add these counters together.
+  - type: grid
+    cards:
+    - type: heading
+      heading: Counter 1
+      heading_style: title
+      icon: mdi:swap-vertical
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_1_received_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_received')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Receive rate
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_received
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Received · counter total
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_1_sent_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_sent')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Send rate
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_sent
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Sent · counter total
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: statistics-graph
+      title: Transferred per hour
+      chart_type: bar
+      period: hour
+      days_to_show: 1
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.devices_router_zyxel_bytes_received
+        name: Received
+        color: '#00bcd4'
+      - entity: sensor.devices_router_zyxel_bytes_sent
+        name: Sent
+        color: '#009688'
+  - type: grid
+    cards:
+    - type: heading
+      heading: Counter 2
+      heading_style: title
+      icon: mdi:swap-vertical
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_2_received_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_received_2')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Receive rate
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_received_2
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Received · counter total
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_2_sent_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_sent_2')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Send rate
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_sent_2
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Sent · counter total
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: statistics-graph
+      title: Transferred per hour
+      chart_type: bar
+      period: hour
+      days_to_show: 1
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.devices_router_zyxel_bytes_received_2
+        name: Received
+        color: '#00bcd4'
+      - entity: sensor.devices_router_zyxel_bytes_sent_2
+        name: Sent
+        color: '#009688'
+  - type: grid
+    cards:
+    - type: heading
+      heading: Counter 3
+      heading_style: title
+      icon: mdi:swap-vertical
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_3_received_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_received_3')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Receive rate
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_received_3
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Received · counter total
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_3_sent_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_sent_3')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Send rate
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_sent_3
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Sent · counter total
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: statistics-graph
+      title: Transferred per hour
+      chart_type: bar
+      period: hour
+      days_to_show: 1
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.devices_router_zyxel_bytes_received_3
+        name: Received
+        color: '#00bcd4'
+      - entity: sensor.devices_router_zyxel_bytes_sent_3
+        name: Sent
+        color: '#009688'
+  - type: grid
+    cards:
+    - type: heading
+      heading: Counter 4
+      heading_style: title
+      icon: mdi:swap-vertical
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_4_received_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_received_4')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Receive rate
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_received_4
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Received · counter total
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_4_sent_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_sent_4')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Send rate
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_sent_4
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Sent · counter total
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: statistics-graph
+      title: Transferred per hour
+      chart_type: bar
+      period: hour
+      days_to_show: 1
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.devices_router_zyxel_bytes_received_4
+        name: Received
+        color: '#00bcd4'
+      - entity: sensor.devices_router_zyxel_bytes_sent_4
+        name: Sent
+        color: '#009688'
+  - type: grid
+    cards:
+    - type: heading
+      heading: Counter 5
+      heading_style: title
+      icon: mdi:swap-vertical
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_5_received_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_received_5')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Receive rate
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_received_5
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Received · counter total
+      icon: mdi:download-network
+      color: cyan
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.zyxel_counter_5_sent_rate
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B/s': 8, 'kB/s': 8000, 'MB/s': 8000000,
+                          'GB/s': 8000000000, 'TB/s': 8000000000000,
+                          'KiB/s': 8192, 'MiB/s': 8388608,
+                          'GiB/s': 8589934592, 'TiB/s': 8796093022208} %}
+        {% if has_value('sensor.devices_router_zyxel_bytes_sent_5')
+            and is_number(value) and unit in factors and value | float >= 0 %}
+          {% set bits = value | float * factors[unit] %}
+          {% if bits >= 1000000000 %}
+            {{ (bits / 1000000000) | round(2) }} Gbit/s
+          {% elif bits >= 1000000 %}
+            {{ (bits / 1000000) | round(2) }} Mbit/s
+          {% else %}
+            {{ (bits / 1000) | round(2) }} kbit/s
+          {% endif %}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Send rate
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: custom:mushroom-template-card
+      entity: sensor.devices_router_zyxel_bytes_sent_5
+      primary: |-
+        {% set value = states(entity) %}
+        {% set unit = state_attr(entity, 'unit_of_measurement') %}
+        {% set factors = {'B': 1, 'kB': 1000, 'MB': 1000000, 'GB': 1000000000,
+                          'TB': 1000000000000, 'KiB': 1024, 'MiB': 1048576,
+                          'GiB': 1073741824, 'TiB': 1099511627776} %}
+        {% if is_number(value) and unit in factors %}
+          {{ (value | float * factors[unit] / 1000000000) | round(2) }} GB
+        {% elif has_value(entity) %}
+          {{ value }} {{ unit or '' }}
+        {% else %}
+          Unavailable
+        {% endif %}
+      secondary: Sent · counter total
+      icon: mdi:upload-network
+      color: teal
+      tap_action:
+        action: more-info
+      grid_options:
+        columns: 6
+    - type: statistics-graph
+      title: Transferred per hour
+      chart_type: bar
+      period: hour
+      days_to_show: 1
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.devices_router_zyxel_bytes_received_5
+        name: Received
+        color: '#00bcd4'
+      - entity: sensor.devices_router_zyxel_bytes_sent_5
+        name: Sent
+        color: '#009688'
+- title: Diagnostics
+  path: diagnostics
+  icon: mdi:stethoscope
+  type: sections
+  max_columns: 3
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Interface diagnostics
+      heading_style: title
+      icon: mdi:stethoscope
+    - type: markdown
+      content: Packet, error, and discard values are cumulative counters. A nonzero count can be old;
+        look for **increases** while troubleshooting. Firmware-specific status values are shown as reported.
+        Byte-counter suffixes are intentionally not mapped to these interfaces.
+  - type: grid
+    cards:
+    - type: heading
+      heading: br0
+      heading_style: title
+      icon: mdi:ethernet
+    - type: entities
+      title: Packet counters
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_traffic_br0_packetsreceived
+        name: Received packets
+      - entity: sensor.devices_router_zyxel_traffic_br0_packetssent
+        name: Sent packets
+      - entity: sensor.devices_router_zyxel_traffic_br0_errorsreceived
+        name: Receive errors
+      - entity: sensor.devices_router_zyxel_traffic_br0_errorssent
+        name: Send errors
+      - entity: sensor.devices_router_zyxel_traffic_br0_discardpacketsreceived
+        name: Receive discards
+      - entity: sensor.devices_router_zyxel_traffic_br0_discardpacketssent
+        name: Send discards
+      - entity: sensor.devices_router_zyxel_traffic_br0_multicastpacketsreceived
+        name: Received multicast
+      - entity: sensor.devices_router_zyxel_traffic_br0_multicastpacketssent
+        name: Sent multicast
+      - entity: sensor.devices_router_zyxel_traffic_br0_broadcastpacketsreceived
+        name: Received broadcast
+      - entity: sensor.devices_router_zyxel_traffic_br0_broadcastpacketssent
+        name: Sent broadcast
+      - entity: sensor.devices_router_zyxel_traffic_br0_unknownprotopacketsreceived
+        name: Unknown protocol received
+  - type: grid
+    cards:
+    - type: heading
+      heading: Unnamed interface
+      heading_style: title
+      icon: mdi:ethernet
+    - type: entities
+      title: Packet counters
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_traffic_packetsreceived
+        name: Received packets
+      - entity: sensor.devices_router_zyxel_traffic_packetssent
+        name: Sent packets
+      - entity: sensor.devices_router_zyxel_traffic_errorsreceived
+        name: Receive errors
+      - entity: sensor.devices_router_zyxel_traffic_errorssent
+        name: Send errors
+      - entity: sensor.devices_router_zyxel_traffic_discardpacketsreceived
+        name: Receive discards
+      - entity: sensor.devices_router_zyxel_traffic_discardpacketssent
+        name: Send discards
+      - entity: sensor.devices_router_zyxel_traffic_multicastpacketsreceived
+        name: Received multicast
+      - entity: sensor.devices_router_zyxel_traffic_multicastpacketssent
+        name: Sent multicast
+      - entity: sensor.devices_router_zyxel_traffic_broadcastpacketsreceived
+        name: Received broadcast
+      - entity: sensor.devices_router_zyxel_traffic_broadcastpacketssent
+        name: Sent broadcast
+      - entity: sensor.devices_router_zyxel_traffic_unknownprotopacketsreceived
+        name: Unknown protocol received
+  - type: grid
+    cards:
+    - type: heading
+      heading: veip0.2
+      heading_style: title
+      icon: mdi:ethernet
+    - type: entities
+      title: Packet counters
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_packetsreceived
+        name: Received packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_packetssent
+        name: Sent packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_errorsreceived
+        name: Receive errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_errorssent
+        name: Send errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_discardpacketsreceived
+        name: Receive discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_discardpacketssent
+        name: Send discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_multicastpacketsreceived
+        name: Received multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_multicastpacketssent
+        name: Sent multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_broadcastpacketsreceived
+        name: Received broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_broadcastpacketssent
+        name: Sent broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_2_unknownprotopacketsreceived
+        name: Unknown protocol received
+  - type: grid
+    cards:
+    - type: heading
+      heading: veip0.3
+      heading_style: title
+      icon: mdi:ethernet
+    - type: entities
+      title: Packet counters
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_packetsreceived
+        name: Received packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_packetssent
+        name: Sent packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_errorsreceived
+        name: Receive errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_errorssent
+        name: Send errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_discardpacketsreceived
+        name: Receive discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_discardpacketssent
+        name: Send discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_multicastpacketsreceived
+        name: Received multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_multicastpacketssent
+        name: Sent multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_broadcastpacketsreceived
+        name: Received broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_broadcastpacketssent
+        name: Sent broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_3_unknownprotopacketsreceived
+        name: Unknown protocol received
+  - type: grid
+    cards:
+    - type: heading
+      heading: veip0.4
+      heading_style: title
+      icon: mdi:ethernet
+    - type: entities
+      title: Packet counters
+      show_header_toggle: false
+      entities:
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_packetsreceived
+        name: Received packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_packetssent
+        name: Sent packets
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_errorsreceived
+        name: Receive errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_errorssent
+        name: Send errors
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_discardpacketsreceived
+        name: Receive discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_discardpacketssent
+        name: Send discards
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_multicastpacketsreceived
+        name: Received multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_multicastpacketssent
+        name: Sent multicast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_broadcastpacketsreceived
+        name: Received broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_broadcastpacketssent
+        name: Sent broadcast
+      - entity: sensor.devices_router_zyxel_traffic_veip0_4_unknownprotopacketsreceived
+        name: Unknown protocol received
