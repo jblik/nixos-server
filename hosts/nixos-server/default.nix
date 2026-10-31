@@ -76,6 +76,7 @@ in
           open-webui = "/var/lib/private/open-webui"; # DynamicUser
           paperless = "/var/lib/paperless";
           postgresql = "/var/lib/postgresql";
+          prowlarr = "/var/lib/private/prowlarr"; # DynamicUser
           pulsarr = "/var/lib/pulsarr";
           qbittorrent = "/var/lib/qBittorrent";
           radarr = "/var/lib/radarr";

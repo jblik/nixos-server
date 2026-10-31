@@ -145,6 +145,11 @@ in
         default = 9117;
         description = "Jackett web UI port.";
       };
+      prowlarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 9696;
+        description = "Prowlarr web UI port.";
+      };
       flaresolverr.port = lib.mkOption {
         type = lib.types.port;
         default = 8191;

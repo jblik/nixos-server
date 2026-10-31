@@ -51,6 +51,7 @@ let
       (service media internal "radarr" "Radarr" "Movie fetcher" (svg "radarr"))
       (service media internal "bazarr" "Bazarr" "Subtitle fetcher" (svg "bazarr"))
       (service media internal "jackett" "Jackett" "Indexer proxy" (svg "jackett"))
+      (service media internal "prowlarr" "Prowlarr" "Indexer manager" (svg "prowlarr"))
       (service media internal "qbittorrent" "qBittorrent" "Download client" (svg "qbittorrent"))
       (service media internal "tdarr" "Tdarr" "Transcoding Plex library" (svg "tdarr"))
       (service media internal "cleanuparr" "Cleanuparr" "Clears stalled downloads" (png "cleanuparr"))

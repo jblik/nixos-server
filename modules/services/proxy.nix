@@ -42,6 +42,7 @@ let
       radarr = s.radarr.settings.server.port;
       bazarr = s.bazarr.listenPort;
       jackett = s.jackett.port;
+      prowlarr = s.prowlarr.settings.server.port;
       qbittorrent = s.qbittorrent.webuiPort;
       tdarr = s.tdarr.server.webUIPort;
       cleanuparr = config.host.media.cleanuparr.port;

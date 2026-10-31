@@ -177,6 +177,7 @@ flake input continues to reference the published dashboard revision.
 | Media Preview Generator                    | 8280                       | Podman, NVIDIA GPU                                |
 | Sonarr / Radarr / Bazarr                   | 8989 / 7878 / 6767         | native                                            |
 | Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                            |
+| Prowlarr (prowlarr.internal.steenblik.ch)   | 9696                       | native                                            |
 | qBittorrent                                | 8080                       | native                                            |
 | Tdarr                                      | 8265 (UI), 8266 (server)   | native, GPU node                                  |
 | Cleanuparr                                 | 11011                      | podman container                                  |
@@ -194,6 +195,18 @@ flake input continues to reference the published dashboard revision.
 | Grafana (grafana.internal.steenblik.ch)    | 3002 (localhost)           | native                                            |
 | Tailscale (exit node)                      | —                          | native                                            |
 | Ollama + Open WebUI (ai.steenblik.ch)      | 11434 / 8082 (localhost)   | native, Ollama on the RTX 3060                    |
+
+Prowlarr runs alongside Jackett at `https://prowlarr.internal.steenblik.ch`, accessible
+from the LAN and tailnet through the existing wildcard DNS and TLS certificate.
+Before deploying it for the first time, create its snapshotted state dataset on the server:
+
+```sh
+sudo zfs create -o mountpoint=legacy fast/prowlarr
+```
+
+Configure indexers and application connections in Prowlarr's UI when ready to migrate.
+Local Sonarr and Radarr URLs are `http://127.0.0.1:8989` and `http://127.0.0.1:7878`;
+the shared FlareSolverr is at `http://127.0.0.1:8191`.
 
 ## VPN and torrent monitoring
 

@@ -24,6 +24,7 @@ in
   sonarr = applicationPkgs.sonarr.sonarr;
   radarr = applicationPkgs.radarr.radarr;
   jackett = applicationPkgs.jackett.jackett;
+  prowlarr = applicationPkgs.prowlarr.prowlarr;
   flaresolverr = applicationPkgs.flaresolverr.flaresolverr;
   qbittorrent-nox = applicationPkgs.qbittorrent.qbittorrent-nox;
   forgejo-lts = applicationPkgs.forgejo.forgejo-lts;

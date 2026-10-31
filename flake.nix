@@ -19,6 +19,7 @@
     nixpkgs-open-webui.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-postgresql.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-prometheus.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-prowlarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-qbittorrent.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
