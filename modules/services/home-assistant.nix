@@ -81,6 +81,7 @@ in
         xiaomi-vacuum-map-card
       ];
       extraComponents = [
+        "androidtv_remote"
         "apple_tv"
         "caldav"
         "co2signal"
