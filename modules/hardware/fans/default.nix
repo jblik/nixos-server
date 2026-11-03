@@ -70,8 +70,8 @@ let
     front-top = {
       name = "Front top";
       channel = "fan1";
-      start = 39;
-      night = 45;
+      start = 45;
+      night = 50;
       sources = [
         "cpu"
         "motherboard"
@@ -106,8 +106,8 @@ let
     rear = {
       name = "Rear exhaust";
       channel = "fan6";
-      start = 50;
-      night = 55;
+      start = 55;
+      night = 60;
       sources = lib.attrNames caseCurves;
     };
   };
