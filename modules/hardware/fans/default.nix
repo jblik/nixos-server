@@ -106,8 +106,8 @@ let
     rear = {
       name = "Rear exhaust";
       channel = "fan6";
-      start = 45;
-      night = 50;
+      start = 50;
+      night = 55;
       sources = lib.attrNames caseCurves;
     };
   };
@@ -240,15 +240,7 @@ let
       key:
       let
         temperatureCurve = (if uid == "rear" then rearCurves else caseCurves).${key};
-        points = lib.mapAttrs (
-          _: duty:
-          if uid == "front-bottom" then
-            lib.max fan.start duty
-          else if duty == 0 then
-            0
-          else
-            lib.max fan.start duty
-        ) temperatureCurve;
+        points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) temperatureCurve;
         tempSource =
           if uid == "rear" && key == "gpu" then
             {
