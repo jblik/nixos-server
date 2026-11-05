@@ -42,6 +42,7 @@ in
         TZ = config.time.timeZone;
         IMMICH_HOST = "127.0.0.1";
         IMMICH_PORT = toString mlPort;
+        ORT_DISABLE_TELEMETRY = "1";
       };
       volumes = [ "/var/cache/immich-machine-learning:/cache" ];
       extraOptions = [
