@@ -1,0 +1,170 @@
+--- a/src/paperless_ai/client.py
++++ b/src/paperless_ai/client.py
+@@ -48,8 +48,19 @@
+     A client for interacting with an LLM backend.
+     """
+
+-    def __init__(self) -> None:
++    def __init__(
++        self,
++        *,
++        thinking: bool = False,
++        request_timeout: int | None = None,
++    ) -> None:
+         self.settings = AIConfig()
++        self.thinking = thinking
++        self.request_timeout = (
++            request_timeout
++            if request_timeout is not None
++            else self.settings.llm_request_timeout
++        )
+         self.llm = self.get_llm()
+
+     def get_llm(self) -> "Ollama | OpenAILike":
+@@ -70,20 +81,21 @@
+                 allow_internal=self.settings.llm_allow_internal_endpoints,
+             )
+             return Ollama(
++                thinking=self.thinking,
+                 model=self.settings.llm_model or "llama3.1",
+                 base_url=endpoint,
+                 context_window=self.settings.llm_context_size,
+-                request_timeout=self.settings.llm_request_timeout,
++                request_timeout=self.request_timeout,
+                 system_prompt=LLM_SYSTEM_PROMPT,
+                 additional_kwargs=self.settings.llm_extra_params,
+                 client=Client(
+                     host=endpoint,
+-                    timeout=self.settings.llm_request_timeout,
++                    timeout=self.request_timeout,
+                     transport=transport,
+                 ),
+                 async_client=AsyncClient(
+                     host=endpoint,
+-                    timeout=self.settings.llm_request_timeout,
++                    timeout=self.request_timeout,
+                     transport=async_transport,
+                 ),
+             )
+@@ -97,18 +109,18 @@
+                 http_client = create_pinned_httpx_client(
+                     endpoint,
+                     allow_internal=self.settings.llm_allow_internal_endpoints,
+-                    timeout=self.settings.llm_request_timeout,
++                    timeout=self.request_timeout,
+                 )
+                 async_http_client = create_pinned_async_httpx_client(
+                     endpoint,
+                     allow_internal=self.settings.llm_allow_internal_endpoints,
+-                    timeout=self.settings.llm_request_timeout,
++                    timeout=self.request_timeout,
+                 )
+             return OpenAILike(
+                 model=self.settings.llm_model or "gpt-3.5-turbo",
+                 api_base=endpoint,
+                 api_key=self.settings.llm_api_key or PLACEHOLDER_API_KEY,
+-                timeout=self.settings.llm_request_timeout,
++                timeout=self.request_timeout,
+                 is_chat_model=True,
+                 is_function_calling_model=True,
+                 system_prompt=LLM_SYSTEM_PROMPT,
+@@ -138,7 +150,7 @@
+                 result = self.llm.chat(
+                     [ChatMessage(role="user", content=prompt)],
+                     format=DocumentClassifierSchema.model_json_schema(),
+-                    think=False,
++                    think=self.thinking,
+                 )
+             logger.debug("LLM query result: %s", result)
+             parsed = DocumentClassifierSchema(**json.loads(result.message.content))
+--- a/src/paperless_ai/ai_classifier.py
++++ b/src/paperless_ai/ai_classifier.py
+@@ -292,6 +292,9 @@
+     document: Document,
+     user: User | None = None,
+     output_language: str | None = None,
++    *,
++    thinking: bool = False,
++    request_timeout: int | None = None,
+ ) -> ClassificationSuggestions:
+     ai_config = AIConfig()
+
+@@ -303,7 +306,7 @@
+         context=context,
+     )
+
+-    client = AIClient()
++    client = AIClient(thinking=thinking, request_timeout=request_timeout)
+     # Hand the pooled DB connection back while the (slow) LLM query runs so it
+     # is not pinned for the call's duration; see paperless_ai.db and #12976.
+     with db_connection_released():
+--- a/src/documents/workflows/ai.py
++++ b/src/documents/workflows/ai.py
+@@ -156,6 +156,8 @@
+             document,
+             owner,
+             get_llm_output_language(ai_config, owner),
++            thinking=True,
++            request_timeout=600,
+         )
+     except ValueError:
+         # A bad AI config will not fix itself, so swallow it rather than
+--- a/src/documents/tasks.py
++++ b/src/documents/tasks.py
+@@ -759,6 +759,7 @@
+
+ @shared_task(
+     bind=True,
++    time_limit=1260,
+     autoretry_for=(LLMTimeoutError,),
+     max_retries=3,
+     retry_backoff=60,
+--- a/src/paperless_ai/tests/test_client.py
++++ b/src/paperless_ai/tests/test_client.py
+@@ -48,6 +48,7 @@
+     client = AIClient()
+
+     mock_ollama_llm.assert_called_once_with(
++        thinking=False,
+         model="test_model",
+         base_url="http://test-url",
+         context_window=8192,
+@@ -310,3 +311,38 @@
+
+     with pytest.raises(LLMTimeoutError):
+         client.run_llm_query("test_prompt")
++
++
++def test_workflow_client_limits_do_not_change_generic_requests(
++    mock_ai_config,
++    mock_ollama_llm,
++):
++    mock_ai_config.llm_backend = "ollama"
++    mock_ai_config.llm_model = "test_model"
++    mock_ai_config.llm_endpoint = "http://test-url"
++
++    with (
++        patch("ollama.Client") as sync_client,
++        patch("ollama.AsyncClient") as async_client,
++    ):
++        AIClient()
++        workflow_client = AIClient(thinking=True, request_timeout=600)
++        AIClient()
++
++    assert mock_ai_config.llm_request_timeout == 120
++    assert [call.kwargs["thinking"] for call in mock_ollama_llm.call_args_list] == [
++        False,
++        True,
++        False,
++    ]
++    for calls, key in [
++        (mock_ollama_llm.call_args_list, "request_timeout"),
++        (sync_client.call_args_list, "timeout"),
++        (async_client.call_args_list, "timeout"),
++    ]:
++        assert [call.kwargs[key] for call in calls] == [120, 600, 120]
++
++    mock_llm = workflow_client.llm
++    mock_llm.chat.return_value.message.content = '{"title": "Invoice"}'
++    workflow_client.run_llm_query("Invoice document")
++    assert mock_llm.chat.call_args.kwargs["think"] is True

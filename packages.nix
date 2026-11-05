@@ -120,8 +120,9 @@ in
   immich = applicationPkgs.immich.immich;
 
   # we run 3.x and the importer needs the same version; 26.05 only has 2.x.
-  # Until https://github.com/run-llama/llama_index/pull/22468 lands, per-call think=False is dropped.
+  # Until https://github.com/run-llama/llama_index/pull/22468 lands, per-call think is dropped.
   paperless-ngx = applicationPkgs.paperless.paperless-ngx.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [ ./modules/services/paperless/workflow_ai.patch ];
     disabledTests = (old.disabledTests or [ ]) ++ [
       # Took 225 seconds on the server; embeddings use Ollama, not Hugging Face.
       "test_get_embedding_model_huggingface"
@@ -134,10 +135,6 @@ in
         --replace-fail '    if not apply_ai_suggestions_to_document(action, document):' '    updated_fields = apply_ai_suggestions_to_document(action, document)
           transaction.on_commit(lambda: populate_document_fields.delay(document_id))
           if not updated_fields:'
-      substituteInPlace src/paperless_ai/client.py \
-        --replace-fail 'return Ollama(' 'return Ollama(thinking=False,'
-      substituteInPlace src/paperless_ai/tests/test_client.py \
-        --replace-fail 'mock_ollama_llm.assert_called_once_with(' 'mock_ollama_llm.assert_called_once_with(thinking=False,'
     '';
   });
 }

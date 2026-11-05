@@ -113,7 +113,12 @@ class CouponFields(DocumentFields):
     )
 
 
-@shared_task(autoretry_for=(LLMTimeoutError,), retry_backoff=60, max_retries=3)
+@shared_task(
+    autoretry_for=(LLMTimeoutError,),
+    retry_backoff=60,
+    max_retries=3,
+    time_limit=660,
+)
 def populate_document_fields(document_id):
     document = Document.objects.get(pk=document_id)
     owner_field = CustomField.objects.get(name="Owner")
@@ -151,7 +156,7 @@ def populate_document_fields(document_id):
 
         from paperless_ai.client import AIClient
 
-        client = AIClient()
+        client = AIClient(thinking=True, request_timeout=600)
         content = truncate_content(document.content)
         prompt = (
             "Extract the addressee and payment deadline from this document. "
@@ -173,7 +178,7 @@ def populate_document_fields(document_id):
             response = client.llm.chat(
                 [ChatMessage(role="user", content=prompt)],
                 format=schema.model_json_schema(),
-                think=False,
+                think=True,
             )
         fields = schema.model_validate_json(response.message.content)
         recipient = fields.recipient
