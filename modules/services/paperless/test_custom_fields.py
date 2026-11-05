@@ -43,6 +43,7 @@ class DocumentFieldsTest(unittest.TestCase):
         self.dependencies["paperless_ai.client"].AIClient.reset_mock()
         self.module.Document.reset_mock()
         self.module.clear_document_caches.reset_mock()
+        self.module.truncate_content.side_effect = lambda content: content
         self.module.AIConfig.return_value.ai_enabled = True
         self.document = self.module.Document.objects.get.return_value
         self.document.document_type = None
@@ -77,6 +78,10 @@ class DocumentFieldsTest(unittest.TestCase):
             spec.loader.exec_module(importlib.util.module_from_spec(spec))
 
     def run_extraction(self, recipient="Sophie", requires_payment=True, due="2026-11-15", **extra):
+        if isinstance(due, str):
+            due = self.date_value(due)
+        if isinstance(extra.get("coupon_expiry_date"), str):
+            extra["coupon_expiry_date"] = self.date_value(extra["coupon_expiry_date"])
         self.client.llm.chat.return_value.message.content = json.dumps({
             "recipient": recipient,
             "requires_payment": requires_payment,
@@ -85,7 +90,16 @@ class DocumentFieldsTest(unittest.TestCase):
         })
         self.module.populate_document_fields(42)
 
+    def date_value(self, value, text=None, offset_days=0, terms=None):
+        return {
+            "text": text if text is not None else value,
+            "value": value,
+            "offset_days": offset_days,
+            "terms": terms,
+        }
+
     def prepare_coupon(self):
+        self.document.content += " Coupon valid until 2026-12-31. Code Save-20!"
         self.document.document_type = MagicMock()
         self.document.document_type.name = "Coupons"
         owner_field = self.module.CustomField.objects.get.side_effect
@@ -172,6 +186,110 @@ class DocumentFieldsTest(unittest.TestCase):
         self.run_extraction(due=None)
         self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
 
+    def test_payment_year_is_read_from_printed_date(self):
+        for printed in ["2026-11-15", "15.11.2026", "15/11/2026", "15-11-2026"]:
+            with self.subTest(printed=printed):
+                self.setUp()
+                self.document.content = f"Invoice for Sophie. Pay by {printed}."
+                self.run_extraction(due=self.date_value("2024-11-15", text=printed))
+                self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+                    value_date=date(2026, 11, 15),
+                )
+
+    def test_coupon_year_is_read_from_printed_date(self):
+        self.prepare_coupon()
+        self.run_extraction(
+            requires_payment=False,
+            coupon_expiry_date=self.date_value("2024-12-31", text="2026-12-31"),
+            coupon_code="Save-20!",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+            value_date=date(2026, 12, 31),
+        )
+
+    def test_unsupported_dates_stay_blank(self):
+        for printed, value, content in [
+            ("2024-11-15", "2024-11-15", "Pay by 2026-11-15."),
+            ("15.11", "2026-11-15", "Pay by 15.11."),
+            ("15.11.26", "2026-11-15", "Pay by 15.11.26."),
+            ("15 November 2026", "2024-11-15", "Pay by 15 November 2026."),
+            ("31.02.2026", "2026-02-28", "Pay by 31.02.2026."),
+            ("2026", "2026-11-15", "Copyright 2026."),
+            ("", "2026-11-15", "No deadline."),
+        ]:
+            with self.subTest(printed=printed):
+                self.setUp()
+                self.document.content = content
+                self.run_extraction(due=self.date_value(value, text=printed))
+                self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
+
+    def test_unsupported_coupon_date_preserves_owner_and_code(self):
+        self.prepare_coupon()
+        self.run_extraction(
+            requires_payment=False,
+            coupon_expiry_date=self.date_value("2024-12-31"),
+            coupon_code="Save-20!",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_any_call(
+            value_select="sophie-option",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_any_call(
+            value_text="Save-20!",
+        )
+
+    def test_historical_named_date_and_ocr_whitespace(self):
+        self.document.content = "Pay by 15.\n November 2021."
+        self.run_extraction(due=self.date_value("2021-11-15", text="15. November 2021"))
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+            value_date=date(2021, 11, 15),
+        )
+
+    def test_relative_payment_deadline_crosses_year_in_python(self):
+        self.document.content = "Invoice date 20.12.2025. Pay within 30 days."
+        self.run_extraction(due=self.date_value(
+            "2024-12-20", text="20.12.2025", offset_days=30, terms="Pay within 30 days",
+        ))
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+            value_date=date(2026, 1, 19),
+        )
+
+    def test_relative_coupon_expiry_crosses_leap_day_in_python(self):
+        self.prepare_coupon()
+        self.document.content = "Valid from 2024-02-28 for 2 days. Code Save-20!"
+        self.run_extraction(
+            requires_payment=False,
+            coupon_expiry_date=self.date_value(
+                "2024-02-28", offset_days=2, terms="for 2 days",
+            ),
+            coupon_code="Save-20!",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+            value_date=date(2024, 3, 1),
+        )
+
+    def test_relative_deadline_requires_quoted_days(self):
+        for terms in [None, "Pay within 30 days", "Pay within 14 days", "30 months", "Invoice 30"]:
+            with self.subTest(terms=terms):
+                self.setUp()
+                self.document.content = "Invoice 30, date 2026-11-15. Pay within 14 days. Valid for 30 months."
+                self.run_extraction(due=self.date_value(
+                    "2026-11-15", offset_days=30, terms=terms,
+                ))
+                self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
+
+    def test_relative_deadline_in_ocr_languages(self):
+        for terms in ["30 days", "30 Tage", "30 Tagen", "30 giorni", "30 päivää", "30 päivän"]:
+            with self.subTest(terms=terms):
+                self.setUp()
+                self.document.content = f"2026-11-15. {terms}."
+                self.run_extraction(due=self.date_value(
+                    "2026-11-15", offset_days=30, terms=terms,
+                ))
+                self.module.CustomFieldInstance.objects.filter.return_value.update.assert_called_once_with(
+                    value_date=date(2026, 12, 15),
+                )
+
     def test_shared_recipient(self):
         self.run_extraction(recipient="Shared Bears")
         self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_called_once_with(
@@ -194,7 +312,10 @@ class DocumentFieldsTest(unittest.TestCase):
         self.module.CustomFieldInstance.objects.filter.assert_not_called()
 
     def test_invalid_date_and_unknown_recipient_are_rejected(self):
-        for overrides in [{"payment_due_date": "2026-02-30"}, {"recipient": "Someone"}]:
+        for overrides in [
+            {"payment_due_date": self.date_value("2026-02-30")},
+            {"recipient": "Someone"},
+        ]:
             with self.subTest(overrides=overrides), self.assertRaises(ValidationError):
                 self.module.DocumentFields.model_validate({
                     "recipient": "Sophie",
