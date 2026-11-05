@@ -46,7 +46,21 @@ fi
 
 jq -c .settings "$DEFAULTS" | call PATCH /settings --data @- >/dev/null
 
-jq -c '.custom_sensors[]' "$DEFAULTS" | while read -r sensor; do
+resolve_sensor() {
+  jq -c --argjson devices "$devices" '
+    walk(if type == "object" and has("temp_source") then
+      .temp_source as $s
+      | (first($devices.devices[] | select(.name == $s.device or .info.model == $s.device))
+          // error("no device \($s.device)")) as $d
+      | .temp_source = {
+          device_uid: $d.uid,
+          temp_name: (first($d.info.temps | to_entries[] | select(.key == $s.sensor or .value.label == $s.sensor) | .key)
+            // error("no sensor \($s.sensor) on \($s.device)"))
+        }
+    end)'
+}
+
+jq -c '.custom_sensors[]' "$DEFAULTS" | resolve_sensor | while read -r sensor; do
   id=$(jq -r .id <<<"$sensor")
   if call GET "/custom-sensors/$id" >/dev/null 2>&1; then
     call PUT /custom-sensors --data "$sensor" >/dev/null
@@ -56,20 +70,6 @@ jq -c '.custom_sensors[]' "$DEFAULTS" | while read -r sensor; do
 done
 
 devices=$(call GET /devices)
-
-resolve_sensor() {
-  jq -c --argjson devices "$devices" '
-    if .temp_source then
-      .temp_source as $s
-      | (first($devices.devices[] | select(.name == $s.device or .info.model == $s.device))
-          // error("no device \($s.device)")) as $d
-      | .temp_source = {
-          device_uid: $d.uid,
-          temp_name: (first($d.info.temps | to_entries[] | select(.key == $s.sensor or .value.label == $s.sensor) | .key)
-            // error("no sensor \($s.sensor) on \($s.device)"))
-        }
-    end'
-}
 
 upsert() {
   local collection=$1 entity=$2 uid

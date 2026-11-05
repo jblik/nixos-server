@@ -15,7 +15,7 @@
 # no `acpi_enforce_resources=lax` is needed. Every header controls its fan in PWM
 # mode: the driver rejects DC mode on 2-7, and fan1 barely slows in DC.
 #   fan1 CHA_FAN1 (top), fan3 CHA_FAN2 (middle), fan4 CHA_FAN3 (bottom),
-#   fan6 AIO_PUMP (rear exhaust),
+#   fan6 AIO_PUMP (top exhaust),
 #   fan2 CPU_FAN, fan5 chipset, fan7 CPU_OPT (empty)
 # The GPU fans keep the card's own zero-rpm curve.
 let
@@ -55,6 +55,11 @@ let
 
   # Tdie jumps by ~10 °C every few seconds even at idle.
   smoothed = profile: profile // { function_uid = "smooth"; };
+
+  quietCpu = {
+    device = "Custom Sensors";
+    sensor = "cpu-average";
+  };
 
   mix = uid: name: members: {
     inherit uid name;
@@ -104,7 +109,7 @@ let
       ];
     };
     rear = {
-      name = "Rear exhaust";
+      name = "Top exhaust";
       channel = "fan6";
       start = 55;
       night = 60;
@@ -117,9 +122,8 @@ let
     # The probe restarted at 31%; 33% leaves a small margin after stopping.
     cpu = {
       "0" = 0;
-      "60" = 0;
-      "61" = 33;
-      "65" = 40;
+      "65" = 0;
+      "66" = 33;
       "70" = 50;
       "75" = 70;
       "80" = 100;
@@ -128,8 +132,8 @@ let
     # 15% can sustain rotation but stalls on restart; the probe needed 23% to start.
     chipset = {
       "0" = 0;
-      "75" = 0;
-      "76" = 25;
+      "77" = 0;
+      "78" = 25;
       "80" = 25;
       "85" = 45;
       "90" = 100;
@@ -137,8 +141,7 @@ let
     };
     caseCpu = {
       "0" = 0;
-      "65" = 0;
-      "66" = 35;
+      "69" = 0;
       "70" = 45;
       "75" = 65;
       "80" = 100;
@@ -242,23 +245,32 @@ let
         temperatureCurve = (if uid == "rear" then rearCurves else caseCurves).${key};
         points = lib.mapAttrs (_: duty: if duty == 0 then 0 else lib.max fan.start duty) temperatureCurve;
         tempSource =
-          if uid == "rear" && key == "gpu" then
+          if key == "cpu" then
+            quietCpu
+          else if uid == "rear" && key == "gpu" then
             {
               device = "Custom Sensors";
               sensor = "gpu-exhaust";
             }
           else
             source sensors.${key};
-        profile = graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" tempSource points;
       in
-      (if key == "cpu" then smoothed else lib.id) profile
+      graph "case-${uid}-${key}" "${fan.name}: ${sensors.${key}.name}" tempSource points
     ) fan.sources
   ) caseFans;
 
-  quietGraphs = lib.mapAttrs (_: profiles: map (p: p.uid) profiles) caseGraphs // {
-    cpu = [ "cpu" ];
-    chipset = [ "chipset" ];
-  };
+  quietGraphs =
+    lib.mapAttrs (
+      uid: profiles:
+      map (p: p.uid) profiles ++ lib.optional (lib.elem "cpu" caseFans.${uid}.sources) "cpu-hot"
+    ) caseGraphs
+    // {
+      cpu = [
+        "cpu-quiet"
+        "cpu-hot"
+      ];
+      chipset = [ "chipset" ];
+    };
 
   nightDuty = lib.mapAttrs (_: fan: fan.night) caseFans // {
     cpu = 40;
@@ -313,6 +325,19 @@ let
         sources = [ ];
         file_path = gpuExhaustFile;
       }
+      {
+        id = "cpu-average";
+        cs_type = "TimeAverage";
+        mix_function = "Avg";
+        # A day's light-load history puts the 20-second average below 65 °C at p99.
+        time_window_seconds = 20;
+        sources = [
+          {
+            temp_source = source sensors.cpu;
+            weight = 1;
+          }
+        ];
+      }
     ];
 
     settings = {
@@ -355,9 +380,20 @@ let
       lib.concatLists (lib.attrValues caseGraphs)
       ++ coolSources
       ++ baselineGraphs
-      ++ lib.mapAttrsToList (uid: fan: mix uid fan.name quietGraphs.${uid}) caseFans
       ++ [
-        (smoothed (graph "cpu" sensors.cpu.name (source sensors.cpu) curves.cpu))
+        (graph "cpu-quiet" sensors.cpu.name quietCpu curves.cpu)
+        # Averaging must not delay the full-speed response to a hot raw CPU reading.
+        (
+          (graph "cpu-hot" "CPU: full-speed override" (source sensors.cpu) {
+            "0" = 0;
+            "79" = 0;
+            "80" = 100;
+            "100" = 100;
+          })
+          // {
+            function_uid = "0";
+          }
+        )
         (graph "chipset" sensors.chipset.name (source sensors.chipset) curves.chipset)
         {
           uid = "full";
@@ -368,6 +404,8 @@ let
           member_profile_uids = [ ];
         }
       ]
+      ++ lib.mapAttrsToList (uid: fan: mix uid fan.name quietGraphs.${uid}) caseFans
+      ++ [ (mix "cpu" sensors.cpu.name quietGraphs.cpu) ]
       ++ keepCool;
 
     # The first mode is the one activated after applying.
