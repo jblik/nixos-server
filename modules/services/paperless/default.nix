@@ -38,6 +38,7 @@ in
         PAPERLESS_AI_LLM_BACKEND = "ollama";
         PAPERLESS_AI_LLM_ENDPOINT = "http://127.0.0.1:${toString config.host.ai.apiPort}";
         PAPERLESS_AI_LLM_MODEL = config.host.ai.models.chat;
+        PAPERLESS_AI_LLM_CONTEXT_SIZE = 196608;
         PAPERLESS_AI_LLM_EMBEDDING_BACKEND = "ollama";
         PAPERLESS_AI_LLM_EMBEDDING_MODEL = config.host.ai.models.embedding;
       };
