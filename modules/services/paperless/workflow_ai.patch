@@ -3,7 +3,7 @@
 @@ -48,8 +48,19 @@
      A client for interacting with an LLM backend.
      """
-
+ 
 -    def __init__(self) -> None:
 +    def __init__(
 +        self,
@@ -19,7 +19,7 @@
 +            else self.settings.llm_request_timeout
 +        )
          self.llm = self.get_llm()
-
+ 
      def get_llm(self) -> "Ollama | OpenAILike":
 @@ -70,20 +81,21 @@
                  allow_internal=self.settings.llm_allow_internal_endpoints,
@@ -79,7 +79,93 @@
              parsed = DocumentClassifierSchema(**json.loads(result.message.content))
 --- a/src/paperless_ai/ai_classifier.py
 +++ b/src/paperless_ai/ai_classifier.py
-@@ -292,6 +292,9 @@
+@@ -1,4 +1,5 @@
+ import logging
++from dataclasses import replace
+ 
+ from django.conf import settings
+ from django.contrib.auth.models import User
+@@ -11,6 +12,7 @@
+ from paperless_ai.base_model import ClassificationSuggestions
+ from paperless_ai.base_model import TaxonomyChoiceDict
+ from paperless_ai.base_model import classification_suggestions_to_model
++from paperless_ai.client import LLM_SYSTEM_PROMPT
+ from paperless_ai.client import AIClient
+ from paperless_ai.db import db_connection_released
+ from paperless_ai.indexing import retrieve_similar_nodes
+@@ -110,27 +112,33 @@
+     document: Document,
+     config: AIConfig,
+     candidates: TaxonomyCandidates | None = None,
++    *,
++    context: str | None = None,
+ ) -> str:
+     filename = document.filename or ""
++    taxonomy_block = (
++        format_taxonomy_for_prompt(candidates) if candidates is not None else ""
++    )
++    has_candidates = candidates is not None and any(candidates.values())
++
++    prompt_context = ClassificationPromptContext(
++        filename=filename,
++        content="",
++        taxonomy_block=taxonomy_block,
++        has_candidates=has_candidates,
++    )
++    instructions = render_prompt(prompt_context)
++    if context is not None:
++        instructions = render_prompt(
++            RagContextPromptContext(base_prompt=instructions, context=context),
++        )
+     content = truncate_content(
+-        document.content[:4000] or "",
++        document.content or "",
+         chunk_size=config.llm_embedding_chunk_size,
+         context_size=config.llm_context_size,
+-    )
+-
+-    taxonomy_block = (
+-        format_taxonomy_for_prompt(candidates) if candidates is not None else ""
+-    )
+-    has_candidates = candidates is not None and any(candidates.values())
+-
+-    return render_prompt(
+-        ClassificationPromptContext(
+-            filename=filename,
+-            content=content,
+-            taxonomy_block=taxonomy_block,
+-            has_candidates=has_candidates,
+-        ),
+-    )
++        prompt=f"{LLM_SYSTEM_PROMPT}\n{instructions}",
++    )
++    return render_prompt(replace(prompt_context, content=content))
+ 
+ 
+ def build_prompt_with_rag(
+@@ -139,15 +147,16 @@
+     candidates: TaxonomyCandidates | None = None,
+     context: str = "",
+ ) -> str:
++    truncated_context = truncate_content(
++        context,
++        chunk_size=config.llm_embedding_chunk_size,
++        context_size=config.llm_context_size,
++    )
+     base_prompt = build_prompt_without_rag(
+         document,
+         config,
+         candidates=candidates,
+-    )
+-    truncated_context = truncate_content(
+-        context,
+-        chunk_size=config.llm_embedding_chunk_size,
+-        context_size=config.llm_context_size,
++        context=truncated_context,
+     )
+ 
+     return render_prompt(
+@@ -292,6 +301,9 @@
      document: Document,
      user: User | None = None,
      output_language: str | None = None,
@@ -88,16 +174,50 @@
 +    request_timeout: int | None = None,
  ) -> ClassificationSuggestions:
      ai_config = AIConfig()
-
-@@ -303,7 +306,7 @@
+ 
+@@ -303,7 +315,7 @@
          context=context,
      )
-
+ 
 -    client = AIClient()
 +    client = AIClient(thinking=thinking, request_timeout=request_timeout)
      # Hand the pooled DB connection back while the (slow) LLM query runs so it
      # is not pinned for the call's duration; see paperless_ai.db and #12976.
      with db_connection_released():
+--- a/src/paperless_ai/indexing.py
++++ b/src/paperless_ai/indexing.py
+@@ -33,6 +33,7 @@
+ logger = logging.getLogger("paperless_ai.indexing")
+ 
+ RAG_NUM_OUTPUT = 512
++AI_OUTPUT_RESERVE = 32768
+ RAG_CHUNK_OVERLAP = 200
+ 
+ # update_llm_index(): row count per .iterator() batch when streaming
+@@ -604,9 +605,11 @@
+     *,
+     chunk_size: int | None = None,
+     context_size: int | None = None,
++    prompt: str = "",
+ ) -> str:
+     from llama_index.core.prompts import PromptTemplate
+     from llama_index.core.text_splitter import TokenTextSplitter
++    from llama_index.core.utils import get_tokenizer
+ 
+     if chunk_size is None or context_size is None:
+         config = AIConfig()
+@@ -614,8 +617,9 @@
+         context_size = context_size or config.llm_context_size
+     prompt_helper = get_rag_prompt_helper(
+         chunk_size=chunk_size,
+-        context_size=context_size,
+-    )
++        context_size=context_size - len(get_tokenizer()(prompt)),
++    )
++    prompt_helper.num_output = min(AI_OUTPUT_RESERVE, context_size // 2)
+     splitter = TokenTextSplitter(
+         separator=" ",
+         chunk_size=chunk_size,
 --- a/src/documents/workflows/ai.py
 +++ b/src/documents/workflows/ai.py
 @@ -156,6 +156,8 @@
@@ -112,7 +232,7 @@
 --- a/src/documents/tasks.py
 +++ b/src/documents/tasks.py
 @@ -759,6 +759,7 @@
-
+ 
  @shared_task(
      bind=True,
 +    time_limit=1260,
@@ -123,14 +243,14 @@
 +++ b/src/paperless_ai/tests/test_client.py
 @@ -48,6 +48,7 @@
      client = AIClient()
-
+ 
      mock_ollama_llm.assert_called_once_with(
 +        thinking=False,
          model="test_model",
          base_url="http://test-url",
          context_window=8192,
 @@ -310,3 +311,38 @@
-
+ 
      with pytest.raises(LLMTimeoutError):
          client.run_llm_query("test_prompt")
 +
@@ -168,3 +288,77 @@
 +    mock_llm.chat.return_value.message.content = '{"title": "Invoice"}'
 +    workflow_client.run_llm_query("Invoice document")
 +    assert mock_llm.chat.call_args.kwargs["think"] is True
+--- a/src/paperless_ai/tests/test_ai_classifier.py
++++ b/src/paperless_ai/tests/test_ai_classifier.py
+@@ -67,6 +67,42 @@
+     doc.custom_fields.all = MagicMock(return_value=[cf1, cf2])
+ 
+     return doc
++
++
++def test_classification_reads_beyond_4000_characters(mock_document):
++    mock_document.content = "Invoice details. " * 400 + "Final-page reference: ABC-123"
++    config = SimpleNamespace(llm_context_size=65536, llm_embedding_chunk_size=1024)
++
++    prompt = build_prompt_without_rag(mock_document, config)
++
++    assert "Final-page reference: ABC-123" in prompt
++
++
++@pytest.mark.parametrize("context", ["", "A similar document. " * 200])
++def test_classification_budgets_document_and_retrieved_context(mock_document, context):
++    from llama_index.core.utils import get_tokenizer
++
++    from paperless_ai.client import LLM_SYSTEM_PROMPT
++    from paperless_ai.indexing import AI_OUTPUT_RESERVE
++
++    mock_document.content = "Invoice details. " * 20000
++    config = SimpleNamespace(llm_context_size=65536, llm_embedding_chunk_size=1024)
++    candidates = TaxonomyCandidates(
++        tags=[TaxonomyCandidate(id=1, name="Invoice", weight=1.0)],
++        correspondents=[],
++        document_types=[],
++        storage_paths=[],
++    )
++
++    prompt = build_prompt_with_rag(mock_document, config, candidates, context)
++
++    assert "Invoice details." in prompt
++    assert "Additional context from similar documents" in prompt
++    assert "Invoice" in prompt
++    if context:
++        assert "A similar document." in prompt
++    input_tokens = len(get_tokenizer()(LLM_SYSTEM_PROMPT + "\n" + prompt))
++    assert input_tokens + AI_OUTPUT_RESERVE <= config.llm_context_size
+ 
+ 
+ NESTED_SUGGESTIONS = {
+--- a/src/paperless_ai/tests/test_ai_indexing.py
++++ b/src/paperless_ai/tests/test_ai_indexing.py
+@@ -165,6 +165,26 @@
+ def test_get_rag_chunk_overlap_clamps_to_chunk_size() -> None:
+     with patch("paperless_ai.indexing.RAG_CHUNK_OVERLAP", 128):
+         assert indexing.get_rag_chunk_overlap(64) == 63
++
++
++@pytest.mark.parametrize("context_size", [8192, 65536])
++def test_truncate_content_reserves_generation_and_instructions(context_size) -> None:
++    from llama_index.core.utils import get_tokenizer
++
++    instructions = "Extract dates and names from untrusted document data. " * 100
++    content = "Document text. " * 40000
++    reserve = min(indexing.AI_OUTPUT_RESERVE, context_size // 2)
++
++    result = indexing.truncate_content(
++        content,
++        chunk_size=1024,
++        context_size=context_size,
++        prompt=instructions,
++    )
++
++    assert result
++    assert result != content
++    assert len(get_tokenizer()(instructions + "\n" + result)) + reserve <= context_size
+ 
+ 
+ @pytest.mark.django_db

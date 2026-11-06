@@ -43,8 +43,12 @@ class DocumentFieldsTest(unittest.TestCase):
         self.dependencies["paperless_ai.client"].AIClient.reset_mock()
         self.module.Document.reset_mock()
         self.module.clear_document_caches.reset_mock()
-        self.module.truncate_content.side_effect = lambda content: content
+        self.module.truncate_content.reset_mock()
+        self.module.truncate_content.side_effect = lambda content, **kwargs: content
         self.module.AIConfig.return_value.ai_enabled = True
+        self.module.AIConfig.return_value.llm_context_size = 196608
+        self.module.AIConfig.return_value.llm_embedding_chunk_size = 1024
+        self.dependencies["paperless_ai.client"].LLM_SYSTEM_PROMPT = "System instructions"
         self.document = self.module.Document.objects.get.return_value
         self.document.document_type = None
         self.document.content = "Invoice addressed to Sophie. Pay by 2026-11-15."
@@ -76,6 +80,27 @@ class DocumentFieldsTest(unittest.TestCase):
         )
         with patch("builtins.__import__", side_effect=check_import):
             spec.loader.exec_module(importlib.util.module_from_spec(spec))
+
+    def test_extraction_budgets_for_instructions_and_full_document(self):
+        self.document.content = "Invoice " * 1000 + "Pay by 2026-11-15."
+        self.run_extraction()
+        args, kwargs = self.module.truncate_content.call_args
+        self.assertEqual(args, (self.document.content,))
+        self.assertEqual(kwargs["context_size"], 196608)
+        self.assertEqual(kwargs["chunk_size"], 1024)
+        self.assertIn("System instructions", kwargs["prompt"])
+        self.assertIn("Extract the addressee", kwargs["prompt"])
+        self.assertNotIn(self.document.content, kwargs["prompt"])
+        prompt = self.dependencies["llama_index.core.llms"].ChatMessage.call_args.kwargs["content"]
+        self.assertTrue(prompt.endswith(self.document.content))
+
+    def test_coupon_budget_includes_coupon_instructions(self):
+        self.prepare_coupon()
+        self.run_extraction(
+            requires_payment=False, coupon_expiry_date=None, coupon_code=None,
+        )
+        prompt = self.module.truncate_content.call_args.kwargs["prompt"]
+        self.assertIn("expiry date and redemption code too", prompt)
 
     def run_extraction(self, recipient="Sophie", requires_payment=True, due="2026-11-15", **extra):
         if isinstance(due, str):
