@@ -172,15 +172,24 @@ class DocumentFieldsTest(unittest.TestCase):
             value_select="sophie-option",
         )
 
-    def test_filled_coupon_fields_skip_extraction(self):
+    def test_filled_coupon_fields_still_reassess_owner(self):
         self.prepare_coupon()
         self.owner.value_select = "sophie-option"
         self.due.value_date = date(2026, 11, 15)
         self.expiry.value_date = date(2026, 12, 31)
         self.code.value_text = "MANUAL"
-        self.run_extraction()
-        self.client.llm.chat.assert_not_called()
-        self.module.CustomFieldInstance.objects.filter.assert_not_called()
+        self.run_extraction(
+            recipient="Jacob", requires_payment=False,
+            coupon_expiry_date=None, coupon_code=None,
+        )
+        self.client.llm.chat.assert_called_once()
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.assert_called_once_with(
+            value_select="sophie-option",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_called_once_with(
+            value_select="jacob-option",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
 
     def test_other_types_do_not_attach_or_request_coupon_fields(self):
         self.document.document_type = MagicMock()
@@ -329,17 +338,36 @@ class DocumentFieldsTest(unittest.TestCase):
             value_select="shared-option",
         )
 
-    def test_filled_fields_are_preserved_without_calling_llm(self):
+    def test_existing_owner_is_reassessed_and_due_date_is_preserved(self):
         self.owner.value_select = "jacob-option"
         self.due.value_date = date(2026, 12, 1)
-        self.run_extraction()
-        self.client.llm.chat.assert_not_called()
-        self.module.CustomFieldInstance.objects.filter.assert_not_called()
+        self.run_extraction(requires_payment=False)
+        self.client.llm.chat.assert_called_once()
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.assert_called_once_with(
+            value_select="jacob-option",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_called_once_with(
+            value_select="sophie-option",
+        )
+        self.module.CustomFieldInstance.objects.filter.return_value.update.assert_not_called()
 
-    def test_invalid_date_and_unknown_recipient_are_rejected(self):
+    def test_missing_or_uncertain_recipient_defaults_to_shared(self):
+        for recipient in [None, "", "Someone", "unsure", "Sophie and Jacob"]:
+            with self.subTest(recipient=recipient):
+                self.setUp()
+                self.run_extraction(recipient=recipient, requires_payment=False)
+                self.module.CustomFieldInstance.objects.filter.return_value.filter.return_value.update.assert_called_once_with(
+                    value_select="shared-option",
+                )
+        fields = self.module.DocumentFields.model_validate({
+            "requires_payment": False,
+            "payment_due_date": None,
+        })
+        self.assertEqual(fields.recipient, "Shared Bears")
+
+    def test_invalid_date_is_rejected(self):
         for overrides in [
             {"payment_due_date": self.date_value("2026-02-30")},
-            {"recipient": "Someone"},
         ]:
             with self.subTest(overrides=overrides), self.assertRaises(ValidationError):
                 self.module.DocumentFields.model_validate({
