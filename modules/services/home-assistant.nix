@@ -504,6 +504,8 @@ in
     networking.firewall.extraInputRules = ''
       ip saddr ${config.host.lanCidr} tcp dport { ${toString config.services.home-assistant.config.http.server_port}, ${toString config.host.home-assistant.homekitPort} } accept
       ip saddr ${config.host.lanCidr} udp dport { ${toString config.host.networking.mdnsPort}, ${toString config.host.home-assistant.matterPort} } accept
+      # Matter reports target an ephemeral controller port after UDP conntrack expires.
+      ip6 saddr { fc00::/7, fe80::/10 } udp sport ${toString config.host.home-assistant.matterPort} udp dport 32768-60999 accept
     '';
   };
 }
