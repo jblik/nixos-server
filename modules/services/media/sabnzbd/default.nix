@@ -17,9 +17,14 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
-    sops.secrets = lib.genAttrs [ "apple-username" "apple-token" ] (_: {
+    sops.secrets.sabnzbd-smtp-username = {
+      key = "apple-username";
       owner = s.sabnzbd.user;
-    });
+    };
+    sops.secrets.sabnzbd-smtp-password = {
+      key = "apple-token";
+      owner = s.sabnzbd.user;
+    };
 
     services.sabnzbd = {
       enable = true;
@@ -27,8 +32,8 @@ in
       configFile = null;
       allowConfigWrite = true;
       secretValues = {
-        "@smtp-username@" = config.sops.secrets.apple-username.path;
-        "@smtp-password@" = config.sops.secrets.apple-token.path;
+        "@smtp-username@" = config.sops.secrets.sabnzbd-smtp-username.path;
+        "@smtp-password@" = config.sops.secrets.sabnzbd-smtp-password.path;
       };
       settings = {
         misc = {
