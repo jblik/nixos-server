@@ -23,6 +23,7 @@
     nixpkgs-qbittorrent.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-radarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-redis.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-sabnzbd.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-sonarr.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-speedtest.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-tailscale.url = "github:NixOS/nixpkgs/nixos-26.05";

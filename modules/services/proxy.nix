@@ -44,6 +44,7 @@ let
       jackett = s.jackett.port;
       prowlarr = s.prowlarr.settings.server.port;
       qbittorrent = s.qbittorrent.webuiPort;
+      sabnzbd = s.sabnzbd.settings.misc.port;
       tdarr = s.tdarr.server.webUIPort;
       cleanuparr = config.host.media.cleanuparr.port;
       pulsarr = config.host.media.pulsarr.port;

@@ -80,6 +80,7 @@ in
           pulsarr = "/var/lib/pulsarr";
           qbittorrent = "/var/lib/qBittorrent";
           radarr = "/var/lib/radarr";
+          sabnzbd = "/var/lib/sabnzbd";
           sonarr = "/var/lib/sonarr";
           tdarr = "/var/lib/tdarr";
         };

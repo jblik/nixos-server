@@ -320,6 +320,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-sabnzbd": {
+      "locked": {
+        "lastModified": 1793865203,
+        "narHash": "sha256-/cpdPHaySDIyCgZI6EWngiM6jK3YLUNzv1b7lTzy6Bk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "c56a87d8e41ce69bd2af57eb35dcc117a9dfca33",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-sonarr": {
       "locked": {
         "lastModified": 1793183032,
@@ -390,6 +406,7 @@
         "nixpkgs-qbittorrent": "nixpkgs-qbittorrent",
         "nixpkgs-radarr": "nixpkgs-radarr",
         "nixpkgs-redis": "nixpkgs-redis",
+        "nixpkgs-sabnzbd": "nixpkgs-sabnzbd",
         "nixpkgs-sonarr": "nixpkgs-sonarr",
         "nixpkgs-speedtest": "nixpkgs-speedtest",
         "nixpkgs-tailscale": "nixpkgs-tailscale",

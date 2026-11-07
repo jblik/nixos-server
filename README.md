@@ -90,6 +90,9 @@ migrations; use the service's backups and upgrade guidance for those.
 `/data`: `torrents/{tv,movies}`, `media/{tv,movies}` (imports are hardlinks).
 `/scratch/{incomplete,transcode}` (NVMe, off the pool): in-progress downloads and the
 Plex/Tdarr transcode cache.
+SABnzbd downloads and unpacks on NVMe under `/scratch/usenet/{incomplete,complete}`.
+Sonarr and Radarr import completed jobs into `/data/media/{tv,movies}` and remove
+the source after a successful import. Usenet downloads do not need to stay for seeding.
 
 Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
 HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port 8280.
@@ -179,6 +182,7 @@ flake input continues to reference the published dashboard revision.
 | Jackett (+ FlareSolverr on localhost:8191) | 9117                       | native                                            |
 | Prowlarr (prowlarr.internal.steenblik.ch)   | 9696                       | native                                            |
 | qBittorrent                                | 8080                       | native                                            |
+| SABnzbd (sabnzbd.internal.steenblik.ch)     | 8085 (localhost)           | native                                            |
 | Tdarr                                      | 8265 (UI), 8266 (server)   | native, GPU node                                  |
 | Cleanuparr                                 | 11011                      | podman container                                  |
 | Pulsarr                                    | 3003                       | podman container                                  |
@@ -207,6 +211,33 @@ sudo zfs create -o mountpoint=legacy fast/prowlarr
 Configure indexers and application connections in Prowlarr's UI when ready to migrate.
 Local Sonarr and Radarr URLs are `http://127.0.0.1:8989` and `http://127.0.0.1:7878`;
 the shared FlareSolverr is at `http://127.0.0.1:8191`.
+
+## Usenet
+
+SABnzbd is at `https://sabnzbd.internal.steenblik.ch`, proxying its loopback-only
+UI on port 8085. Before its first deployment, create its snapshotted state dataset:
+
+```sh
+sudo zfs create -o mountpoint=legacy fast/sabnzbd
+```
+
+Enter Usenet provider servers and credentials in SABnzbd's UI, using the provider's
+TLS settings. Configure Usenet indexers in Prowlarr and sync them to Sonarr/Radarr.
+Provider credentials and SABnzbd's generated API key remain in its private state
+directory; UI settings persist across rebuilds except for the paths and categories
+managed here.
+
+The `sonarr-sabnzbd` and `radarr-sabnzbd` services automatically configure the local
+SABnzbd download client through the application APIs. They enable Completed Download
+Handling and removal after successful import, with categories `tv` and `movies`.
+Completed jobs stay under `/scratch/usenet/complete/{tv,movies}` until imported into
+the existing bulk-drive libraries; no remote path mapping is needed. The services
+retry while the application APIs are starting. Check setup with:
+
+```sh
+systemctl status sabnzbd sonarr-sabnzbd radarr-sabnzbd
+journalctl -u sonarr-sabnzbd -u radarr-sabnzbd -b
+```
 
 ## VPN and torrent monitoring
 

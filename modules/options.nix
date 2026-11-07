@@ -130,6 +130,11 @@ in
         default = 8989;
         description = "Sonarr web UI port.";
       };
+      sabnzbd.port = lib.mkOption {
+        type = lib.types.port;
+        default = 8085;
+        description = "SABnzbd web UI port.";
+      };
       radarr.port = lib.mkOption {
         type = lib.types.port;
         default = 7878;

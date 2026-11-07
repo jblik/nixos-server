@@ -4,9 +4,10 @@
 #   /data/torrents/{tv,movies}   qBittorrent downloads
 #   /data/media/{tv,movies}      the library (Plex, Sonarr, Radarr, Bazarr)
 #   /scratch/incomplete        qBittorrent in-progress downloads (fast storage)
+#   /scratch/usenet            SABnzbd incomplete and completed downloads
 #   /scratch/transcode         Tdarr cache (fast storage)
 #
-# Downloads and library share one mount so imports are hardlinks, not copies.
+# Torrent downloads share the library mount so seeding does not need another copy.
 let
   inherit (config.host.storage) bulkMount scratchDir;
   s = config.services;
@@ -36,6 +37,7 @@ in
   imports = [
     ./arr.nix
     ./qbittorrent
+    ./sabnzbd
     ./containers.nix
     ./cleanuparr
     ./media-preview-generator
@@ -55,6 +57,11 @@ in
       ]
       ++ map (d: "d ${scratchDir}/${d} 2775 root users -") [
         "incomplete"
+        "usenet"
+        "usenet/incomplete"
+        "usenet/complete"
+        "usenet/complete/tv"
+        "usenet/complete/movies"
         "transcode"
       ];
 

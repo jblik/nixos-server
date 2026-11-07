@@ -27,6 +27,7 @@ in
   prowlarr = applicationPkgs.prowlarr.prowlarr;
   flaresolverr = applicationPkgs.flaresolverr.flaresolverr;
   qbittorrent-nox = applicationPkgs.qbittorrent.qbittorrent-nox;
+  sabnzbd = applicationPkgs.sabnzbd.sabnzbd;
   forgejo-lts = applicationPkgs.forgejo.forgejo-lts;
   forgejo-runner = applicationPkgs.forgejo-runner.forgejo-runner;
   microbin = applicationPkgs.microbin.microbin;

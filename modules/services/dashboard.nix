@@ -53,6 +53,7 @@ let
       (service media internal "jackett" "Jackett" "Indexer proxy" (svg "jackett"))
       (service media internal "prowlarr" "Prowlarr" "Indexer manager" (svg "prowlarr"))
       (service media internal "qbittorrent" "qBittorrent" "Download client" (svg "qbittorrent"))
+      (service media internal "sabnzbd" "SABnzbd" "Usenet download client" (svg "sabnzbd"))
       (service media internal "tdarr" "Tdarr" "Transcoding Plex library" (svg "tdarr"))
       (service media internal "cleanuparr" "Cleanuparr" "Clears stalled downloads" (png "cleanuparr"))
       (service media internal "pulsarr" "Pulsarr" "Plex watchlist sync" (svg "pulsarr"))
