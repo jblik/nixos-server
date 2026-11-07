@@ -26,6 +26,13 @@ in
           host = "127.0.0.1";
           port = config.host.media.sabnzbd.port;
           host_whitelist = "sabnzbd.internal.steenblik.ch";
+          local_ranges = lib.concatStringsSep ", " [
+            "127.0.0.0/8"
+            "::1/128"
+            config.host.lanCidr
+            "100.64.0.0/10"
+            "fd7a:115c:a1e0::/48"
+          ];
           download_dir = "${scratchDir}/usenet/incomplete";
           complete_dir = "${scratchDir}/usenet/complete";
           permissions = "0775";
