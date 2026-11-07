@@ -107,7 +107,7 @@ in
       smtpPort = lib.mkOption {
         type = lib.types.port;
         default = 587;
-        description = "SMTP submission port used by Paperless and Alertmanager.";
+        description = "SMTP submission port used by Paperless, Alertmanager and Sabnzb";
       };
     };
 

@@ -7,6 +7,7 @@
 let
   inherit (config.host.storage) scratchDir;
   s = config.services;
+  smtpPort = config.host.networking.smtpPort;
   configure = pkgs.writers.writePython3 "sabnzbd-arr" {
     libraries = with pkgs.python3Packages; [
       configobj
@@ -16,11 +17,19 @@ let
 in
 {
   config = lib.mkIf config.host.media.enable {
+    sops.secrets = lib.genAttrs [ "apple-username" "apple-token" ] (_: {
+      owner = s.sabnzbd.user;
+    });
+
     services.sabnzbd = {
       enable = true;
       group = "users";
       configFile = null;
       allowConfigWrite = true;
+      secretValues = {
+        "@smtp-username@" = config.sops.secrets.apple-username.path;
+        "@smtp-password@" = config.sops.secrets.apple-token.path;
+      };
       settings = {
         misc = {
           host = "127.0.0.1";
@@ -36,6 +45,11 @@ in
           download_dir = "${scratchDir}/usenet/incomplete";
           complete_dir = "${scratchDir}/usenet/complete";
           permissions = "0775";
+          email_server = "smtp.mail.me.com:${toString smtpPort}";
+          email_account = "@smtp-username@";
+          email_pwd = "@smtp-password@";
+          email_from = "sabnzbd@steenblik.ch";
+          email_to = "jacob@steenblik.ch";
         };
         categories = {
           tv = {
