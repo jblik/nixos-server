@@ -485,7 +485,7 @@ in
               "light.bedroom"
               "light.couch"
               "light.donut"
-              "light.kajplats_e27_cws_globe_1055lm"
+              "light.ball"
               "light.monkey"
               "light.table"
               "light.tv"
