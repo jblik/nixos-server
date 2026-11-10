@@ -35,7 +35,7 @@ in
     virtualisation.oci-containers.backend = "podman";
 
     virtualisation.oci-containers.containers.media-preview-generator = {
-      image = "docker.io/stevezzau/media_preview_generator:5.1.0";
+      image = "docker.io/stevezzau/media_preview_generator:5.2.3";
       environment = {
         PUID = toString config.users.users.${plex.user}.uid;
         PGID = toString config.users.groups.${plex.group}.gid;

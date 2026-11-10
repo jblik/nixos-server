@@ -7,7 +7,7 @@ let
   gid = "100";
   containers = {
     pulsarr = {
-      image = "lakker/pulsarr:0.19.7";
+      image = "lakker/pulsarr:1.1.1";
       environment = {
         PUID = uid;
         PGID = gid;
@@ -17,7 +17,7 @@ let
     };
 
     maintainerr = {
-      image = "ghcr.io/maintainerr/maintainerr:3.31.0";
+      image = "ghcr.io/maintainerr/maintainerr:3.32.0";
       user = "${uid}:${gid}";
       environment.UI_PORT = toString m.maintainerr.port;
       volumes = [ "/var/lib/maintainerr:/opt/data" ];

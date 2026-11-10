@@ -11,7 +11,7 @@ in
 
     virtualisation.oci-containers.containers.cleanuparr = {
       extraOptions = [ "--network=host" ];
-      image = "ghcr.io/cleanuparr/cleanuparr:2.10.12";
+      image = "ghcr.io/cleanuparr/cleanuparr:2.11.0";
       environment = {
         TZ = config.time.timeZone;
         PUID = uid;
