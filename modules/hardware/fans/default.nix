@@ -132,8 +132,7 @@ let
     # 15% can sustain rotation but stalls on restart; the probe needed 23% to start.
     chipset = {
       "0" = 0;
-      "77" = 0;
-      "78" = 25;
+      "79" = 0;
       "80" = 25;
       "85" = 45;
       "90" = 100;
@@ -289,7 +288,7 @@ let
     Cpu = 75;
     Gpu = 75;
     Board = 60;
-    Nic = 75;
+    Nic = 80;
     Chipset = 80;
     Hdd = 45;
     Ssd = 55;
