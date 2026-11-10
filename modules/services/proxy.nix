@@ -41,7 +41,6 @@ let
       sonarr = s.sonarr.settings.server.port;
       radarr = s.radarr.settings.server.port;
       bazarr = s.bazarr.listenPort;
-      jackett = s.jackett.port;
       prowlarr = s.prowlarr.settings.server.port;
       qbittorrent = s.qbittorrent.webuiPort;
       sabnzbd = s.sabnzbd.settings.misc.port;

@@ -25,7 +25,6 @@ let
     s.sonarr.settings.server.port
     s.radarr.settings.server.port
     s.bazarr.listenPort
-    s.jackett.port
     s.prowlarr.settings.server.port
     s.tdarr.server.webUIPort
     m.cleanuparr.port

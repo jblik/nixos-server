@@ -145,11 +145,6 @@ in
         default = 6767;
         description = "Bazarr web UI port.";
       };
-      jackett.port = lib.mkOption {
-        type = lib.types.port;
-        default = 9117;
-        description = "Jackett web UI port.";
-      };
       prowlarr.port = lib.mkOption {
         type = lib.types.port;
         default = 9696;

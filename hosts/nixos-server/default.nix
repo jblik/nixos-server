@@ -69,7 +69,6 @@ in
           forgejo = "/var/lib/forgejo";
           hass = "/var/lib/hass";
           immich = "/var/lib/immich";
-          jackett = "/var/lib/jackett";
           plex = "/var/lib/plex";
           maintainerr = "/var/lib/maintainerr";
           media-preview-generator = "/var/lib/media-preview-generator";

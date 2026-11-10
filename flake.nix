@@ -11,7 +11,6 @@
     nixpkgs-forgejo.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-forgejo-runner.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-grafana.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-jackett.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-matter-server.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-microbin.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-nginx.url = "github:NixOS/nixpkgs/nixos-26.05";
