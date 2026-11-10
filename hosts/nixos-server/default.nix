@@ -72,6 +72,7 @@ in
           jackett = "/var/lib/jackett";
           plex = "/var/lib/plex";
           maintainerr = "/var/lib/maintainerr";
+          media-preview-generator = "/var/lib/media-preview-generator";
           microbin = "/var/lib/private/microbin"; # DynamicUser: /var/lib/microbin is a symlink
           open-webui = "/var/lib/private/open-webui"; # DynamicUser
           paperless = "/var/lib/paperless";
