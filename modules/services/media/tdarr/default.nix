@@ -16,15 +16,6 @@ let
       ]
       (builtins.readFile ./plugins/Tdarr_Plugin_nxsv_GPU_Cleanup.js)
   );
-  languagePlugin = pkgs.writeText "Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js" (
-    lib.replaceStrings
-      [ "@sonarrPort@" "@radarrPort@" ]
-      [
-        (toString config.services.sonarr.settings.server.port)
-        (toString config.services.radarr.settings.server.port)
-      ]
-      (builtins.readFile ./plugins/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js)
-  );
 in
 {
   config = lib.mkIf config.host.media.enable {
@@ -54,7 +45,6 @@ in
       "d ${config.services.tdarr.dataDir}/nodes 0750 ${config.services.tdarr.user} users -"
       "d ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local 0750 ${config.services.tdarr.user} users -"
       # Copied rather than symlinked so the server never serves a dangling store path after GC.
-      "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${languagePlugin}"
       "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_GPU_Cleanup.js - - - - ${cleanupPlugin}"
     ];
 
