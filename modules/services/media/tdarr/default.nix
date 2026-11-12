@@ -7,6 +7,7 @@
 let
   maintenanceService = import ../../maintenance/service.nix { inherit config lib pkgs; };
   inherit (config.host.storage) bulkMount scratchDir;
+  arrHelper = pkgs.writeText "tdarr-arr.js" (builtins.readFile ./arr.js);
   cleanupPlugin = pkgs.writeText "Tdarr_Plugin_nxsv_GPU_Cleanup.js" (
     lib.replaceStrings
       [ "@sonarrPort@" "@radarrPort@" ]
@@ -77,7 +78,29 @@ in
       )
       # The node installs plugin deps (e.g. axios) with pnpm, which keeps its store in
       # $HOME; the user's home (dataDir) is read-only under ProtectSystem=strict.
-      { tdarr-node-main.environment.HOME = "${config.services.tdarr.dataDir}/nodes/main"; }
+      {
+        tdarr-node-main = {
+          requires = [
+            "radarr.service"
+            "sonarr.service"
+          ];
+          after = [
+            "radarr.service"
+            "sonarr.service"
+          ];
+          environment = {
+            HOME = "${config.services.tdarr.dataDir}/nodes/main";
+            TDARR_ARR_HELPER = toString arrHelper;
+            TDARR_NOTIFY_PLUGIN = "${config.services.tdarr.dataDir}/nodes/main/assets/app/plugins/FlowPlugins/CommunityFlowPlugins/tools/notifyRadarrOrSonarr/3.0.0/index.js";
+            RADARR_URL = "http://127.0.0.1:${toString config.services.radarr.settings.server.port}";
+            SONARR_URL = "http://127.0.0.1:${toString config.services.sonarr.settings.server.port}";
+          };
+          serviceConfig.LoadCredential = [
+            "radarr.xml:${config.services.radarr.dataDir}/config.xml"
+            "sonarr.xml:${config.services.sonarr.dataDir}/config.xml"
+          ];
+        };
+      }
     ];
   };
 }

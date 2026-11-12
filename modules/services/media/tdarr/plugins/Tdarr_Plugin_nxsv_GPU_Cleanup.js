@@ -8,7 +8,7 @@ const details = () => ({
     Description: `Keeps one audio track each for the original language, English and
     undefined, removes subtitles and images, and orders video before audio in one pass.
     Encodes non-HEVC video with NVENC CQ 20, preset p6 and 4 B-frames. HEVC is copied.`,
-    Version: '1.0',
+    Version: '1.1',
     Tags: 'pre-processing,configurable',
     Inputs: [
         {
@@ -19,25 +19,11 @@ const details = () => ({
             tooltip: 'Sonarr url, e.g. http://127.0.0.1:@sonarrPort@',
         },
         {
-            name: 'sonarr_api_key',
-            type: 'string',
-            defaultValue: '',
-            inputUI: {type: 'text'},
-            tooltip: 'Sonarr api key (Settings > General).',
-        },
-        {
             name: 'radarr_url',
             type: 'string',
             defaultValue: 'http://127.0.0.1:@radarrPort@',
             inputUI: {type: 'text'},
             tooltip: 'Radarr url, e.g. http://127.0.0.1:@radarrPort@',
-        },
-        {
-            name: 'radarr_api_key',
-            type: 'string',
-            defaultValue: '',
-            inputUI: {type: 'text'},
-            tooltip: 'Radarr api key (Settings > General).',
         },
     ],
 });
@@ -62,11 +48,11 @@ const codeForArrName = (name, candidates) => {
         && (displayNames.of(code) || '').startsWith(base)) || base;
 };
 
-const arrParse = async (url, apiKey, fileName, key) => {
-    if (!apiKey) return null;
+const arrParse = async (url, app, fileName, key) => {
+    const {apiKey} = require(process.env.TDARR_ARR_HELPER);
     const res = await fetch(
         `${url.replace(/\/$/, '')}/api/v3/parse?title=${encodeURIComponent(fileName)}`,
-        {headers: {'X-Api-Key': apiKey}},
+        {headers: {'X-Api-Key': apiKey(app)}},
     );
     if (!res.ok) throw new Error(`${url} parse failed: HTTP ${res.status}`);
     const body = await res.json();
@@ -106,8 +92,8 @@ const plugin = async (file, librarySettings, inputs, otherArguments) => {
         }));
 
     // Sonarr first: its parser only matches episode-style names, so movies fall through.
-    const original = await arrParse(inputs.sonarr_url, inputs.sonarr_api_key, file.meta.FileName, 'series')
-        || await arrParse(inputs.radarr_url, inputs.radarr_api_key, file.meta.FileName, 'movie');
+    const original = await arrParse(inputs.sonarr_url, 'sonarr', file.meta.FileName, 'series')
+        || await arrParse(inputs.radarr_url, 'radarr', file.meta.FileName, 'movie');
     const originalCode = original && codeForArrName(original.name, audio.map((a) => a.lang));
     if (!originalCode) {
         response.infoLog += '☒Could not determine the original language. Keeping all audio. \n';
