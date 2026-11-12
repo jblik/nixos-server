@@ -7,6 +7,15 @@
 let
   maintenanceService = import ../../maintenance/service.nix { inherit config lib pkgs; };
   inherit (config.host.storage) bulkMount scratchDir;
+  cleanupPlugin = pkgs.writeText "Tdarr_Plugin_nxsv_GPU_Cleanup.js" (
+    lib.replaceStrings
+      [ "@sonarrPort@" "@radarrPort@" ]
+      [
+        (toString config.services.sonarr.settings.server.port)
+        (toString config.services.radarr.settings.server.port)
+      ]
+      (builtins.readFile ./plugins/Tdarr_Plugin_nxsv_GPU_Cleanup.js)
+  );
   languagePlugin = pkgs.writeText "Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js" (
     lib.replaceStrings
       [ "@sonarrPort@" "@radarrPort@" ]
@@ -46,6 +55,7 @@ in
       "d ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local 0750 ${config.services.tdarr.user} users -"
       # Copied rather than symlinked so the server never serves a dangling store path after GC.
       "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_Keep_Original_Eng_Und.js - - - - ${languagePlugin}"
+      "C+ ${config.services.tdarr.dataDir}/server/server/Tdarr/Plugins/Local/Tdarr_Plugin_nxsv_GPU_Cleanup.js - - - - ${cleanupPlugin}"
     ];
 
     # The Tdarr module only lets it write to its own state; it has to replace
