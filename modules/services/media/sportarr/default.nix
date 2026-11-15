@@ -53,7 +53,7 @@ in
         LoadCredential = [
           "sportarr.xml:/var/lib/sportarr/config.xml"
           "prowlarr.xml:/var/lib/prowlarr/config.xml"
-          "qbittorrent.conf:${s.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf"
+          "qbittorrent.conf:${lib.removeSuffix "/" s.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf"
           "sabnzbd.ini:/var/lib/${s.sabnzbd.stateDir}/sabnzbd.ini"
           "plex.xml:/run/sportarr-plex.xml"
         ];

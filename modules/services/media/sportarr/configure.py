@@ -33,7 +33,8 @@ def upsert(client, url, values):
 
 def configure_downloads(sportarr, base, credentials):
     profile = configparser.ConfigParser(interpolation=None)
-    profile.read(credentials / "qbittorrent.conf")
+    with (credentials / "qbittorrent.conf").open() as source:
+        profile.read_file(source)
     qbit_key = profile["Preferences"][r"WebUI\APIKey"]
     qbit = session({"Authorization": f"Bearer {qbit_key}"})
     qbit_url = os.environ["QBITTORRENT_URL"] + "/api/v2/torrents"
@@ -114,7 +115,7 @@ def configure_plex(sportarr, base, credentials):
     provider_uri = "https://sportarr.net/plex"
     provider = next(
         (p for p in providers.get("MetadataAgentProvider", [])
-         if p["uri"] == provider_uri), None,
+         if p["uri"].rstrip("/") == provider_uri), None,
     )
     if provider is None:
         result = request(plex, "POST", providers_url, params={
