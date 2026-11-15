@@ -23,6 +23,11 @@ let
 in
 {
   config = lib.mkIf m.enable {
+    # systemd 260 fails to deserialize credential source paths containing spaces.
+    systemd.tmpfiles.rules = [
+      "L /run/sportarr-plex.xml - - - - ${s.plex.dataDir}/Plex Media Server/Preferences.xml"
+    ];
+
     systemd.services.sportarr-integrations = {
       description = "Configure Sportarr download clients, Prowlarr and Plex";
       wantedBy = [ "multi-user.target" ];
@@ -50,7 +55,7 @@ in
           "prowlarr.xml:/var/lib/prowlarr/config.xml"
           "qbittorrent.conf:${s.qbittorrent.profileDir}/qBittorrent/config/qBittorrent.conf"
           "sabnzbd.ini:/var/lib/${s.sabnzbd.stateDir}/sabnzbd.ini"
-          "plex.xml:${s.plex.dataDir}/Plex Media Server/Preferences.xml"
+          "plex.xml:/run/sportarr-plex.xml"
         ];
         Restart = "on-failure";
         RestartSec = "10s";
