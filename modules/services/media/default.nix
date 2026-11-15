@@ -44,6 +44,7 @@ in
     ./cleanuparr
     ./media-preview-generator
     ./plex.nix
+    ./threadfin
     ./tdarr
   ];
 

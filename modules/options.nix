@@ -186,6 +186,11 @@ in
           description = "Plex web UI port. The NixOS module hardcodes it, so this only records it.";
         };
       };
+      threadfin.port = lib.mkOption {
+        type = lib.types.port;
+        default = 34400;
+        description = "Threadfin IPTV tuner and web UI port (localhost).";
+      };
       cleanuparr = {
         port = lib.mkOption {
           type = lib.types.port;

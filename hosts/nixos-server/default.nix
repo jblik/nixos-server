@@ -84,6 +84,7 @@ in
           sonarr = "/var/lib/sonarr";
           sportarr = "/var/lib/sportarr";
           tdarr = "/var/lib/tdarr";
+          threadfin = "/var/lib/threadfin";
         };
         # Regeneratable from the originals.
         noSnapshot = {

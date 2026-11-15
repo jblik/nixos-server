@@ -41,6 +41,7 @@ let
       sonarr = s.sonarr.settings.server.port;
       radarr = s.radarr.settings.server.port;
       sportarr = config.host.media.sportarr.port;
+      threadfin = config.host.media.threadfin.port;
       bazarr = s.bazarr.listenPort;
       prowlarr = s.prowlarr.settings.server.port;
       qbittorrent = s.qbittorrent.webuiPort;
