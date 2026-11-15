@@ -33,17 +33,17 @@ https://africa24.vedge.infomaniak.com/livecast/ik:africa24/manifest.m3u8
 https://africa24sport.vedge.infomaniak.com/livecast/ik:africa24sport/manifest.m3u8
 #EXTINF:-1 tvg-id="teletop.ch" tvg-logo="https://picserve.netplus.ch/channels/teletop.png" group-title="iktv.m3u8",TeleTop
 https://teletop.vedge.infomaniak.com/livecast/ik:teletop/manifest.m3u8
-#EXTINF:-1 tvg-id="www.alpe.tv" tvg-logo="https://picserve.netplus.ch/channels/alpe.png" group-title="iktv.m3u8",alpe d'huez tv HD
+#EXTINF:-1 tvg-id="www.alpe.tv" tvg-logo="https://picserve.netplus.ch/channels/alpe.png" group-title="iktv.m3u8",alpe d’huez tv HD
 https://adhtv.vedge.infomaniak.com/livecast/ik:adhtv/manifest.m3u8
 #EXTINF:-1 tvg-id="dbmtv.com" tvg-logo="https://picserve.netplus.ch/channels/dbmtv.png" group-title="iktv.m3u8",DBMTV HD Digital Black Music HD
 https://dbmtv.vedge.infomaniak.com/livecast/ik:dbmtv/manifest.m3u8
 #EXTINF:-1 tvg-id="generations.fr" tvg-logo="https://picserve.netplus.ch/channels/generations.png" group-title="iktv.m3u8",Generations TV HD
 https://generation-tv.vedge.infomaniak.com/livecast/ik:generation-tv/manifest.m3u8
-#EXTINF:-1 tvg-id="bblack.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackafrica.png" group-title="iktv.m3u8",BB BLACK! Africa HD
+#EXTINF:-1 tvg-id="bblackafrica.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackafrica.png" group-title="iktv.m3u8",BB BLACK! Africa HD
 https://bblackafrica.vedge.infomaniak.com/livecast/ik:bblackafrica/manifest.m3u8
-#EXTINF:-1 tvg-id="bblack.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackcaribbean.png" group-title="iktv.m3u8",BB BLACK! Caribbean HD
+#EXTINF:-1 tvg-id="bblackcaribbean.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackcaribbean.png" group-title="iktv.m3u8",BB BLACK! Caribbean HD
 https://bblackcaribbean.vedge.infomaniak.com/livecast/ik:bblackcaribbean/manifest.m3u8
-#EXTINF:-1 tvg-id="bblack.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackclassik.png" group-title="iktv.m3u8",BB BLACK! Classik HD
+#EXTINF:-1 tvg-id="bblackclassik.tv" tvg-logo="https://picserve.netplus.ch/channels/bblackclassik.png" group-title="iktv.m3u8",BB BLACK! Classik HD
 https://bblackclassik.vedge.infomaniak.com/livecast/ik:bblackclassik/manifest.m3u8
 #EXTINF:-1 tvg-logo="https://i.ibb.co/pdnMrZn/a24.png" group-title="iktv.m3u8",AFRICA 24 EN HD
 https://africa24english.vedge.infomaniak.com/livecast/ik:africa24english/manifest.m3u8
@@ -135,7 +135,7 @@ https://viamotionhsi.netplus.ch/live/eds/novo19/browser-dash/novo19.mpd
 https://viamotionhsi.netplus.ch/live/eds/numero23/browser-HLS8/numero23.m3u8
 #EXTINF:-1 tvg-id="bluezoom.ch" tvg-logo="https://picserve.netplus.ch/channels/bluezoomfr.png" tvg-country="CH" tvg-language="French" group-title="netplus.m3u8",blue zoom F HD
 https://viamotionhsi.netplus.ch/live/eds/bluezoomfr/browser-HLS8/bluezoomfr.m3u8
-#EXTINF:-1 tvg-id="lequipe.fr" tvg-logo="https://picserve.netplus.ch/channels/lequipe21.png" group-title="netplus.mpd",La chaine L'EQUIPE HD
+#EXTINF:-1 tvg-id="lequipe.fr" tvg-logo="https://picserve.netplus.ch/channels/lequipe21.png" group-title="netplus.mpd",La chaine L’EQUIPE HD
 https://viamotionhsi.netplus.ch/live/eds/lequipe21/browser-dash/lequipe21.mpd
 #EXTINF:-1 tvg-id="ab3.tv" tvg-logo="https://picserve.netplus.ch/channels/ab3.png" tvg-country="BE" tvg-language="French" group-title="netplus.m3u8",AB3 HD
 https://viamotionhsi.netplus.ch/live/eds/ab3/browser-HLS8/ab3.m3u8
@@ -481,9 +481,9 @@ https://lightning-traceurban-samsungau.amagi.tv/playlist720p.m3u8
 http://tv.mondeduloisir.fr:1935/tixtv/smil:web.smil/playlist.m3u8
 #EXTINF:-1 tvg-id="tracesportstars.tv@SD" tvg-logo="https://picserve.netplus.ch/channels/tracesportstars.png" group-title="webtv.m3u",Trace Sport Stars HD
 https://lightning-tracesport-samsungau.amagi.tv/playlist.m3u8
-#EXTINF:-1 channel-id="GBBD1900009UD" tvg-id="GBBD1900009UD" tvg-chno="" tvg-name="Vevo '70s & '80s" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/GBBD1900009UD_20250107T030827SQUARE.png" group-title="webtv.m3u",Vevo '70s & '80s
+#EXTINF:-1 channel-id="GBBD1900009UD" tvg-id="GBBD1900009UD" tvg-chno="" tvg-name="Vevo ’70s & ’80s" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/GBBD1900009UD_20250107T030827SQUARE.png" group-title="webtv.m3u",Vevo ’70s & ’80s
 https://jmp2.uk/stvp-GBBD1900009UD
-#EXTINF:-1 channel-id="GBBC2100002HP" tvg-id="GBBC2100002HP" tvg-chno="" tvg-name="Vevo '90s & '00s" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/GBBC2100002HP_20250107T025831SQUARE.png" group-title="webtv.m3u",Vevo '90s & '00s
+#EXTINF:-1 channel-id="GBBC2100002HP" tvg-id="GBBC2100002HP" tvg-chno="" tvg-name="Vevo ’90s & ’00s" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/GBBC2100002HP_20250107T025831SQUARE.png" group-title="webtv.m3u",Vevo ’90s & ’00s
 https://jmp2.uk/stvp-GBBC2100002HP
 #EXTINF:-1 channel-id="GBBD2300001C0" tvg-id="GBBD2300001C0" tvg-chno="" tvg-name="Vevo Hip Hop & R&B" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/GBBD2300001C0_20250107T030829SQUARE.png" group-title="webtv.m3u",Vevo Hip Hop & RnB
 https://jmp2.uk/stvp-GBBD2300001C0
@@ -509,7 +509,7 @@ https://jmp2.uk/stvp-FRBD5100003TP
 https://jmp2.uk/stvp-FRBC4700002RF
 #EXTINF:-1 channel-id="samsung-FR1100001V1" tvg-id="FR1100001V1" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/FR1100001V1_20250513T005820SQUARE.png" tvg-chno="" group-title="webtv.m3u",Passion Bollywood
 https://jmp2.uk/stvp-FR1100001V1
-#EXTINF:-1 channel-id="samsung-FRBD4800001P4" tvg-id="FRBD4800001P4" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/FRBD4800001P4_20241106T142647SQUARE.png" tvg-chno="" group-title="webtv.m3u",J'irai dormir chez vous
+#EXTINF:-1 channel-id="samsung-FRBD4800001P4" tvg-id="FRBD4800001P4" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/FRBD4800001P4_20241106T142647SQUARE.png" tvg-chno="" group-title="webtv.m3u",J’irai dormir chez vous
 https://jmp2.uk/stvp-FRBD4800001P4
 #EXTINF:-1 channel-id="samsung-FRBC4000001IO" tvg-id="FRBC4000001IO" tvg-logo="https://tvpnlogopeu.samsungcloud.tv/platform/image/sourcelogo/vc/00/02/34/FRBC4000001IO_20250722T005817SQUARE.png" tvg-chno="" group-title="webtv.m3u",Destination Nature
 https://jmp2.uk/stvp-FRBC4000001IO
@@ -563,7 +563,7 @@ https://dash4.antik.sk/live/test_stingray_iconcerts_hd_hevc50/playlist.m3u8
 https://dash4.antik.sk/live/test_ectv_hd_1200/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://gamako.net/iptv/logos/blacklogos/tv_logobbg.png" tvg-country="FR" tvg-language="French" group-title="webtv.m3u",LGF Talk
 https://edge16.vedge.infomaniak.com/livecast/ik:espacetv/chunklist.m3u8
-#EXTINF:-1 tvg-id="Now00.uk" tvg-name="NOW 00" tvg-logo="https://i.postimg.cc/gjHCXtNd/now00.png" group-title="webtv.m3u",that's 00s
+#EXTINF:-1 tvg-id="Now00.uk" tvg-name="NOW 00" tvg-logo="https://i.postimg.cc/gjHCXtNd/now00.png" group-title="webtv.m3u",that’s 00s
 https://amg01076-amg01076c19-rakuten-gb-8653.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="Totalmusic2000s.uk" tvg-name="Totalmusic 2000s" tvg-logo="https://static.elektamedia.com/ch/tmc_00s.png" group-title="webtv.m3u",Totalmusic 2000s
 https://cdn.global.elektamedia.com/live/c7eds/Totalmusic_00s/SA_LIVE_hls_enc/master.m3u8

@@ -1,0 +1,1215 @@
+{
+  "léman bleu HD": {
+    "source": "CH1",
+    "id": "Léman.Bleu.Télévision.ch"
+  },
+  "Canal9 FHD": {
+    "source": "CH1",
+    "id": "Canal.9.ch"
+  },
+  "LA TELE FHD": {
+    "source": "CH1",
+    "id": "La.Télé.ch"
+  },
+  "Canal Alpha JU FHD": {
+    "source": "CH1",
+    "id": "Canal.Alpha.JU.ch"
+  },
+  "Canal Alpha NE FHD": {
+    "source": "CH1",
+    "id": "Canal.Alpha.NE.ch"
+  },
+  "rhone tv HD": {
+    "source": "CH1",
+    "id": "Rhône.TV.ch"
+  },
+  "carac1 FHD": {
+    "source": "CH1",
+    "id": "CARAC.1.ch"
+  },
+  "carac2 FHD": {
+    "source": "CH1",
+    "id": "CARAC.2.ch"
+  },
+  "carac3 FHD": {
+    "source": "CH1",
+    "id": "CARAC.3.ch"
+  },
+  "carac4 HD": {
+    "source": "CH1",
+    "id": "CARAC.4.ch"
+  },
+  "carac5 FHD": {
+    "source": "CH1",
+    "id": "CARAC.5.ch"
+  },
+  "tvm3 HD": {
+    "source": "CH1",
+    "id": "TVM3.ch"
+  },
+  "kanal9 HD": {
+    "source": "CH1",
+    "id": "Kanal.9.ch"
+  },
+  "Africa24": {
+    "source": "FR1",
+    "id": "Africa.24.fr"
+  },
+  "Africa24 Sport": null,
+  "TeleTop": {
+    "source": "CH1",
+    "id": "Tele.Top.ch"
+  },
+  "alpe d’huez tv HD": null,
+  "DBMTV HD Digital Black Music HD": null,
+  "Generations TV HD": null,
+  "BB BLACK! Africa HD": {
+    "source": "FR1",
+    "id": "BBLACK.Africa.fr"
+  },
+  "BB BLACK! Caribbean HD": {
+    "source": "FR1",
+    "id": "BBLACK.Caribbean.fr"
+  },
+  "BB BLACK! Classik HD": {
+    "source": "FR1",
+    "id": "BBLACK.Classik.fr"
+  },
+  "AFRICA 24 EN HD": null,
+  "KALAC TV HD": {
+    "source": "XMLTVFR",
+    "id": "KalacTV.af"
+  },
+  "PTV Puissance TV": {
+    "source": "FR1",
+    "id": "Puissance.TV.fr"
+  },
+  "ETV GUADELOUPE HD": null,
+  "FUSION TV HD": null,
+  "TÉLÉ PEYI GUYANE HD": null,
+  "FUN RADIO TV BE HD": null,
+  "TVD TV Découverte HD": null,
+  "RHT Radio Haute Tension Guadeloupe": null,
+  "Espace TV Ghana": null,
+  " Madras FM TV HD": null,
+  "na tv HD région Nouvelle-Aquitaine": {
+    "source": "FR1",
+    "id": "NA.TV.fr"
+  },
+  "rtb1 La Radiodiffusion-télévision du Burkina": null,
+  "rtb3 langues nationales HD La Radiodiffusion-télévision du Burkina": null,
+  "Canal B fr HD": null,
+  "Canal B deutsch": null,
+  "ProSieben HD": {
+    "source": "CH1",
+    "id": "ProSieben.ch"
+  },
+  "SAT.1 HD": {
+    "source": "CH1",
+    "id": "SAT.1.ch"
+  },
+  " Kabel1 HD": {
+    "source": "CH1",
+    "id": "Kabel.eins.ch"
+  },
+  "sixx HD": {
+    "source": "CH1",
+    "id": "sixx.ch"
+  },
+  "SAT.1 GOLD": {
+    "source": "CH1",
+    "id": "SAT.1.GOLD.ch"
+  },
+  "DELUXE MUSIC HD": {
+    "source": "CH1",
+    "id": "Deluxe.Music.ch"
+  },
+  "RTK1 SAT HD": {
+    "source": "CH1",
+    "id": "RTK.1.ch"
+  },
+  "2M Maroc FHD": {
+    "source": "CH1",
+    "id": "2M.Monde.ch"
+  },
+  "RTS 1 FHD": {
+    "source": "CH1",
+    "id": "RTS.1.ch"
+  },
+  "RTS 2 HD": {
+    "source": "CH1",
+    "id": "RTS.2.ch"
+  },
+  "TF1 CH HD": {
+    "source": "CH1",
+    "id": "TF1.ch"
+  },
+  "France2 HD": {
+    "source": "CH1",
+    "id": "France.2.ch"
+  },
+  "France3 HD": {
+    "source": "CH1",
+    "id": "France.3.ch"
+  },
+  "France4 HD": {
+    "source": "CH1",
+    "id": "France.4.ch"
+  },
+  "France5 HD": {
+    "source": "CH1",
+    "id": "France.5.ch"
+  },
+  "M6 CH HD": {
+    "source": "CH1",
+    "id": "M6.ch"
+  },
+  "TMC HD": {
+    "source": "CH1",
+    "id": "TMC.ch"
+  },
+  "W9 HD": {
+    "source": "CH1",
+    "id": "W9.ch"
+  },
+  "TFX HD": {
+    "source": "CH1",
+    "id": "TFX.ch"
+  },
+  "T18 HD": {
+    "source": "FR1",
+    "id": "T18.fr"
+  },
+  "CSTAR HD": {
+    "source": "CH1",
+    "id": "CSTAR.F.ch"
+  },
+  "RTL9 HD": {
+    "source": "CH1",
+    "id": "RTL9.ch"
+  },
+  "AB1 HD": {
+    "source": "CH1",
+    "id": "AB1.ch"
+  },
+  "TF1 Series Films HD": {
+    "source": "CH1",
+    "id": "TF1.Séries.Films.ch"
+  },
+  "6ter CH HD": {
+    "source": "CH1",
+    "id": "6ter.ch"
+  },
+  "RMC Life HD": {
+    "source": "XMLTVFR",
+    "id": "Cherie25.fr"
+  },
+  "NOVO19 HD": {
+    "source": "FR1",
+    "id": "NOVO19.fr"
+  },
+  "RMC STORY HD": {
+    "source": "CH1",
+    "id": "RMC.Story.ch"
+  },
+  "blue zoom F HD": {
+    "source": "CH1",
+    "id": "blue.Zoom.F.ch"
+  },
+  "La chaine L’EQUIPE HD": {
+    "source": "CH1",
+    "id": "L'Equipe.ch"
+  },
+  "AB3 HD": {
+    "source": "CH1",
+    "id": "AB.3.ch"
+  },
+  "TCM CINEMA F HD": {
+    "source": "FR1",
+    "id": "TCM.Cinéma.fr"
+  },
+  "CARTOON NETWORK HD": {
+    "source": "CH1",
+    "id": "Cartoon.Network.F.ch"
+  },
+  "gulli HD": {
+    "source": "CH1",
+    "id": "Gulli.ch"
+  },
+  "TREK HD": {
+    "source": "CH1",
+    "id": "Trek.ch"
+  },
+  "RMC DECOUVERTE HD": {
+    "source": "CH1",
+    "id": "RMC.Découverte.ch"
+  },
+  "PLANETE+ HD": {
+    "source": "CH1",
+    "id": "Planète+.ch"
+  },
+  "ANIMAUX HD": {
+    "source": "CH1",
+    "id": "Animaux.ch"
+  },
+  "arte F HD": {
+    "source": "CH1",
+    "id": "Arte.Français.ch"
+  },
+  "BFM TV HD": {
+    "source": "CH1",
+    "id": "BFM.TV.ch"
+  },
+  "France24 HD": {
+    "source": "CH1",
+    "id": "France.24.ch"
+  },
+  "euronews F HD": {
+    "source": "CH1",
+    "id": "Euronews.F.ch"
+  },
+  "TV5 MONDE FBSM HD": {
+    "source": "CH1",
+    "id": "TV5.Monde.FBS.ch"
+  },
+  "CNEWS HD": {
+    "source": "CH1",
+    "id": "CNEWS.ch"
+  },
+  "LCI HD": {
+    "source": "CH1",
+    "id": "La.Chaine.Info.-.LCI.ch"
+  },
+  "BFM BUSINESS HD": {
+    "source": "FR1",
+    "id": "BFM.Business.fr"
+  },
+  "LCP8 Public Senat HD": {
+    "source": "CH1",
+    "id": "La.Chaîne.parlementaire.ch"
+  },
+  "TVMONACO HD": {
+    "source": "CH1",
+    "id": "TV.Monaco.ch"
+  },
+  "Franceinfo HD": {
+    "source": "CH1",
+    "id": "franceinfo.ch"
+  },
+  "mezzo HD": {
+    "source": "CH1",
+    "id": "Mezzo.ch"
+  },
+  "MTV France HD": {
+    "source": "CH1",
+    "id": "MTV.France.ch"
+  },
+  "kto HD": {
+    "source": "CH1",
+    "id": "KTO.ch"
+  },
+  "canal+ en clair CH HD": {
+    "source": "CH1",
+    "id": "Canal+.en.clair.ch"
+  },
+  "Canal J HD": {
+    "source": "CH1",
+    "id": "Canal.J.ch"
+  },
+  "nrtv HD": {
+    "source": "CH1",
+    "id": "NRTV.ch"
+  },
+  "DieuTV HD": {
+    "source": "CH1",
+    "id": "Max.TV.ch"
+  },
+  "8montblanc HD": {
+    "source": "CH1",
+    "id": "TV8.Mont.Blanc.ch"
+  },
+  "Val TV HD": null,
+  "SRF1 HD": {
+    "source": "CH1",
+    "id": "SRF.1.ch"
+  },
+  "SRF2 HD": {
+    "source": "CH1",
+    "id": "SRF.zwei.ch"
+  },
+  "SRF info HD": {
+    "source": "CH1",
+    "id": "SRF.info.ch"
+  },
+  "ARD1 Das Erste HD": {
+    "source": "CH1",
+    "id": "Das.Erste.ch"
+  },
+  "ZDF HD": {
+    "source": "CH1",
+    "id": "ZDF.ch"
+  },
+  "ORF1 HD": {
+    "source": "CH1",
+    "id": "ORF.1.ch"
+  },
+  "RTL HD": {
+    "source": "CH1",
+    "id": "RTL.ch"
+  },
+  "RTLZWEI HD": {
+    "source": "CH1",
+    "id": "RTL.ZWEI.ch"
+  },
+  "VOX HD": {
+    "source": "CH1",
+    "id": "VOX.ch"
+  },
+  " 3sat HD": {
+    "source": "CH1",
+    "id": "3sat.ch"
+  },
+  "SWR HD": {
+    "source": "CH1",
+    "id": "SWR.ch"
+  },
+  "RTL SUPER HD": {
+    "source": "CH1",
+    "id": "Super.RTL.ch"
+  },
+  "KIKA HD": {
+    "source": "CH1",
+    "id": "KiKa.ch"
+  },
+  "sport1 HD": {
+    "source": "CH1",
+    "id": "Sport1.ch"
+  },
+  "TeleBärn HD": {
+    "source": "CH1",
+    "id": "Tele.Bärn.ch"
+  },
+  "3+ ADRENALIN HD": {
+    "source": "CH1",
+    "id": "TV24.ch"
+  },
+  "blue zoom D HD": {
+    "source": "CH1",
+    "id": "blue.Zoom.D.ch"
+  },
+  "TB2 HD": {
+    "source": "CH1",
+    "id": "Tele.Bielingue.ch"
+  },
+  "ORF2 HD": {
+    "source": "CH1",
+    "id": "ORF.2.ch"
+  },
+  "NITRO. HD": {
+    "source": "CH1",
+    "id": "Nitro.ch"
+  },
+  "BR HD": {
+    "source": "CH1",
+    "id": "BR.ch"
+  },
+  "WDR HD": {
+    "source": "CH1",
+    "id": "WDR.ch"
+  },
+  "ndr HD": {
+    "source": "CH1",
+    "id": "NDR.ch"
+  },
+  "hr HD": {
+    "source": "CH1",
+    "id": "HR.ch"
+  },
+  "mdr HD": {
+    "source": "CH1",
+    "id": "MDR.ch"
+  },
+  "zdf neo HD": {
+    "source": "CH1",
+    "id": "ZDFneo.ch"
+  },
+  "zdf info HD": {
+    "source": "CH1",
+    "id": "ZDFinfo.ch"
+  },
+  "WeLT": {
+    "source": "CH1",
+    "id": "WELT.ch"
+  },
+  "ntv": {
+    "source": "CH1",
+    "id": "n-tv.ch"
+  },
+  "phoenix HD": {
+    "source": "CH1",
+    "id": "Phoenix.TV.ch"
+  },
+  "eurosport1 D": {
+    "source": "CH1",
+    "id": "Eurosport.1.D.ch"
+  },
+  "comedy central D HD": {
+    "source": "CH1",
+    "id": "Comedy.Central.ch"
+  },
+  "nickelodeon D": {
+    "source": "CH1",
+    "id": "7+./.Nickelodeon.ch"
+  },
+  "Disney Channel D": {
+    "source": "CH1",
+    "id": "Disney.Channel.D.ch"
+  },
+  "RiC D": {
+    "source": "CH1",
+    "id": "RIC.TV.ch"
+  },
+  "DMAX CH": {
+    "source": "CH1",
+    "id": "DMAX.ch"
+  },
+  "ServusTV HD": {
+    "source": "CH1",
+    "id": "Servus.TV.ch"
+  },
+  "ANIXE SERIE HD": {
+    "source": "CH1",
+    "id": "Anixe.Serie.ch"
+  },
+  "tele5 D": {
+    "source": "CH1",
+    "id": "Tele.5.ch"
+  },
+  "ARD alpha HD": {
+    "source": "CH1",
+    "id": "ARD-alpha.ch"
+  },
+  "rbb HD": {
+    "source": "CH1",
+    "id": "RBB.ch"
+  },
+  "atv2 HD": {
+    "source": "DE1",
+    "id": "ATV.II.de"
+  },
+  "ARD one HD": {
+    "source": "CH1",
+    "id": "One.ch"
+  },
+  "STAR TV D HD": {
+    "source": "CH1",
+    "id": "Star.TV.ch"
+  },
+  "RSI La 1 HD": {
+    "source": "CH1",
+    "id": "RSI.La.1.ch"
+  },
+  "RSI La 2 HD": {
+    "source": "CH1",
+    "id": "RSI.LA.2.ch"
+  },
+  "Rai 1 HD": {
+    "source": "CH1",
+    "id": "Rai.1.ch"
+  },
+  "Rai 2 HD": {
+    "source": "CH1",
+    "id": "Rai.2.ch"
+  },
+  "Rai 3 HD": {
+    "source": "CH1",
+    "id": "Rai.3.ch"
+  },
+  "Rai Sport HD": {
+    "source": "CH1",
+    "id": "Rai.Sport.+.ch"
+  },
+  "Rai News24 HD": {
+    "source": "CH1",
+    "id": "Rai.News.24.ch"
+  },
+  "Italia1 HD": {
+    "source": "CH1",
+    "id": "Italia.1.ch"
+  },
+  "Rete4 HD": {
+    "source": "CH1",
+    "id": "Rete.4.ch"
+  },
+  "canale5 HD": {
+    "source": "CH1",
+    "id": "Canale.5.ch"
+  },
+  "LA7 HD": {
+    "source": "CH1",
+    "id": "La.7.ch"
+  },
+  "Rai Gulp HD": {
+    "source": "CH1",
+    "id": "Rai.Gulp.ch"
+  },
+  "Rai Storia FHD": {
+    "source": "CH1",
+    "id": "Rai.Storia.ch"
+  },
+  "Italiana HD": null,
+  "DMAX Italia HD": {
+    "source": "CH1",
+    "id": "DMAX.Italia.ch"
+  },
+  "LA5 HD": {
+    "source": "CH1",
+    "id": "La5.ch"
+  },
+  "CANALE Italia": {
+    "source": "CH1",
+    "id": "Canale.Italia.ch"
+  },
+  "VIDEO ITALIA HD": {
+    "source": "CH1",
+    "id": "Video.Italia.TV.ch"
+  },
+  "nove HD 720p": {
+    "source": "CH1",
+    "id": "NOVE.ch"
+  },
+  "LA7 CINEMA HD 720p": {
+    "source": "IT1",
+    "id": "LA7.CINEMA.it"
+  },
+  "BBC TWO HD": {
+    "source": "CH1",
+    "id": "BBC.Two.ch"
+  },
+  "BBC THREE CBBC HD": {
+    "source": "CH1",
+    "id": "BBC.Three./.CBBC.ch"
+  },
+  "BBC FOUR CBeebies HD": {
+    "source": "CH1",
+    "id": "BBC.Four.ch"
+  },
+  "BBC NEWS HD": {
+    "source": "CH1",
+    "id": "BBC.News.ch"
+  },
+  "itv2 HD": {
+    "source": "CH1",
+    "id": "ITV2.ch"
+  },
+  "itv3 HD": {
+    "source": "CH1",
+    "id": "ITV3.ch"
+  },
+  "itv4 HD": {
+    "source": "CH1",
+    "id": "ITV4.ch"
+  },
+  "sky news": {
+    "source": "CH1",
+    "id": "Sky.News.International.ch"
+  },
+  "cnn europe HD": {
+    "source": "CH1",
+    "id": "CNN.ch"
+  },
+  "AlJazeera En HD": {
+    "source": "CH1",
+    "id": "Al.Jazeera.English.ch"
+  },
+  "CNBC 720p": {
+    "source": "CH1",
+    "id": "CNBC.UK.ch"
+  },
+  "bloomberg HD": {
+    "source": "CH1",
+    "id": "Bloomberg.TV.ch"
+  },
+  "FashionTV HD": {
+    "source": "FR1",
+    "id": "Fashion.TV.fr"
+  },
+  "QUEST HD": {
+    "source": "CH1",
+    "id": "Quest.ch"
+  },
+  "channel4 HD": {
+    "source": "CH1",
+    "id": "Channel.4.ch"
+  },
+  "channel5 HD": {
+    "source": "CH1",
+    "id": "Channel.5.ch"
+  },
+  "FILM4": {
+    "source": "UK1",
+    "id": "Film4.HD.uk"
+  },
+  "More4": {
+    "source": "CH1",
+    "id": "More.4.ch"
+  },
+  "food network E HD": {
+    "source": "CH1",
+    "id": "Food.Network.E.ch"
+  },
+  "TVCNEWS": {
+    "source": "UK1",
+    "id": "TVC.News.uk"
+  },
+  "NHK WORLD JAPAN HD": {
+    "source": "CH1",
+    "id": "NHK.World.Japan.ch"
+  },
+  "RTP mundo_": {
+    "source": "CH1",
+    "id": "RTP.Internacional.ch"
+  },
+  "Rede Record internacional HD": {
+    "source": "CH1",
+    "id": "Record.TV.ch"
+  },
+  "tve internacional HD": {
+    "source": "CH1",
+    "id": "TVE.Internacional.ch"
+  },
+  "24h HD": {
+    "source": "CH1",
+    "id": "Canal.24.Horas.ch"
+  },
+  "Aragon TV HD": {
+    "source": "CH1",
+    "id": "Aragón.TV.Int.ch"
+  },
+  "Canal Sur Andalucia TV HD": {
+    "source": "CH1",
+    "id": "Canal.Sur.Andalucía.ch"
+  },
+  "star HD": null,
+  "Record news internacional": {
+    "source": "FR1",
+    "id": "Record.News.fr"
+  },
+  "Al Arabiya HD": {
+    "source": "CH1",
+    "id": "Al.Arabiya.ch"
+  },
+  "Al Maghribia HD": {
+    "source": "FR1",
+    "id": "Al.Maghribia.fr"
+  },
+  "Al Masriyah HD": {
+    "source": "CH1",
+    "id": "Al.Masriya.ch"
+  },
+  "DMSAT": {
+    "source": "CH1",
+    "id": "DM.Sat.TV.ch"
+  },
+  "show turk HD": {
+    "source": "CH1",
+    "id": "Show.Türk.ch"
+  },
+  "EUROD HD": {
+    "source": "CH1",
+    "id": "Euro.D.ch"
+  },
+  "TVP POLONIA HD": {
+    "source": "CH1",
+    "id": "TVP.Polonia.ch"
+  },
+  "DUNA HD": {
+    "source": "CH1",
+    "id": "Duna.TV.ch"
+  },
+  "BNT4 HD": {
+    "source": "HR1",
+    "id": "BNT4.hr"
+  },
+  "TVRomania int HD": {
+    "source": "CH1",
+    "id": "TV.Romania.International.ch"
+  },
+  "BVN": {
+    "source": "CH1",
+    "id": "BVN.TV.ch"
+  },
+  "PTC CBET HD": {
+    "source": "CH1",
+    "id": "RTS.Svet.ch"
+  },
+  "MNE HD": {
+    "source": "CH1",
+    "id": "TVCG.MNE.ch"
+  },
+  "TRT1 HD": {
+    "source": "TR1",
+    "id": "TRT.1.HD.tr"
+  },
+  "Canal Algerie2": {
+    "source": "FR1",
+    "id": "Canal.Algérie.fr"
+  },
+  "CCTV4 HD": {
+    "source": "CH1",
+    "id": "CCTV4.ch"
+  },
+  "HRT int HD": {
+    "source": "CH1",
+    "id": "HRT.Int..ch"
+  },
+  "CGTN news HD": {
+    "source": "CH1",
+    "id": "CGTN.ch"
+  },
+  "ERT Cosmos HD": {
+    "source": "GR1",
+    "id": "ERT.COSMOS.gr"
+  },
+  "kabel eins DOKU HD scrambled": {
+    "source": "CH1",
+    "id": "kabel.eins.Doku.ch"
+  },
+  "puls acht HD scrambled": {
+    "source": "CH1",
+    "id": "Puls.8.ch"
+  },
+  "7MAXX HD scrambled": {
+    "source": "CH1",
+    "id": "ProSieben.MAXX.ch"
+  },
+  "BBC ONE HD scrambled": {
+    "source": "CH1",
+    "id": "BBC.One.ch"
+  },
+  "itv1 HD scrambled": {
+    "source": "CH1",
+    "id": "ITV1.ch"
+  },
+  "EPT News": {
+    "source": "GR1",
+    "id": "EPT.NEWS.gr"
+  },
+  "RTS Info HD": null,
+  "africanews. HD": {
+    "source": "RAKUTEN1",
+    "id": "FR:.Africanews.be"
+  },
+  "TV5MONDE Info (1080p) [Geo-blocked]": {
+    "source": "XMLTVFR",
+    "id": "TV5MondeInfo.fr"
+  },
+  "RT Russia Today France HD": null,
+  "The Explorers HD": null,
+  "Voyages+ FHD": null,
+  "travelxp HD": {
+    "source": "CH1",
+    "id": "travelxp.ch"
+  },
+  "Just for laughs HD": null,
+  "Nautical Channel HD": {
+    "source": "DE1",
+    "id": "Nautical.Channel.de"
+  },
+  "AUTOMOTION FHD": null,
+  "ADN Animation Digital Network HD": null,
+  "Figaro TV HD": {
+    "source": "FR1",
+    "id": "Figaro.TV.IDF.fr"
+  },
+  "Canal32 HD 1080p": {
+    "source": "FR1",
+    "id": "Canal.32.fr"
+  },
+  "wetter.tv HD": {
+    "source": "CH1",
+    "id": "Wetter.TV.ch"
+  },
+  "swiss sport tv HD": {
+    "source": "CH1",
+    "id": "Swiss.Sport.TV.ch"
+  },
+  "TeleBasel HD": {
+    "source": "CH1",
+    "id": "Telebasel.ch"
+  },
+  "teletecino HD": {
+    "source": "CH1",
+    "id": "Tele.Ticino.ch"
+  },
+  "BFMTV Alsace": {
+    "source": "FR1",
+    "id": "BFM.Alsace.fr"
+  },
+  "Al24news HD": {
+    "source": "AE1",
+    "id": "Al.24.News.ae"
+  },
+  "Equidia HD": {
+    "source": "CH1",
+    "id": "Equidia.Live.ch"
+  },
+  "FIFA+ HD": {
+    "source": "RAKUTEN1",
+    "id": "FR:.FIFA+.be"
+  },
+  "Haiti News HD": null,
+  "ivoire channel": null,
+  "TRACE URBAN HD": {
+    "source": "CH1",
+    "id": "Trace.Urban.ch"
+  },
+  "MDL Monde Du Loisir TV HD": null,
+  "Trace Sport Stars HD": {
+    "source": "WHALETVPLUS1",
+    "id": "Trace.Sport.Stars.us"
+  },
+  "Vevo ’70s & ’80s": {
+    "source": "SAMSUNG",
+    "id": "GBBD1900009UD"
+  },
+  "Vevo ’90s & ’00s": {
+    "source": "SAMSUNG",
+    "id": "GBBC2100002HP"
+  },
+  "Vevo Hip Hop & RnB": {
+    "source": "RAKUTEN1",
+    "id": "FR:.Vevo.Hip-Hop.&.R&B.be"
+  },
+  "Vevo Pop": {
+    "source": "RAKUTEN1",
+    "id": "FR:.Vevo.Pop.be"
+  },
+  "SONY ONE HITS ACTION": {
+    "source": "XMLTVFR",
+    "id": "SonyOneHitsAction.fr"
+  },
+  "SONY ONE HITS COMEDIE": {
+    "source": "XMLTVFR",
+    "id": "SonyOneHitsComedy.fr"
+  },
+  "SONY ONE FAVORIS": {
+    "source": "XMLTVFR",
+    "id": "SonyOneFavoris.fr"
+  },
+  "SONY ONE THE BLACKLIST": {
+    "source": "SAMSUNG",
+    "id": "FR300010HD"
+  },
+  "Vosges TV": {
+    "source": "FR1",
+    "id": "Vosges.tv.fr"
+  },
+  "POPCORN": null,
+  "CINE NANAR": {
+    "source": "RAKUTEN1",
+    "id": "FR:.Ciné.Nanar.be"
+  },
+  "Epicurieux avec Jamy": {
+    "source": "SAMSUNG",
+    "id": "FRBD5100003TP"
+  },
+  "Alerte à Malibu": {
+    "source": "RAKUTEN1",
+    "id": "FR:.Alerte.à.Malibu.TV.be"
+  },
+  "Passion Bollywood": {
+    "source": "SAMSUNG",
+    "id": "FR1100001V1"
+  },
+  "J’irai dormir chez vous": {
+    "source": "FR1",
+    "id": "J'irai.dormir.chez.vous.fr"
+  },
+  "Destination Nature": {
+    "source": "SAMSUNG",
+    "id": "FRBC4000001IO"
+  },
+  "TV5 Monde Voyage": {
+    "source": "XMLTVFR",
+    "id": "TV5MondeVoyage.fr"
+  },
+  "Global Buddhist Network HD": null,
+  "HANDICAP TV HD": null,
+  "ERT news HD EPT news HD": {
+    "source": "GR1",
+    "id": "EPT.NEWS.gr"
+  },
+  "Die Neue Zeit TV": null,
+  "Fox LiveNOW": {
+    "source": "PLEX1",
+    "id": "plex.tv.LiveNOW.from.FOX.plex"
+  },
+  "CHADA TV HD": {
+    "source": "FR1",
+    "id": "CHADA.TV.fr"
+  },
+  "MATELE (1080i)": {
+    "source": "XMLTVFR",
+    "id": "MaTele.be"
+  },
+  "RIK SAT HD": {
+    "source": "CH1",
+    "id": "RIK.Sat.ch"
+  },
+  "Radio Italia tv": {
+    "source": "CH1",
+    "id": "Radio.Italia.TV.ch"
+  },
+  "Deejay TV HD": {
+    "source": "CH1",
+    "id": "Deejay.TV.ch"
+  },
+  "Reggio TV HD": null,
+  "TRENTINO TV HD": {
+    "source": "CH1",
+    "id": "Trentino.TV.ch"
+  },
+  "TELENORD": null,
+  "RADIO FRECCIA TV HD": {
+    "source": "IT1",
+    "id": "RADIOFRECCIA.HD.it"
+  },
+  "KISS KISS HD": null,
+  "Dokusat HD": {
+    "source": "CH1",
+    "id": "DOKUSAT.ch"
+  },
+  "More Than Sports TV HD": {
+    "source": "CH1",
+    "id": "More.Than.Sports.TV.ch"
+  },
+  "tagesschau24 HD": {
+    "source": "CH1",
+    "id": "Tagesschau24.ch"
+  },
+  "Musig24 Schweizer musik schlager": {
+    "source": "CH1",
+    "id": "musig24.ch"
+  },
+  "TVP info_ HD": {
+    "source": "CH1",
+    "id": "TVP.Info.ch"
+  },
+  "euronews. english HD": {
+    "source": "CH1",
+    "id": "Euronews.E.ch"
+  },
+  "STINGRAY iConcerts HD": {
+    "source": "CH1",
+    "id": "Stingray.iConcerts.ch"
+  },
+  "English Club TV": {
+    "source": "CH1",
+    "id": "English.Club.TV.ch"
+  },
+  "LGF Talk": null,
+  "that’s 00s": null,
+  "Totalmusic 2000s": null,
+  "DW English (1080p)": {
+    "source": "CH1",
+    "id": "DW.Englisch.ch"
+  },
+  "arte d HD": {
+    "source": "CH1",
+    "id": "Arte.Deutsch.ch"
+  },
+  "ICI Television Québec HD": null,
+  "SPORTDIGITAL FREE HD deutsch": {
+    "source": "SAMSUNG",
+    "id": "DEAJ0500429A"
+  },
+  "Movie Music by STINGRAY HD": {
+    "source": "PLEX1",
+    "id": "plex.tv.Movie.Music.by.Stingray.plex"
+  },
+  "dJazz STINGRAY HD": {
+    "source": "CH1",
+    "id": "Stingray.djazz.ch"
+  },
+  "Classica STINGRAY HD": {
+    "source": "XMLTVFR",
+    "id": "StingrayClassica.fr"
+  },
+  "MotorVision En HD": {
+    "source": "PLEX1",
+    "id": "plex.tv.Motorvision.TV.plex"
+  },
+  "BBC Earth HD": {
+    "source": "PLEX1",
+    "id": "plex.tv.BBC.Earth.plex"
+  },
+  "GB News HD": {
+    "source": "CH1",
+    "id": "GB.News.ch"
+  },
+  "ICI RDI Télé - Radio Canada HD": {
+    "source": "CA2",
+    "id": "ICI.RDI.HD.ca2"
+  },
+  "N24 Doku HD": {
+    "source": "CH1",
+    "id": "N24.Doku.ch"
+  },
+  "Bild TV HD": null,
+  "Auto Bild HD": null,
+  "Welt der Wunder HD": {
+    "source": "CH1",
+    "id": "Welt.der.Wunder.TV.ch"
+  },
+  "lilo.TV HD": {
+    "source": "CH1",
+    "id": "Lilo.TV.ch"
+  },
+  "SWR DASDING HD": null,
+  "CGTN DOCUMENTARY FHD": {
+    "source": "CH1",
+    "id": "CGTN.Documentary.ch"
+  },
+  "Reuters TV HD": {
+    "source": "SAMSUNG",
+    "id": "GBBD4900001RG"
+  },
+  "France24 english HD": {
+    "source": "CH1",
+    "id": "France.24.English.ch"
+  },
+  "Rugby Zone": null,
+  "Wired2fish": {
+    "source": "PLEX1",
+    "id": "plex.tv.Wired2Fish.plex"
+  },
+  "TVR INFO Romania INFO HD": {
+    "source": "RO1",
+    "id": "TVR.Info.ro"
+  },
+  "RTL Luxembourg HD": {
+    "source": "LU1",
+    "id": "RTL.Lëtzebuerg.lu"
+  },
+  "TRT WORLD HD": {
+    "source": "UK1",
+    "id": "TRT.World.HD.uk"
+  },
+  "1+1 NEWS Ukrain": {
+    "source": "RAKUTEN1",
+    "id": "PL:.1+1.News.be"
+  },
+  "FAST & FUNBOX HD": {
+    "source": "LU1",
+    "id": "FastandfunBox.lu"
+  },
+  "euronews. deutsch HD": {
+    "source": "CH1",
+    "id": "Euronews.D.ch"
+  },
+  "Radio Italia live": {
+    "source": "BE2",
+    "id": "Radio.Italia.Live.be"
+  },
+  "Food Network IT HD": {
+    "source": "CH1",
+    "id": "Food.Network.IT.ch"
+  },
+  "ClassTV MODA IT HD": {
+    "source": "CH1",
+    "id": "Class.TV.Moda.ch"
+  },
+  "Sportitalia HD": {
+    "source": "CH1",
+    "id": "SPORTITALIA.ch"
+  },
+  "AUTOMOTO IT": {
+    "source": "RAKUTEN1",
+    "id": "IT:.Automoto.be"
+  },
+  "DISCOVERY IT": {
+    "source": "CH1",
+    "id": "Discovery.Channel.I.ch"
+  },
+  "Giallo IT": {
+    "source": "CH1",
+    "id": "Giallo.ch"
+  },
+  "TV2000": {
+    "source": "CH1",
+    "id": "TV2000.ch"
+  },
+  "Real Time IT HD": {
+    "source": "CH1",
+    "id": "Real.Time.ch"
+  },
+  "HGTV IT Home & Garden HD": {
+    "source": "CH1",
+    "id": "Home.&.Garden.TV.IT.ch"
+  },
+  "RTL102.5 HD": {
+    "source": "CH1",
+    "id": "RTL.102.5.TV.ch"
+  },
+  "euronews. italia HD": {
+    "source": "CH1",
+    "id": "Euronews.I.ch"
+  },
+  "QS24.TV HD": null,
+  "Class CNBC IT HD": {
+    "source": "IT1",
+    "id": "Class.CNBC.it"
+  },
+  "20 Minutes TV HD": {
+    "source": "FR1",
+    "id": "20.Minutes.TV.fr"
+  },
+  "time2Rlx HD": {
+    "source": "WHALETVPLUS1",
+    "id": "time2Rlx.us"
+  },
+  "CGTN français HD": {
+    "source": "FR1",
+    "id": "CGTN.Français.fr"
+  },
+  "RTVi HD": {
+    "source": "CH1",
+    "id": "RTVi.ch"
+  },
+  "bibel tv HD": {
+    "source": "CH1",
+    "id": "Bibel.TV.ch"
+  },
+  "K-TV HD": {
+    "source": "CH1",
+    "id": "K-TV.ch"
+  },
+  " TV RT Rheintal": {
+    "source": "CH1",
+    "id": "TV.Rheintal.ch"
+  },
+  "NEXT TV": null,
+  "Star Novelas": null,
+  "TV5Monde Europe HD": {
+    "source": "CH1",
+    "id": "TV5.MONDE.EUROPE.ch"
+  },
+  "TV5MONDE Chefs HD": {
+    "source": "WHALETVPLUS1",
+    "id": "TV5.Monde+.Chefs.us"
+  },
+  "Black TVs": null,
+  "SciFi": {
+    "source": "CH1",
+    "id": "Syfy.F.ch"
+  },
+  "13EME RUE": {
+    "source": "CH1",
+    "id": "13eme.Rue.ch"
+  },
+  "MCM Top": {
+    "source": "CH1",
+    "id": "MCM.Top.ch"
+  }
+}

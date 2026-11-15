@@ -7,6 +7,9 @@
 let
   port = config.host.media.threadfin.port;
   stateDir = "/var/lib/threadfin";
+  configure = pkgs.writers.writePython3 "threadfin-xmltv" {
+    libraries = [ pkgs.python3Packages.websockets ];
+  } (builtins.readFile ./configure.py);
   settings = pkgs.writeText "threadfin-settings.json" (
     builtins.toJSON {
       buffer = "ffmpeg";
@@ -59,6 +62,28 @@ in
       preStart = ''
         ${pkgs.systemd}/bin/systemd-tmpfiles --create --prefix=${stateDir}
       '';
+    };
+    systemd.services.threadfin-xmltv = {
+      description = "Configure IPTV guide sources and channel mappings";
+      wantedBy = [ "multi-user.target" ];
+      requires = [ "podman-threadfin.service" ];
+      after = [ "podman-threadfin.service" ];
+      partOf = [ "podman-threadfin.service" ];
+      unitConfig.StartLimitIntervalSec = 0;
+      environment = {
+        THREADFIN_URL = "ws://127.0.0.1:${toString port}/data/";
+        GUIDE_MAPPING = toString ./guide-mapping.json;
+        PLAYLIST_FILE = toString ./channels.m3u;
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = configure;
+        DynamicUser = true;
+        Restart = "on-failure";
+        RestartSec = "10s";
+        TimeoutStartSec = "20min";
+      };
     };
   };
 }
