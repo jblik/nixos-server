@@ -106,7 +106,7 @@ def configure_plex(sportarr, base, credentials):
     token = preferences.attrib["PlexOnlineToken"]
     plex = session({
         "X-Plex-Token": token, "Accept": "application/json",
-        "X-Plex-Pms-Api-Version": "1.2.3",
+        "X-Plex-Pms-Api-Version": "1.2.0",
     })
     plex_url = os.environ["PLEX_URL"]
     providers_url = plex_url + "/media/providers/metadata"
