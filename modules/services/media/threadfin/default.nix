@@ -52,6 +52,11 @@ in
       "d ${stateDir} 0750 99 100 -"
       "C ${stateDir}/settings.json 0640 99 100 - ${settings}"
     ];
-    systemd.services.podman-threadfin.unitConfig.RequiresMountsFor = [ stateDir ];
+    systemd.services.podman-threadfin = {
+      unitConfig.RequiresMountsFor = [ stateDir ];
+      preStart = ''
+        ${pkgs.systemd}/bin/systemd-tmpfiles --create --prefix=${stateDir}
+      '';
+    };
   };
 }
