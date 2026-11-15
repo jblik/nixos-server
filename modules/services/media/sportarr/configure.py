@@ -105,49 +105,7 @@ def configure_prowlarr(credentials, api_key):
 def configure_plex(sportarr, base, credentials):
     preferences = ET.parse(credentials / "plex.xml").getroot()
     token = preferences.attrib["PlexOnlineToken"]
-    plex = session({
-        "X-Plex-Token": token, "Accept": "application/json",
-        "X-Plex-Pms-Api-Version": "1.2.0",
-    })
     plex_url = os.environ["PLEX_URL"]
-    providers_url = plex_url + "/media/providers/metadata"
-    providers = request(plex, "GET", providers_url).json()["MediaContainer"]
-    provider_uri = "https://sportarr.net/plex"
-    provider = next(
-        (p for p in providers.get("MetadataAgentProvider", [])
-         if p["uri"].rstrip("/") == provider_uri), None,
-    )
-    if provider is None:
-        result = request(plex, "POST", providers_url, params={
-            "uri": provider_uri,
-        })
-        provider = result.json()["MediaContainer"]["MetadataAgentProvider"][0]
-    groups_url = providers_url + "/group"
-    groups = request(plex, "GET", groups_url).json()["MediaContainer"]
-    group = next(
-        (g for g in groups.get("MetadataAgentProviderGroup", [])
-         if g["primaryIdentifier"] == provider["identifier"]), None,
-    )
-    if group is None:
-        result = request(plex, "POST", groups_url, params={
-            "title": "Sportarr", "primaryIdentifier": provider["identifier"],
-        })
-        container = result.json()["MediaContainer"]
-        group = container["MetadataAgentProviderGroup"][0]
-    libraries_url = plex_url + "/library/sections"
-    libraries = request(plex, "GET", libraries_url).json()["MediaContainer"]
-    root = os.environ["SPORTS_ROOT"]
-    library = next(
-        (s for s in libraries.get("Directory", [])
-         if any(p["path"] == root for p in s.get("Location", []))), None,
-    )
-    if library is None:
-        request(plex, "POST", libraries_url + "/all", params={
-            "name": "Sports", "type": 2,
-            "scanner": "Plex TV Series", "agent": "tv.plex.agents.series",
-            "metadataAgentProviderGroupId": group["id"],
-            "language": "en", "locations": root,
-        })
     notification = upsert(sportarr, base + "/notification", {
         "name": "Plex", "implementation": "Plex", "enabled": True,
         "configJson": json.dumps({
