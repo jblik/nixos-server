@@ -16,6 +16,8 @@ let
       ThreadfinAutoUpdate = false;
       httpThreadfinDomain = "127.0.0.1:${toString port}";
       version = "0.5.0";
+      "ffmpeg.options" =
+        "-hide_banner -loglevel error -analyzeduration 1000000 -probesize 1000000 -i [URL] -c:v copy -c:a aac -b:a 192k -ac 2 -sn -f mpegts -fflags +genpts -movflags +faststart -copyts pipe:1";
       files = {
         m3u.M0000000000000000001 = {
           name = "Verified Swiss IPTV";
