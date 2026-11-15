@@ -140,6 +140,11 @@ in
         default = 7878;
         description = "Radarr web UI port.";
       };
+      sportarr.port = lib.mkOption {
+        type = lib.types.port;
+        default = 1867;
+        description = "Sportarr web UI port.";
+      };
       bazarr.port = lib.mkOption {
         type = lib.types.port;
         default = 6767;

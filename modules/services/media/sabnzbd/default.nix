@@ -57,6 +57,11 @@ in
           email_to = "jacob@steenblik.ch";
         };
         categories = {
+          sports = {
+            name = "sports";
+            dir = "sports";
+            pp = 3;
+          };
           tv = {
             name = "tv";
             dir = "tv";

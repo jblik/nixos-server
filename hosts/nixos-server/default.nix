@@ -82,6 +82,7 @@ in
           radarr = "/var/lib/radarr";
           sabnzbd = "/var/lib/sabnzbd";
           sonarr = "/var/lib/sonarr";
+          sportarr = "/var/lib/sportarr";
           tdarr = "/var/lib/tdarr";
         };
         # Regeneratable from the originals.

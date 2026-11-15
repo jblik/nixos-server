@@ -1,8 +1,8 @@
 { config, lib, ... }:
 # Plex, the *arr stack and Tdarr, plus the shared /data layout they all use:
 #
-#   /data/torrents/{tv,movies}   qBittorrent downloads
-#   /data/media/{tv,movies}      the library (Plex, Sonarr, Radarr, Bazarr)
+#   /data/torrents/{tv,movies,sports}   qBittorrent downloads
+#   /data/media/{tv,movies,sports}      the library (Plex, Sonarr, Radarr, Sportarr, Bazarr)
 #   /scratch/incomplete        qBittorrent in-progress downloads (fast storage)
 #   /scratch/usenet            SABnzbd incomplete and completed downloads
 #   /scratch/transcode         Tdarr cache (fast storage)
@@ -20,6 +20,7 @@ let
     "bazarr"
     "tdarr-server"
     "tdarr-node-main"
+    "podman-sportarr"
   ];
   ports = [
     s.sonarr.settings.server.port
@@ -30,6 +31,7 @@ let
     m.cleanuparr.port
     m.pulsarr.port
     m.maintainerr.port
+    m.sportarr.port
   ];
 in
 {
@@ -37,6 +39,7 @@ in
     ./arr.nix
     ./qbittorrent
     ./sabnzbd
+    ./sportarr
     ./containers.nix
     ./cleanuparr
     ./media-preview-generator
@@ -50,9 +53,11 @@ in
         "torrents"
         "torrents/tv"
         "torrents/movies"
+        "torrents/sports"
         "media"
         "media/tv"
         "media/movies"
+        "media/sports"
       ]
       ++ map (d: "d ${scratchDir}/${d} 2775 root users -") [
         "incomplete"
@@ -61,6 +66,7 @@ in
         "usenet/complete"
         "usenet/complete/tv"
         "usenet/complete/movies"
+        "usenet/complete/sports"
         "transcode"
       ];
 

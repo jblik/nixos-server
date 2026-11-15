@@ -49,6 +49,9 @@ let
       )
       (service media internal "sonarr" "Sonarr" "TV series fetcher" (svg "sonarr"))
       (service media internal "radarr" "Radarr" "Movie fetcher" (svg "radarr"))
+      (service media internal "sportarr" "Sportarr" "Sports event fetcher"
+        "https://sportarr.net/favicon.ico"
+      )
       (service media internal "bazarr" "Bazarr" "Subtitle fetcher" (svg "bazarr"))
       (service media internal "prowlarr" "Prowlarr" "Indexer manager" (svg "prowlarr"))
       (service media internal "qbittorrent" "qBittorrent" "Download client" (svg "qbittorrent"))

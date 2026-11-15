@@ -6,6 +6,21 @@ let
   uid = "99";
   gid = "100";
   containers = {
+    sportarr = {
+      image = "sportarr/sportarr:4.1.12.1122";
+      environment = {
+        PUID = uid;
+        PGID = gid;
+        UMASK = "002";
+        Sportarr__Port = toString m.sportarr.port;
+      };
+      volumes = [
+        "/var/lib/sportarr:/config"
+        "${config.host.storage.bulkMount}:${config.host.storage.bulkMount}"
+        "${config.host.storage.scratchDir}/usenet:${config.host.storage.scratchDir}/usenet"
+      ];
+    };
+
     pulsarr = {
       image = "lakker/pulsarr:1.1.1";
       environment = {
