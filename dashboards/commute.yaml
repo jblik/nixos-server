@@ -1,0 +1,1075 @@
+type: grid
+cards:
+  - type: clock
+    clock_style: digital
+    clock_size: small
+    show_seconds: true
+    no_background: false
+    time_format: '24'
+    face_style: markers
+  - type: tile
+    entity: sensor.meteoswiss_zurich_affoltern_temperature
+    name: " "
+    hide_state: false
+    vertical: false
+    grid_options:
+      columns: 6
+      rows: 1
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Temperature
+          content:
+            type: custom:mod-card
+            card:
+              type: custom:meteoswiss-forecast-diagram-card
+              entity: weather.meteoswiss_zurich_affoltern
+              grid_options:
+                rows: 6
+                columns: 12
+            card_mod:
+              style:
+                .: |
+                  ha-card {
+                    background: none;
+                    border: none;
+                    box-shadow: none;
+                  }
+                meteoswiss-temperature-card$:
+                  .: |
+                    .card-content {
+                      height: 550px !important;
+                    }
+                    forecast-temperature-chart {
+                      height: 550px !important;
+                    }
+                  forecast-temperature-chart$: |
+                    .chart {
+                      height: 550px !important;
+                    }
+                    .chart-svg-area {
+                      flex: 1;
+                      min-height: 0;
+                      overflow: visible;
+                    }
+                    svg {
+                      overflow: visible;
+                    }
+                    svg text {
+                      font-size: 16px !important;
+                      font-weight: 700;
+                      fill: var(--primary-text-color);
+                      opacity: 1;
+                    }
+                    svg text[text-anchor="middle"]:last-of-type {
+                      text-anchor: end;
+                    }
+          popup_styles:
+            - style: all
+              styles: |
+                ha-dialog {
+                  --popup-width: 640px;
+                  --popup-max-width: calc(100vw - 24px);
+                }
+    card_mod:
+      style:
+        .: |
+          ha-tile-icon {
+            display: none !important;
+          }
+          ha-tile-info {
+            width: 100%;
+            text-align: center;
+            --ha-tile-info-min-height: 0;
+            --ha-tile-info-primary-min-height: 0;
+          }
+        ha-tile-info$: |
+          .primary {
+            display: none !important;
+          }
+          .secondary {
+            font-size: 26px !important;
+            line-height: 1.2 !important;
+            font-weight: 450 !important;
+          }
+  - type: markdown
+    content: >-
+      {%- set commute = 'binary_sensor.sophie_work_commute' -%}
+
+      {%- set current = as_timestamp(now()) -%}
+
+      <div>
+        {%- set event = as_timestamp(state_attr(commute, 'event_start'), none) if commute else none -%}
+        {%- if commute is none or (is_state(commute, 'on') and event is not none and 0 < event - current <= 10800) -%}
+      <div>
+
+      <div><span>Hagenholz</span><ha-icon
+      icon="mdi:arrow-right"></ha-icon><span>Dietlikon,
+      Industriestrasse</span></div>
+
+      <table role="presentation" width="100%" border="0"><tbody>
+        {%- set ns = namespace(count=0) -%}
+        {%- for connection in state_attr('sensor.sophie_work_departure', 'connections') or [] -%}
+          {%- set departure = as_timestamp(connection.departure, none) -%}
+          {%- set delay = connection.delay | float(0) -%}
+          {%- set prognosis = connection.raw.get('from', {}).get('prognosis') or {} -%}
+          {%- set expected = as_timestamp(prognosis.get('departure'), none) -%}
+          {%- set expected = expected if expected is not none else departure + delay * 60 if departure is not none else none -%}
+          {%- if ns.count < 16 and departure is not none and expected is not none and expected > current -%}
+            {%- set ns.count = ns.count + 1 -%}
+            {%- set minutes = ((expected - current) / 60) | round(0, 'ceil') | int -%}
+            {%- set category = (connection.category or '') | upper -%}
+            {%- set icon = 'mdi:bus' if category in ['B', 'BUS', 'NFB', 'NFO'] else 'mdi:tram' if category in ['T', 'TRAM', 'NFT'] else 'mdi:train' -%}
+            {%- set number = connection.service_number or connection.line or connection.train_number -%}
+            {%- set service = number if icon != 'mdi:train' else connection.line or connection.train_number -%}
+      <tr><td><span><ha-icon icon="{{ icon }}"></ha-icon><span>{{ service | e
+      }}</span></span></td><td><strong>{{ departure | timestamp_custom('%H:%M')
+      }}</strong></td><td>{% if delay > 0 %}+{{ delay | round(0) | int }} mins{%
+      endif %}</td><td>in {{ minutes }} mins</td></tr>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.count == 0 -%}
+      <tr><td colspan="4">No upcoming departures available.</td></tr>
+        {%- endif -%}
+      </tbody></table>
+
+      </div>
+        {%- endif -%}
+      </div>
+    card_mod:
+      style:
+        .: |
+          ha-card {
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-radius: 12px;
+          }
+          ha-markdown { padding: 12px; }
+        ha-markdown$: >
+          ha-markdown-element > div { display: grid; grid-template-columns:
+          minmax(0, 1fr); gap: 16px; width: 100%; }
+
+          ha-markdown-element > div > div { min-width: 0; }
+
+          ha-markdown-element > div > div > div {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 24px;
+          }
+
+          td[colspan] { font-size: 12px; color: var(--secondary-text-color); }
+
+          table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            font-size: 16px;
+            line-height: 22px;
+            font-variant-numeric: tabular-nums;
+          }
+
+          table, tr, td, th { border: 0 !important; }
+
+          td {
+            padding: 8px 6px;
+            border: 0;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+          }
+
+          td:first-child > span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          td:last-child { font-size: 13px; color: var(--secondary-text-color); }
+
+          td:nth-child(3) { font-size: 13px; color: #db4437; }
+
+          ha-icon { --mdc-icon-size: 18px; flex: 0 0 18px; }
+    grid_options:
+      rows: 3
+      columns: 12
+    visibility:
+      - condition: state
+        entity: binary_sensor.sophie_work_commute
+        state: 'on'
+  - type: markdown
+    content: >-
+      {%- set commute = 'binary_sensor.jacob_work_commute' -%}
+
+      {%- set current = as_timestamp(now()) -%}
+
+      <div>
+        {%- set event = as_timestamp(state_attr(commute, 'event_start'), none) if commute else none -%}
+        {%- if commute is none or (is_state(commute, 'on') and event is not none and 0 < event - current <= 10800) -%}
+      <div>
+
+      <div><span>Oerlikon</span><ha-icon
+      icon="mdi:arrow-right"></ha-icon><span>Zug</span></div>
+
+      <table role="presentation" width="100%" border="0"><tbody>
+        {%- set ns = namespace(count=0) -%}
+        {%- for connection in state_attr('sensor.jacob_work_departure', 'connections') or [] -%}
+          {%- set departure = as_timestamp(connection.departure, none) -%}
+          {%- set delay = connection.delay | float(0) -%}
+          {%- set prognosis = connection.raw.get('from', {}).get('prognosis') or {} -%}
+          {%- set platform = prognosis.get('platform') or connection.raw.get('from', {}).get('platform') -%}
+          {%- set expected = as_timestamp(prognosis.get('departure'), none) -%}
+          {%- set expected = expected if expected is not none else departure + delay * 60 if departure is not none else none -%}
+          {%- if ns.count < 16 and departure is not none and expected is not none and expected > current -%}
+            {%- set ns.count = ns.count + 1 -%}
+            {%- set minutes = ((expected - current) / 60) | round(0, 'ceil') | int -%}
+            {%- set category = (connection.category or '') | upper -%}
+            {%- set icon = 'mdi:bus' if category in ['B', 'BUS', 'NFB', 'NFO'] else 'mdi:tram' if category in ['T', 'TRAM', 'NFT'] else 'mdi:train' -%}
+            {%- set number = connection.service_number or connection.line or connection.train_number -%}
+            {%- set service = number if icon != 'mdi:train' else connection.line or connection.train_number -%}
+      <tr><td><span><ha-icon icon="{{ icon }}"></ha-icon><span>{{ service | e
+      }}</span></span></td><td>{% if platform %}Gl. {{ platform | e }}{% endif
+      %}</td><td><strong>{{ departure | timestamp_custom('%H:%M')
+      }}</strong></td><td>{% if delay > 0 %}+{{ delay | round(0) | int }} mins{%
+      endif %}</td><td>in {{ minutes }} mins</td></tr>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.count == 0 -%}
+      <tr><td colspan="5">No upcoming departures available.</td></tr>
+        {%- endif -%}
+      </tbody></table>
+
+      </div>
+        {%- endif -%}
+      </div>
+    card_mod:
+      style:
+        .: |
+          ha-card {
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-radius: 12px;
+          }
+          ha-markdown { padding: 12px; }
+        ha-markdown$: >
+          ha-markdown-element > div { display: grid; grid-template-columns:
+          minmax(0, 1fr); gap: 16px; width: 100%; }
+
+          ha-markdown-element > div > div { min-width: 0; }
+
+          ha-markdown-element > div > div > div {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 24px;
+          }
+
+          td[colspan] { font-size: 12px; color: var(--secondary-text-color); }
+
+          table {
+            display: table;
+            width: 100%;
+            table-layout: auto;
+            border-collapse: collapse;
+            font-size: 16px;
+            line-height: 22px;
+            font-variant-numeric: tabular-nums;
+          }
+
+          table, tr, td, th { border: 0 !important; }
+
+          td {
+            padding: 8px 6px;
+            border: 0;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+          }
+
+          td:first-child > span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          td:last-child { font-size: 13px; color: var(--secondary-text-color); }
+
+          td:nth-child(4) { font-size: 13px; color: #db4437; }
+
+          ha-icon { --mdc-icon-size: 18px; flex: 0 0 18px; }
+
+          td:nth-child(2) { font-size: 13px; text-align: center; }
+    grid_options:
+      rows: 3
+      columns: 12
+    visibility:
+      - condition: state
+        entity: binary_sensor.jacob_work_commute
+        state: 'on'
+  - type: markdown
+    content: >-
+      {%- set commute = 'binary_sensor.jacob_uni_commute' -%}
+
+      {%- set current = as_timestamp(now()) -%}
+
+      <div>
+        {%- set event = as_timestamp(state_attr(commute, 'event_start'), none) if commute else none -%}
+        {%- if commute is none or (is_state(commute, 'on') and event is not none and 0 < event - current <= 10800) -%}
+      <div>
+
+      <div><span>Oerlikon</span><ha-icon
+      icon="mdi:arrow-right"></ha-icon><span>Rapperswil SG</span></div>
+
+      <table role="presentation" width="100%" border="0"><tbody>
+        {%- set ns = namespace(count=0) -%}
+        {%- for connection in state_attr('sensor.jacob_uni_departure', 'connections') or [] -%}
+          {%- set departure = as_timestamp(connection.departure, none) -%}
+          {%- set delay = connection.delay | float(0) -%}
+          {%- set prognosis = connection.raw.get('from', {}).get('prognosis') or {} -%}
+          {%- set expected = as_timestamp(prognosis.get('departure'), none) -%}
+          {%- set expected = expected if expected is not none else departure + delay * 60 if departure is not none else none -%}
+          {%- if ns.count < 16 and departure is not none and expected is not none and expected > current -%}
+            {%- set ns.count = ns.count + 1 -%}
+            {%- set minutes = ((expected - current) / 60) | round(0, 'ceil') | int -%}
+            {%- set category = (connection.category or '') | upper -%}
+            {%- set icon = 'mdi:bus' if category in ['B', 'BUS', 'NFB', 'NFO'] else 'mdi:tram' if category in ['T', 'TRAM', 'NFT'] else 'mdi:train' -%}
+            {%- set number = connection.service_number or connection.line or connection.train_number -%}
+            {%- set service = number if icon != 'mdi:train' else connection.line or connection.train_number -%}
+      <tr><td><span><ha-icon icon="{{ icon }}"></ha-icon><span>{{ service | e
+      }}</span></span></td><td><strong>{{ departure | timestamp_custom('%H:%M')
+      }}</strong></td><td>{% if delay > 0 %}+{{ delay | round(0) | int }} mins{%
+      endif %}</td><td>in {{ minutes }} mins</td></tr>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.count == 0 -%}
+      <tr><td colspan="4">No upcoming departures available.</td></tr>
+        {%- endif -%}
+      </tbody></table>
+
+      </div>
+        {%- endif -%}
+      </div>
+    card_mod:
+      style:
+        .: |
+          ha-card {
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-radius: 12px;
+          }
+          ha-markdown { padding: 12px; }
+        ha-markdown$: >
+          ha-markdown-element > div { display: grid; grid-template-columns:
+          minmax(0, 1fr); gap: 16px; width: 100%; }
+
+          ha-markdown-element > div > div { min-width: 0; }
+
+          ha-markdown-element > div > div > div {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 24px;
+          }
+
+          td[colspan] { font-size: 12px; color: var(--secondary-text-color); }
+
+          table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            font-size: 16px;
+            line-height: 22px;
+            font-variant-numeric: tabular-nums;
+          }
+
+          table, tr, td, th { border: 0 !important; }
+
+          td {
+            padding: 8px 6px;
+            border: 0;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+          }
+
+          td:first-child > span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          td:last-child { font-size: 13px; color: var(--secondary-text-color); }
+
+          td:nth-child(3) { font-size: 13px; color: #db4437; }
+
+          ha-icon { --mdc-icon-size: 18px; flex: 0 0 18px; }
+    grid_options:
+      rows: 3
+      columns: 12
+    visibility:
+      - condition: state
+        entity: binary_sensor.jacob_uni_commute
+        state: 'on'
+  - type: markdown
+    content: >-
+      {%- set commute = none -%}
+
+      {%- set current = as_timestamp(now()) -%}
+
+      <div>
+        {%- set event = as_timestamp(state_attr(commute, 'event_start'), none) if commute else none -%}
+        {%- if commute is none or (is_state(commute, 'on') and event is not none and 0 < event - current <= 10800) -%}
+      <div>
+
+      <div><span>Leutschenbach</span><ha-icon
+      icon="mdi:arrow-right"></ha-icon><span>Oerlikon</span></div>
+
+      <table role="presentation" width="100%" border="0"><tbody>
+        {%- set ns = namespace(count=0) -%}
+        {%- for connection in state_attr('sensor.station_departure', 'connections') or [] -%}
+          {%- set departure = as_timestamp(connection.departure, none) -%}
+          {%- set delay = connection.delay | float(0) -%}
+          {%- set prognosis = connection.raw.get('from', {}).get('prognosis') or {} -%}
+          {%- set expected = as_timestamp(prognosis.get('departure'), none) -%}
+          {%- set expected = expected if expected is not none else departure + delay * 60 if departure is not none else none -%}
+          {%- if ns.count < 16 and departure is not none and expected is not none and expected > current -%}
+            {%- set ns.count = ns.count + 1 -%}
+            {%- set minutes = ((expected - current) / 60) | round(0, 'ceil') | int -%}
+            {%- set category = (connection.category or '') | upper -%}
+            {%- set icon = 'mdi:bus' if category in ['B', 'BUS', 'NFB', 'NFO'] else 'mdi:tram' if category in ['T', 'TRAM', 'NFT'] else 'mdi:train' -%}
+            {%- set number = connection.service_number or connection.line or connection.train_number -%}
+            {%- set service = number if icon != 'mdi:train' else connection.line or connection.train_number -%}
+      <tr><td><span><ha-icon icon="{{ icon }}"></ha-icon><span>{{ service | e
+      }}</span></span></td><td><strong>{{ departure | timestamp_custom('%H:%M')
+      }}</strong></td><td>{% if delay > 0 %}+{{ delay | round(0) | int }} mins{%
+      endif %}</td><td>in {{ minutes }} mins</td></tr>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.count == 0 -%}
+      <tr><td colspan="4">No upcoming departures available.</td></tr>
+        {%- endif -%}
+      </tbody></table>
+
+      </div>
+        {%- endif -%}
+      </div>
+    card_mod:
+      style:
+        .: |
+          ha-card {
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-radius: 12px;
+          }
+          ha-markdown { padding: 12px; }
+        ha-markdown$: >
+          ha-markdown-element > div { display: grid; grid-template-columns:
+          minmax(0, 1fr); gap: 16px; width: 100%; }
+
+          ha-markdown-element > div > div { min-width: 0; }
+
+          ha-markdown-element > div > div > div {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 24px;
+          }
+
+          td[colspan] { font-size: 12px; color: var(--secondary-text-color); }
+
+          table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            font-size: 16px;
+            line-height: 22px;
+            font-variant-numeric: tabular-nums;
+          }
+
+          table, tr, td, th { border: 0 !important; }
+
+          td {
+            padding: 8px 6px;
+            border: 0;
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+          }
+
+          td:first-child > span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          td:last-child { font-size: 13px; color: var(--secondary-text-color); }
+
+          td:nth-child(3) { font-size: 13px; color: #db4437; }
+
+          ha-icon { --mdc-icon-size: 18px; flex: 0 0 18px; }
+    grid_options:
+      rows: 3
+      columns: 12
+  - type: custom:button-card
+    section_mode: true
+    show_name: false
+    show_icon: false
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Calendar
+          initial_style: wide
+          style_sequence:
+          - wide
+          - fullscreen
+          content:
+            type: calendar
+            initial_view: dayGridMonth
+            entities:
+            - calendar.jacob
+            - calendar.sophie
+            - calendar.bears
+            - calendar.sophie_uni
+            card_mod:
+              style: |
+                ha-card {
+                  border: none;
+                  box-shadow: none;
+                }
+                ha-full-calendar {
+                  --calendar-height: min(72vh, 800px);
+                }
+          right_button: New event
+          right_button_close: false
+          right_button_action:
+            service: browser_mod.popup
+            data:
+              title: New calendar event
+              tag: newevent
+              content:
+              - name: entity_id
+                label: Calendar
+                required: true
+                selector:
+                  select:
+                    options:
+                    - value: calendar.jacob
+                      label: Jacob
+                    - value: calendar.sophie
+                      label: Sophie
+                    - value: calendar.bears
+                      label: Bears
+                    - value: calendar.sophie_uni
+                      label: Sophie Uni
+              - name: summary
+                label: Title
+                required: true
+                selector:
+                  text: {}
+              - name: start_date_time
+                label: Start
+                required: true
+                selector:
+                  datetime: {}
+              - name: end_date_time
+                label: End
+                required: true
+                selector:
+                  datetime: {}
+              - name: description
+                label: Description
+                selector:
+                  text:
+                    multiline: true
+              - name: location
+                label: Location
+                selector:
+                  text: {}
+              right_button: Create event
+              right_button_close: false
+              right_button_action:
+                service: browser_mod.javascript
+                data:
+                  code: |
+                    return (async () => {
+                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears","calendar.sophie_uni"];
+                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
+                          !data.start_date_time || !data.end_date_time ||
+                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
+                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
+                        return;
+                      }
+                      try {
+                        await hass.callService('calendar', 'create_event', {
+                          entity_id: data.entity_id,
+                          summary: data.summary.trim(),
+                          start_date_time: data.start_date_time,
+                          end_date_time: data.end_date_time,
+                          description: data.description || '',
+                          location: data.location || ''
+                        });
+                        await service('browser_mod.close_popup', { tag: 'newevent' });
+                        service('browser_mod.notification', { message: 'Calendar event created.' });
+                      } catch (error) {
+                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
+                      }
+                    })();
+              left_button: Cancel
+          popup_styles:
+          - style: all
+            styles: |
+              ha-dialog {
+                --popup-width: 1200px;
+                --popup-max-width: calc(100vw - 24px);
+              }
+    styles:
+      card:
+      - padding: '0'
+      - height: 100%
+      - overflow-y: auto
+      grid:
+      - grid-template-areas: '"calendar"'
+      - grid-template-columns: minmax(0, 1fr)
+      - grid-template-rows: min-content
+      - align-content: start
+      custom_fields:
+        calendar:
+        - pointer-events: none
+        - width: 100%
+        - min-width: '0'
+    custom_fields:
+      calendar:
+        card:
+          showLoader: false
+          type: custom:atomic-calendar-revive
+          entities:
+          - entity: calendar.jacob
+            color: "#4CAF50"
+          - entity: calendar.sophie
+            color: "#E91E63"
+          - entity: calendar.bears
+            color: "#2196F3"
+          - entity: calendar.sophie_uni
+            color: "#E91E63"
+          calShowDescription: false
+          showTimeRemaining: false
+          hoursOnSameLine: false
+          compactMode: false
+          card_mod:
+            style: |
+              ha-card {
+                border: none;
+                box-shadow: none;
+                text-align: left;
+              }
+    grid_options:
+      rows: 7
+      columns: 12
+    visibility:
+    - condition: state
+      entity: binary_sensor.sophie_work_commute
+      state_not: 'on'
+    - condition: state
+      entity: binary_sensor.jacob_work_commute
+      state_not: 'on'
+    - condition: state
+      entity: binary_sensor.jacob_uni_commute
+      state_not: 'on'
+  - type: custom:button-card
+    section_mode: true
+    show_name: false
+    show_icon: false
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Calendar
+          initial_style: wide
+          style_sequence:
+          - wide
+          - fullscreen
+          content:
+            type: calendar
+            initial_view: dayGridMonth
+            entities:
+            - calendar.jacob
+            - calendar.sophie
+            - calendar.bears
+            card_mod:
+              style: |
+                ha-card {
+                  border: none;
+                  box-shadow: none;
+                }
+                ha-full-calendar {
+                  --calendar-height: min(72vh, 800px);
+                }
+          right_button: New event
+          right_button_close: false
+          right_button_action:
+            service: browser_mod.popup
+            data:
+              title: New calendar event
+              tag: newevent
+              content:
+              - name: entity_id
+                label: Calendar
+                required: true
+                selector:
+                  select:
+                    options:
+                    - value: calendar.jacob
+                      label: Jacob
+                    - value: calendar.sophie
+                      label: Sophie
+                    - value: calendar.bears
+                      label: Bears
+              - name: summary
+                label: Title
+                required: true
+                selector:
+                  text: {}
+              - name: start_date_time
+                label: Start
+                required: true
+                selector:
+                  datetime: {}
+              - name: end_date_time
+                label: End
+                required: true
+                selector:
+                  datetime: {}
+              - name: description
+                label: Description
+                selector:
+                  text:
+                    multiline: true
+              - name: location
+                label: Location
+                selector:
+                  text: {}
+              right_button: Create event
+              right_button_close: false
+              right_button_action:
+                service: browser_mod.javascript
+                data:
+                  code: |
+                    return (async () => {
+                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears"];
+                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
+                          !data.start_date_time || !data.end_date_time ||
+                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
+                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
+                        return;
+                      }
+                      try {
+                        await hass.callService('calendar', 'create_event', {
+                          entity_id: data.entity_id,
+                          summary: data.summary.trim(),
+                          start_date_time: data.start_date_time,
+                          end_date_time: data.end_date_time,
+                          description: data.description || '',
+                          location: data.location || ''
+                        });
+                        await service('browser_mod.close_popup', { tag: 'newevent' });
+                        service('browser_mod.notification', { message: 'Calendar event created.' });
+                      } catch (error) {
+                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
+                      }
+                    })();
+              left_button: Cancel
+          popup_styles:
+          - style: all
+            styles: |
+              ha-dialog {
+                --popup-width: 1200px;
+                --popup-max-width: calc(100vw - 24px);
+              }
+    styles:
+      card:
+      - padding: '0'
+      - height: 100%
+      - overflow-y: auto
+      grid:
+      - grid-template-areas: '"calendar"'
+      - grid-template-columns: minmax(0, 1fr)
+      - grid-template-rows: min-content
+      - align-content: start
+      custom_fields:
+        calendar:
+        - pointer-events: none
+        - width: 100%
+        - min-width: '0'
+    custom_fields:
+      calendar:
+        card:
+          showLoader: false
+          type: custom:atomic-calendar-revive
+          entities:
+          - entity: calendar.jacob
+            color: "#4CAF50"
+          - entity: calendar.sophie
+            color: "#E91E63"
+          - entity: calendar.bears
+            color: "#2196F3"
+          calShowDescription: false
+          showTimeRemaining: false
+          hoursOnSameLine: false
+          compactMode: false
+          card_mod:
+            style: |
+              ha-card {
+                border: none;
+                box-shadow: none;
+                text-align: left;
+              }
+    grid_options:
+      rows: 4
+      columns: 12
+    visibility:
+    - condition: or
+      conditions:
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.sophie_work_commute
+          state: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_work_commute
+          state_not: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_uni_commute
+          state_not: 'on'
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.sophie_work_commute
+          state_not: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_work_commute
+          state: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_uni_commute
+          state_not: 'on'
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.sophie_work_commute
+          state_not: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_work_commute
+          state_not: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_uni_commute
+          state: 'on'
+  - type: custom:button-card
+    section_mode: true
+    show_name: false
+    show_icon: false
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Calendar
+          initial_style: wide
+          style_sequence:
+          - wide
+          - fullscreen
+          content:
+            type: calendar
+            initial_view: dayGridMonth
+            entities:
+            - calendar.jacob
+            - calendar.sophie
+            - calendar.bears
+            card_mod:
+              style: |
+                ha-card {
+                  border: none;
+                  box-shadow: none;
+                }
+                ha-full-calendar {
+                  --calendar-height: min(72vh, 800px);
+                }
+          right_button: New event
+          right_button_close: false
+          right_button_action:
+            service: browser_mod.popup
+            data:
+              title: New calendar event
+              tag: newevent
+              content:
+              - name: entity_id
+                label: Calendar
+                required: true
+                selector:
+                  select:
+                    options:
+                    - value: calendar.jacob
+                      label: Jacob
+                    - value: calendar.sophie
+                      label: Sophie
+                    - value: calendar.bears
+                      label: Bears
+              - name: summary
+                label: Title
+                required: true
+                selector:
+                  text: {}
+              - name: start_date_time
+                label: Start
+                required: true
+                selector:
+                  datetime: {}
+              - name: end_date_time
+                label: End
+                required: true
+                selector:
+                  datetime: {}
+              - name: description
+                label: Description
+                selector:
+                  text:
+                    multiline: true
+              - name: location
+                label: Location
+                selector:
+                  text: {}
+              right_button: Create event
+              right_button_close: false
+              right_button_action:
+                service: browser_mod.javascript
+                data:
+                  code: |
+                    return (async () => {
+                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears"];
+                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
+                          !data.start_date_time || !data.end_date_time ||
+                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
+                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
+                        return;
+                      }
+                      try {
+                        await hass.callService('calendar', 'create_event', {
+                          entity_id: data.entity_id,
+                          summary: data.summary.trim(),
+                          start_date_time: data.start_date_time,
+                          end_date_time: data.end_date_time,
+                          description: data.description || '',
+                          location: data.location || ''
+                        });
+                        await service('browser_mod.close_popup', { tag: 'newevent' });
+                        service('browser_mod.notification', { message: 'Calendar event created.' });
+                      } catch (error) {
+                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
+                      }
+                    })();
+              left_button: Cancel
+          popup_styles:
+          - style: all
+            styles: |
+              ha-dialog {
+                --popup-width: 1200px;
+                --popup-max-width: calc(100vw - 24px);
+              }
+    styles:
+      card:
+      - padding: '0'
+      - height: 100%
+      - overflow-y: auto
+      grid:
+      - grid-template-areas: '"calendar"'
+      - grid-template-columns: minmax(0, 1fr)
+      - grid-template-rows: min-content
+      - align-content: start
+      custom_fields:
+        calendar:
+        - pointer-events: none
+        - width: 100%
+        - min-width: '0'
+    custom_fields:
+      calendar:
+        card:
+          showLoader: false
+          type: custom:atomic-calendar-revive
+          entities:
+          - entity: calendar.jacob
+            color: "#4CAF50"
+          - entity: calendar.sophie
+            color: "#E91E63"
+          - entity: calendar.bears
+            color: "#2196F3"
+          calShowDescription: false
+          showTimeRemaining: false
+          hoursOnSameLine: false
+          compactMode: false
+          card_mod:
+            style: |
+              ha-card {
+                border: none;
+                box-shadow: none;
+                text-align: left;
+              }
+    grid_options:
+      rows: 1
+      columns: 12
+    visibility:
+    - condition: or
+      conditions:
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.sophie_work_commute
+          state: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_work_commute
+          state: 'on'
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.sophie_work_commute
+          state: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_uni_commute
+          state: 'on'
+      - condition: and
+        conditions:
+        - condition: state
+          entity: binary_sensor.jacob_work_commute
+          state: 'on'
+        - condition: state
+          entity: binary_sensor.jacob_uni_commute
+          state: 'on'
