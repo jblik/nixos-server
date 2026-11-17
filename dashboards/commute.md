@@ -11,6 +11,12 @@ to see that day's events, or an event to see its details. The calendar toolbar
 switches between month, day, and agenda views. Clicking the popup title toggles
 between wide and fullscreen layouts.
 
+The popup uses a compact month toolbar and event rows, with an extra 80px of
+calendar height. Its inherited color palette maps Jacob to `#4CAF50`, Sophie to
+`#E91E63`, and Bears to `#2196F3` using the same sorted entity list as the calendar.
+These colors apply only to the popup; the CalDAV integration remains YAML-managed.
+Busy days can still show **+ more** when their events exceed the available space.
+
 Each popup displays all active Home Assistant calendar entities, including all
 imported CalDAV calendars. Button Card builds this list from the current entity
 states when opening the popup, so newly enabled calendars appear without editing

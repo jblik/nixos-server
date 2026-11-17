@@ -561,23 +561,74 @@ cards:
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
             card_mod:
-              style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(80vh, 900px);
-                }
+              style:
+                .: |
+                  ha-card {
+                    border: none;
+                    box-shadow: none;
+                    padding: 0;
+                  }
+                  ha-full-calendar {
+                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                  }
+                ha-full-calendar$: |
+                  .header {
+                    padding-top: 0;
+                    padding-bottom: 6px;
+                    min-height: 40px;
+                  }
+                  h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    line-height: 32px;
+                  }
+                  .fc .fc-daygrid-day-top {
+                    padding-top: 0;
+                  }
+                  .fc .fc-daygrid-day-number {
+                    font-size: 12px;
+                    line-height: 20px;
+                    padding: 2px !important;
+                  }
+                  .fc .fc-daygrid-day-events {
+                    margin-top: 1px;
+                  }
+                  .fc .fc-event {
+                    font-size: 12px;
+                    line-height: 16px;
+                  }
+                  .fc .fc-daygrid-event {
+                    margin-top: 1px;
+                    margin-bottom: 1px;
+                  }
             show_add_event: true
             add_event_style: header
           popup_styles:
           - style: all
             styles: |
-              ha-dialog {
-                --popup-width: 1200px;
-                --popup-max-width: calc(100vw - 24px);
-              }
+              [[[
+                const colors = {
+                  "calendar.jacob": "#4CAF50",
+                  "calendar.sophie": "#E91E63",
+                  "calendar.bears": "#2196F3"
+                };
+                const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                return `
+                  :host { ${palette} }
+                  ha-dialog {
+                    --popup-width: 1200px;
+                    --popup-max-width: calc(100vw - 24px);
+                  }
+                  :host([wide]) ha-dialog {
+                    --dialog-surface-margin-top: 8px;
+                    --popup-max-height: calc(100svh - 16px);
+                  }
+                  :host([card]) .content .container {
+                    padding: 0 8px 8px;
+                  }
+                `;
+              ]]]
     styles:
       card:
       - padding: '0'
@@ -653,23 +704,74 @@ cards:
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
             card_mod:
-              style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(80vh, 900px);
-                }
+              style:
+                .: |
+                  ha-card {
+                    border: none;
+                    box-shadow: none;
+                    padding: 0;
+                  }
+                  ha-full-calendar {
+                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                  }
+                ha-full-calendar$: |
+                  .header {
+                    padding-top: 0;
+                    padding-bottom: 6px;
+                    min-height: 40px;
+                  }
+                  h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    line-height: 32px;
+                  }
+                  .fc .fc-daygrid-day-top {
+                    padding-top: 0;
+                  }
+                  .fc .fc-daygrid-day-number {
+                    font-size: 12px;
+                    line-height: 20px;
+                    padding: 2px !important;
+                  }
+                  .fc .fc-daygrid-day-events {
+                    margin-top: 1px;
+                  }
+                  .fc .fc-event {
+                    font-size: 12px;
+                    line-height: 16px;
+                  }
+                  .fc .fc-daygrid-event {
+                    margin-top: 1px;
+                    margin-bottom: 1px;
+                  }
             show_add_event: true
             add_event_style: header
           popup_styles:
           - style: all
             styles: |
-              ha-dialog {
-                --popup-width: 1200px;
-                --popup-max-width: calc(100vw - 24px);
-              }
+              [[[
+                const colors = {
+                  "calendar.jacob": "#4CAF50",
+                  "calendar.sophie": "#E91E63",
+                  "calendar.bears": "#2196F3"
+                };
+                const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                return `
+                  :host { ${palette} }
+                  ha-dialog {
+                    --popup-width: 1200px;
+                    --popup-max-width: calc(100vw - 24px);
+                  }
+                  :host([wide]) ha-dialog {
+                    --dialog-surface-margin-top: 8px;
+                    --popup-max-height: calc(100svh - 16px);
+                  }
+                  :host([card]) .content .container {
+                    padding: 0 8px 8px;
+                  }
+                `;
+              ]]]
     styles:
       card:
       - padding: '0'
@@ -769,23 +871,74 @@ cards:
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
             card_mod:
-              style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(80vh, 900px);
-                }
+              style:
+                .: |
+                  ha-card {
+                    border: none;
+                    box-shadow: none;
+                    padding: 0;
+                  }
+                  ha-full-calendar {
+                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                  }
+                ha-full-calendar$: |
+                  .header {
+                    padding-top: 0;
+                    padding-bottom: 6px;
+                    min-height: 40px;
+                  }
+                  h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    line-height: 32px;
+                  }
+                  .fc .fc-daygrid-day-top {
+                    padding-top: 0;
+                  }
+                  .fc .fc-daygrid-day-number {
+                    font-size: 12px;
+                    line-height: 20px;
+                    padding: 2px !important;
+                  }
+                  .fc .fc-daygrid-day-events {
+                    margin-top: 1px;
+                  }
+                  .fc .fc-event {
+                    font-size: 12px;
+                    line-height: 16px;
+                  }
+                  .fc .fc-daygrid-event {
+                    margin-top: 1px;
+                    margin-bottom: 1px;
+                  }
             show_add_event: true
             add_event_style: header
           popup_styles:
           - style: all
             styles: |
-              ha-dialog {
-                --popup-width: 1200px;
-                --popup-max-width: calc(100vw - 24px);
-              }
+              [[[
+                const colors = {
+                  "calendar.jacob": "#4CAF50",
+                  "calendar.sophie": "#E91E63",
+                  "calendar.bears": "#2196F3"
+                };
+                const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                return `
+                  :host { ${palette} }
+                  ha-dialog {
+                    --popup-width: 1200px;
+                    --popup-max-width: calc(100vw - 24px);
+                  }
+                  :host([wide]) ha-dialog {
+                    --dialog-surface-margin-top: 8px;
+                    --popup-max-height: calc(100svh - 16px);
+                  }
+                  :host([card]) .content .container {
+                    padding: 0 8px 8px;
+                  }
+                `;
+              ]]]
     styles:
       card:
       - padding: '0'
