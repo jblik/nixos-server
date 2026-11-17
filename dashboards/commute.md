@@ -6,13 +6,15 @@ configuration to install Button Card, reload the browser, then paste this file i
 the existing grid card's YAML editor. Dashboard layouts remain managed in the UI.
 The updated YAML is also saved to `/tmp/dashboard`.
 
-Click anywhere on the visible agenda to open a wide monthly calendar. Click a day
+Click anywhere on the visible agenda to open a fullscreen monthly calendar. Click a day
 to see that day's events, or an event to see its details. The calendar toolbar
 switches between month, day, and agenda views. Clicking the popup title toggles
 between wide and fullscreen layouts.
 
-The popup uses a compact month toolbar and event rows, with an extra 80px of
-calendar height. Its inherited color palette maps Jacob to `#4CAF50`, Sophie to
+The popup uses a compact month toolbar and event rows, with calendar height based
+on the tablet's current viewport, including orientation changes. An explicit
+Card Mod wrapper applies styling to the standalone native calendar in Browser Mod.
+Its inherited color palette maps Jacob to `#4CAF50`, Sophie to
 `#E91E63`, and Bears to `#2196F3` using the same sorted entity list as the calendar.
 These colors apply only to the popup; the CalDAV integration remains YAML-managed.
 Busy days can still show **+ more** when their events exceed the available space.

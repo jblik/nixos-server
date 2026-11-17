@@ -549,64 +549,73 @@ cards:
         service: browser_mod.popup
         data:
           title: Calendar
-          initial_style: wide
+          initial_style: fullscreen
           style_sequence:
-          - wide
           - fullscreen
+          - wide
           content:
-            type: calendar
-            initial_view: dayGridMonth
-            entities: |
-              [[[
-                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
-              ]]]
-            show_add_event: true
-            add_event_style: header
-          card_mod:
-            style:
-              hui-calendar-card$:
+            type: custom:mod-card
+            card:
+              type: calendar
+              initial_view: dayGridMonth
+              entities: |
+                [[[
+                  return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                ]]]
+              show_add_event: true
+              add_event_style: header
+            card_mod:
+              style:
                 .: |
                   ha-card {
+                    height: calc(100dvh - 72px);
                     border: none;
                     box-shadow: none;
                     padding: 0;
-                    height: auto;
                   }
-                  ha-full-calendar {
-                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
-                    height: auto;
-                    min-height: 0;
-                  }
-                ha-full-calendar$: |
-                  .header {
-                    padding-top: 0;
-                    padding-bottom: 6px;
-                    min-height: 40px;
-                  }
-                  h1 {
-                    margin: 0;
-                    font-size: 24px;
-                    line-height: 32px;
-                  }
-                  .fc .fc-daygrid-day-top {
-                    padding-top: 0;
-                  }
-                  .fc .fc-daygrid-day-number {
-                    font-size: 12px;
-                    line-height: 20px;
-                    padding: 2px !important;
-                  }
-                  .fc .fc-daygrid-day-events {
-                    margin-top: 1px;
-                  }
-                  .fc .fc-event {
-                    font-size: 12px;
-                    line-height: 16px;
-                  }
-                  .fc .fc-daygrid-event {
-                    margin-top: 1px;
-                    margin-bottom: 1px;
-                  }
+                hui-calendar-card$:
+                  .: |
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                      padding: 0;
+                      height: auto;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: calc(100dvh - 120px);
+                      height: auto;
+                      min-height: 0;
+                    }
+                  ha-full-calendar$: |
+                    .header {
+                      padding-top: 0;
+                      padding-bottom: 6px;
+                      min-height: 40px;
+                    }
+                    h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      line-height: 32px;
+                    }
+                    .fc .fc-daygrid-day-top {
+                      padding-top: 0;
+                    }
+                    .fc .fc-daygrid-day-number {
+                      font-size: 12px;
+                      line-height: 20px;
+                      padding: 2px !important;
+                    }
+                    .fc .fc-daygrid-day-events {
+                      margin-top: 1px;
+                    }
+                    .fc .fc-event {
+                      font-size: 12px;
+                      line-height: 16px;
+                    }
+                    .fc .fc-daygrid-event {
+                      margin-top: 1px;
+                      margin-bottom: 1px;
+                    }
           popup_styles:
           - style: all
             styles: |
@@ -624,8 +633,12 @@ cards:
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
+                  .content {
+                    height: calc(100dvh - 64px) !important;
+                  }
                   .content .container {
                     padding: 0 8px 8px !important;
+                    box-sizing: border-box;
                   }
                 `;
               ]]]
@@ -698,64 +711,73 @@ cards:
         service: browser_mod.popup
         data:
           title: Calendar
-          initial_style: wide
+          initial_style: fullscreen
           style_sequence:
-          - wide
           - fullscreen
+          - wide
           content:
-            type: calendar
-            initial_view: dayGridMonth
-            entities: |
-              [[[
-                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
-              ]]]
-            show_add_event: true
-            add_event_style: header
-          card_mod:
-            style:
-              hui-calendar-card$:
+            type: custom:mod-card
+            card:
+              type: calendar
+              initial_view: dayGridMonth
+              entities: |
+                [[[
+                  return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                ]]]
+              show_add_event: true
+              add_event_style: header
+            card_mod:
+              style:
                 .: |
                   ha-card {
+                    height: calc(100dvh - 72px);
                     border: none;
                     box-shadow: none;
                     padding: 0;
-                    height: auto;
                   }
-                  ha-full-calendar {
-                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
-                    height: auto;
-                    min-height: 0;
-                  }
-                ha-full-calendar$: |
-                  .header {
-                    padding-top: 0;
-                    padding-bottom: 6px;
-                    min-height: 40px;
-                  }
-                  h1 {
-                    margin: 0;
-                    font-size: 24px;
-                    line-height: 32px;
-                  }
-                  .fc .fc-daygrid-day-top {
-                    padding-top: 0;
-                  }
-                  .fc .fc-daygrid-day-number {
-                    font-size: 12px;
-                    line-height: 20px;
-                    padding: 2px !important;
-                  }
-                  .fc .fc-daygrid-day-events {
-                    margin-top: 1px;
-                  }
-                  .fc .fc-event {
-                    font-size: 12px;
-                    line-height: 16px;
-                  }
-                  .fc .fc-daygrid-event {
-                    margin-top: 1px;
-                    margin-bottom: 1px;
-                  }
+                hui-calendar-card$:
+                  .: |
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                      padding: 0;
+                      height: auto;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: calc(100dvh - 120px);
+                      height: auto;
+                      min-height: 0;
+                    }
+                  ha-full-calendar$: |
+                    .header {
+                      padding-top: 0;
+                      padding-bottom: 6px;
+                      min-height: 40px;
+                    }
+                    h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      line-height: 32px;
+                    }
+                    .fc .fc-daygrid-day-top {
+                      padding-top: 0;
+                    }
+                    .fc .fc-daygrid-day-number {
+                      font-size: 12px;
+                      line-height: 20px;
+                      padding: 2px !important;
+                    }
+                    .fc .fc-daygrid-day-events {
+                      margin-top: 1px;
+                    }
+                    .fc .fc-event {
+                      font-size: 12px;
+                      line-height: 16px;
+                    }
+                    .fc .fc-daygrid-event {
+                      margin-top: 1px;
+                      margin-bottom: 1px;
+                    }
           popup_styles:
           - style: all
             styles: |
@@ -773,8 +795,12 @@ cards:
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
+                  .content {
+                    height: calc(100dvh - 64px) !important;
+                  }
                   .content .container {
                     padding: 0 8px 8px !important;
+                    box-sizing: border-box;
                   }
                 `;
               ]]]
@@ -871,64 +897,73 @@ cards:
         service: browser_mod.popup
         data:
           title: Calendar
-          initial_style: wide
+          initial_style: fullscreen
           style_sequence:
-          - wide
           - fullscreen
+          - wide
           content:
-            type: calendar
-            initial_view: dayGridMonth
-            entities: |
-              [[[
-                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
-              ]]]
-            show_add_event: true
-            add_event_style: header
-          card_mod:
-            style:
-              hui-calendar-card$:
+            type: custom:mod-card
+            card:
+              type: calendar
+              initial_view: dayGridMonth
+              entities: |
+                [[[
+                  return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                ]]]
+              show_add_event: true
+              add_event_style: header
+            card_mod:
+              style:
                 .: |
                   ha-card {
+                    height: calc(100dvh - 72px);
                     border: none;
                     box-shadow: none;
                     padding: 0;
-                    height: auto;
                   }
-                  ha-full-calendar {
-                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
-                    height: auto;
-                    min-height: 0;
-                  }
-                ha-full-calendar$: |
-                  .header {
-                    padding-top: 0;
-                    padding-bottom: 6px;
-                    min-height: 40px;
-                  }
-                  h1 {
-                    margin: 0;
-                    font-size: 24px;
-                    line-height: 32px;
-                  }
-                  .fc .fc-daygrid-day-top {
-                    padding-top: 0;
-                  }
-                  .fc .fc-daygrid-day-number {
-                    font-size: 12px;
-                    line-height: 20px;
-                    padding: 2px !important;
-                  }
-                  .fc .fc-daygrid-day-events {
-                    margin-top: 1px;
-                  }
-                  .fc .fc-event {
-                    font-size: 12px;
-                    line-height: 16px;
-                  }
-                  .fc .fc-daygrid-event {
-                    margin-top: 1px;
-                    margin-bottom: 1px;
-                  }
+                hui-calendar-card$:
+                  .: |
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                      padding: 0;
+                      height: auto;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: calc(100dvh - 120px);
+                      height: auto;
+                      min-height: 0;
+                    }
+                  ha-full-calendar$: |
+                    .header {
+                      padding-top: 0;
+                      padding-bottom: 6px;
+                      min-height: 40px;
+                    }
+                    h1 {
+                      margin: 0;
+                      font-size: 24px;
+                      line-height: 32px;
+                    }
+                    .fc .fc-daygrid-day-top {
+                      padding-top: 0;
+                    }
+                    .fc .fc-daygrid-day-number {
+                      font-size: 12px;
+                      line-height: 20px;
+                      padding: 2px !important;
+                    }
+                    .fc .fc-daygrid-day-events {
+                      margin-top: 1px;
+                    }
+                    .fc .fc-event {
+                      font-size: 12px;
+                      line-height: 16px;
+                    }
+                    .fc .fc-daygrid-event {
+                      margin-top: 1px;
+                      margin-bottom: 1px;
+                    }
           popup_styles:
           - style: all
             styles: |
@@ -946,8 +981,12 @@ cards:
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
+                  .content {
+                    height: calc(100dvh - 64px) !important;
+                  }
                   .content .container {
                     padding: 0 8px 8px !important;
+                    box-sizing: border-box;
                   }
                 `;
               ]]]
