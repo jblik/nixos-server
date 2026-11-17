@@ -562,13 +562,25 @@ cards:
               ]]]
             card_mod:
               style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(72vh, 800px);
-                }
+                [[[
+                  const colors = {
+                    "calendar.jacob": "#4CAF50",
+                    "calendar.sophie": "#E91E63",
+                    "calendar.bears": "#2196F3"
+                  };
+                  const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                  const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                  return `
+                    :host { ${palette} }
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: min(80vh, 900px);
+                    }
+                  `;
+                ]]]
             show_add_event: true
             add_event_style: header
           popup_styles:
@@ -654,13 +666,25 @@ cards:
               ]]]
             card_mod:
               style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(72vh, 800px);
-                }
+                [[[
+                  const colors = {
+                    "calendar.jacob": "#4CAF50",
+                    "calendar.sophie": "#E91E63",
+                    "calendar.bears": "#2196F3"
+                  };
+                  const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                  const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                  return `
+                    :host { ${palette} }
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: min(80vh, 900px);
+                    }
+                  `;
+                ]]]
             show_add_event: true
             add_event_style: header
           popup_styles:
@@ -770,13 +794,25 @@ cards:
               ]]]
             card_mod:
               style: |
-                ha-card {
-                  border: none;
-                  box-shadow: none;
-                }
-                ha-full-calendar {
-                  --calendar-height: min(72vh, 800px);
-                }
+                [[[
+                  const colors = {
+                    "calendar.jacob": "#4CAF50",
+                    "calendar.sophie": "#E91E63",
+                    "calendar.bears": "#2196F3"
+                  };
+                  const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+                  const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
+                  return `
+                    :host { ${palette} }
+                    ha-card {
+                      border: none;
+                      box-shadow: none;
+                    }
+                    ha-full-calendar {
+                      --calendar-height: min(80vh, 900px);
+                    }
+                  `;
+                ]]]
             show_add_event: true
             add_event_style: header
           popup_styles:
