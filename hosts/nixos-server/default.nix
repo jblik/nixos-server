@@ -32,13 +32,7 @@ in
     lanCidr = "192.168.1.0/24";
 
     media.enable = true;
-    maintenance = {
-      enable = true;
-      window = {
-        start = "01:45";
-        end = "05:30";
-      };
-    };
+    maintenance.enable = true;
     forgejo.enable = true;
     immich.enable = true;
     home-assistant.enable = true;

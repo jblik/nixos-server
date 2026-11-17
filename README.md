@@ -97,50 +97,41 @@ the source after a successful import. Usenet downloads do not need to stay for s
 Plex's generated `Media` directory is bind-mounted from `/data/plex-media` on the
 HDDs. Media Preview Generator runs in Podman with the RTX 3060; its UI is on port 8280.
 
-## Maintenance Window
+## Maintenance
 
-The host explicitly sets `host.maintenance.window = { start = "01:45"; end = "05:30"; };`
-in the server timezone; there are no fallback times. `host.maintenance.enable` defaults to
-`false` and provides the default enable value for each task:
+`host.maintenance.enable` defaults to `false` and provides the default enable value
+for each task: `host.maintenance.keepCool`, `host.maintenance.qbittorrent`,
+`host.maintenance.tdarr`, and `host.maintenance.mediaPreviewGenerator`.
+An explicit per-task `enable` overrides the global default. Tasks disabled in Nix
+remain disabled regardless of the Home Assistant controls.
 
-- `host.maintenance.keepCool`
-- `host.maintenance.qbittorrent`
-- `host.maintenance.tdarr`
-- `host.maintenance.mediaPreviewGenerator`
+Nix provides `input_boolean.server_maintenance`, the four
+`shell_command.server_maintenance_<task>` commands (`keep_cool`, `seeding`, `tdarr`,
+`previews`), and the permissions they need. There are no maintenance schedules.
+The maintenance automations are managed in Home Assistant's UI and stored in its
+writable `automations.yaml`, included by `modules/services/home-assistant.nix`:
 
-Each task has `enable` and `window` options. Its window inherits the shared window.
-For example, `host.maintenance.enable = true;` enables all tasks, while
-`host.maintenance.tdarr.enable = false;` disables only Tdarr maintenance. An explicit
-per-task enable value overrides the global default. Tasks disabled in Nix remain disabled
-regardless of the Home Assistant controls. Home Assistant must be enabled for scheduling.
+- **Server maintenance: determine activity** sets the maintenance boolean when
+  Rocky's dock is drying, Rocky is cleaning, both `person.jacob` and `person.sophie`
+  are confirmed away, or the bedroom door is closed and everyone home is asleep.
+  The sleep condition uses `input_boolean.jacob_asleep` and
+  `input_boolean.sophie_asleep` only for the people currently home, with no time
+  restriction. Unknown or unavailable presence is not treated as away.
+- **Server maintenance: apply activity** passes the maintenance boolean to all
+  four task commands. Both automations reconcile on Home Assistant startup and
+  automation reload; the decision also follows its input states, and application
+  follows the maintenance boolean.
 
-Home Assistant owns maintenance through Nix-managed helpers and automations in
-`modules/services/maintenance/home-assistant.nix`:
+Opening the bedroom door ends the sleep reason; maintenance stays active if any
+other reason remains. Location automations control lights and Rocky without
+writing the maintenance boolean.
 
-- `input_boolean.server_maintenance` runs enabled tasks immediately, outside their scheduled windows.
-  Presence automations can turn it on when everyone leaves and off when someone returns, using
-  `input_boolean.turn_on` and `input_boolean.turn_off`. It restores its previous state on restart.
-- `input_boolean.server_maintenance_schedule` enables daily scheduling independently of that switch.
-  Turn both switches off to stop all maintenance work.
-- `input_datetime.server_maintenance_start` and `input_datetime.server_maintenance_end` edit the
-  shared daily window in the server timezone.
-- Each task (`keep_cool`, `seeding`, `tdarr`, `previews`) has a
-  `input_boolean.server_maintenance_<task>_inherit` helper. Turn it off to use that task's
-  `input_datetime.server_maintenance_<task>_start` and `_end` helpers instead.
-
-A task runs when the immediate switch is on **or** its enabled schedule is inside its window.
-Turning the immediate switch off returns to scheduled behavior; it does not interrupt an active
-scheduled window. Equal start/end times disable a window; an earlier end crosses midnight.
-Time helpers and inheritance switches initialize from Nix at every Home Assistant restart;
-the schedule enable switch initializes to on. Add these helpers to a Home Assistant dashboard
-for editing. The existing UI-managed `automations.yaml` remains available for presence rules.
-
-Home Assistant reconciles tasks on startup, helper changes, and window boundaries. It writes each
-requested state atomically under `/var/lib/server-maintenance/` and starts the existing task oneshot
-through narrowly scoped polkit permissions. Application startup and torrent-completion hooks read
-that same local state; before the first state is written, maintenance is off. Last requested states
-survive restarts. Failed task services retry after ten seconds. Home Assistant must stay running for
-schedule boundaries; the server dashboard is no longer involved.
+Commands write each requested state atomically under `/var/lib/server-maintenance/`
+and start the task oneshot through narrowly scoped polkit permissions. Application
+startup and torrent-completion hooks read that same local state; before the first
+state is written, maintenance is off. Last requested states survive restarts.
+Failed task services retry after ten seconds. Home Assistant must stay running to
+react to changes in the household.
 
 The media tasks each have a `default.nix` and `maintenance.py` under `modules/services/media/`.
 Shared task launchers live in `modules/services/maintenance/`. Keep cool's script and configuration
@@ -157,14 +148,14 @@ Tdarr and preview workers finish current files when paused/reduced; preview GPU 
 available. The preview API's CPU count control requires a single dedicated CPU worker group; split
 or mixed CPU/GPU groups must be adjusted in the preview application's Workers settings. The task
 service reads the preview application's existing `auth.json` token locally, without exposing it to the
-dashboard. Keep cool retains manual fan-mode ownership within a window.
+dashboard. Keep cool retains manual fan-mode ownership within an active maintenance period.
 
 qBittorrent runs its completion launcher as `qbittorrent`, reading the current maintenance state
-rather than embedding window times in the completion command. Reconciliation runs as the same user
+rather than embedding activation rules in the completion command. Reconciliation runs as the same user
 through the existing host-side WebUI proxy. Completion hooks use the VPN namespace's local WebUI
 and need no dashboard connectivity. A shared lock and `seeding-stopped.json` live in the
 existing writable `qBittorrent` profile subdirectory; this operational ownership state survives
-restarts and is separate from schedule overrides. Only torrents stopped by the script are resumed;
+restarts. Only torrents stopped by the script are resumed;
 manual stops and ratio/time limits remain respected. There is no completion marker or systemd path
 watch, and qBittorrent's sandbox is unchanged. Applications may still save their own settings.
 

@@ -1,25 +1,6 @@
 { config, lib, ... }:
 let
-  window =
-    default:
-    lib.mkOption {
-      type = lib.types.submodule {
-        options = lib.genAttrs [ "start" "end" ] (
-          name:
-          lib.mkOption (
-            {
-              type = lib.types.strMatching "([01][0-9]|2[0-3]):[0-5][0-9]";
-              description = "${name} of the daily window in server time (HH:MM). Equal times disable it; an earlier end crosses midnight.";
-            }
-            // lib.optionalAttrs (builtins.hasAttr name default) {
-              default = default.${name};
-            }
-          )
-        );
-      };
-      default = { };
-    };
-  maintenanceWindowTask =
+  maintenanceTask =
     extraOptions:
     lib.mkOption {
       type = lib.types.submodule {
@@ -29,7 +10,6 @@ let
             default = config.host.maintenance.enable;
             description = "Enable this maintenance task. Defaults to the shared maintenance switch.";
           };
-          window = window config.host.maintenance.window;
         }
         // extraOptions;
       };
@@ -71,16 +51,15 @@ in
     };
 
     maintenance = {
-      enable = lib.mkEnableOption "scheduled maintenance";
-      window = window { };
-      keepCool = maintenanceWindowTask { };
-      qbittorrent = maintenanceWindowTask { };
-      tdarr = maintenanceWindowTask { };
-      mediaPreviewGenerator = maintenanceWindowTask {
+      enable = lib.mkEnableOption "maintenance tasks";
+      keepCool = maintenanceTask { };
+      qbittorrent = maintenanceTask { };
+      tdarr = maintenanceTask { };
+      mediaPreviewGenerator = maintenanceTask {
         cpuWorkers = lib.mkOption {
           type = lib.types.ints.between 1 64;
           default = 2;
-          description = "Dedicated preview CPU workers during their scheduled window.";
+          description = "Dedicated preview CPU workers while maintenance is active.";
         };
       };
     };
