@@ -556,11 +556,10 @@ cards:
           content:
             type: calendar
             initial_view: dayGridMonth
-            entities:
-            - calendar.jacob
-            - calendar.sophie
-            - calendar.bears
-            - calendar.sophie_uni
+            entities: |
+              [[[
+                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+              ]]]
             card_mod:
               style: |
                 ha-card {
@@ -570,82 +569,8 @@ cards:
                 ha-full-calendar {
                   --calendar-height: min(72vh, 800px);
                 }
-          right_button: New event
-          right_button_close: false
-          right_button_action:
-            service: browser_mod.popup
-            data:
-              title: New calendar event
-              tag: newevent
-              content:
-              - name: entity_id
-                label: Calendar
-                required: true
-                selector:
-                  select:
-                    options:
-                    - value: calendar.jacob
-                      label: Jacob
-                    - value: calendar.sophie
-                      label: Sophie
-                    - value: calendar.bears
-                      label: Bears
-                    - value: calendar.sophie_uni
-                      label: Sophie Uni
-              - name: summary
-                label: Title
-                required: true
-                selector:
-                  text: {}
-              - name: start_date_time
-                label: Start
-                required: true
-                selector:
-                  datetime: {}
-              - name: end_date_time
-                label: End
-                required: true
-                selector:
-                  datetime: {}
-              - name: description
-                label: Description
-                selector:
-                  text:
-                    multiline: true
-              - name: location
-                label: Location
-                selector:
-                  text: {}
-              right_button: Create event
-              right_button_close: false
-              right_button_action:
-                service: browser_mod.javascript
-                data:
-                  code: |
-                    return (async () => {
-                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears","calendar.sophie_uni"];
-                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
-                          !data.start_date_time || !data.end_date_time ||
-                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
-                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
-                        return;
-                      }
-                      try {
-                        await hass.callService('calendar', 'create_event', {
-                          entity_id: data.entity_id,
-                          summary: data.summary.trim(),
-                          start_date_time: data.start_date_time,
-                          end_date_time: data.end_date_time,
-                          description: data.description || '',
-                          location: data.location || ''
-                        });
-                        await service('browser_mod.close_popup', { tag: 'newevent' });
-                        service('browser_mod.notification', { message: 'Calendar event created.' });
-                      } catch (error) {
-                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
-                      }
-                    })();
-              left_button: Cancel
+            show_add_event: true
+            add_event_style: header
           popup_styles:
           - style: all
             styles: |
@@ -723,10 +648,10 @@ cards:
           content:
             type: calendar
             initial_view: dayGridMonth
-            entities:
-            - calendar.jacob
-            - calendar.sophie
-            - calendar.bears
+            entities: |
+              [[[
+                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+              ]]]
             card_mod:
               style: |
                 ha-card {
@@ -736,80 +661,8 @@ cards:
                 ha-full-calendar {
                   --calendar-height: min(72vh, 800px);
                 }
-          right_button: New event
-          right_button_close: false
-          right_button_action:
-            service: browser_mod.popup
-            data:
-              title: New calendar event
-              tag: newevent
-              content:
-              - name: entity_id
-                label: Calendar
-                required: true
-                selector:
-                  select:
-                    options:
-                    - value: calendar.jacob
-                      label: Jacob
-                    - value: calendar.sophie
-                      label: Sophie
-                    - value: calendar.bears
-                      label: Bears
-              - name: summary
-                label: Title
-                required: true
-                selector:
-                  text: {}
-              - name: start_date_time
-                label: Start
-                required: true
-                selector:
-                  datetime: {}
-              - name: end_date_time
-                label: End
-                required: true
-                selector:
-                  datetime: {}
-              - name: description
-                label: Description
-                selector:
-                  text:
-                    multiline: true
-              - name: location
-                label: Location
-                selector:
-                  text: {}
-              right_button: Create event
-              right_button_close: false
-              right_button_action:
-                service: browser_mod.javascript
-                data:
-                  code: |
-                    return (async () => {
-                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears"];
-                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
-                          !data.start_date_time || !data.end_date_time ||
-                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
-                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
-                        return;
-                      }
-                      try {
-                        await hass.callService('calendar', 'create_event', {
-                          entity_id: data.entity_id,
-                          summary: data.summary.trim(),
-                          start_date_time: data.start_date_time,
-                          end_date_time: data.end_date_time,
-                          description: data.description || '',
-                          location: data.location || ''
-                        });
-                        await service('browser_mod.close_popup', { tag: 'newevent' });
-                        service('browser_mod.notification', { message: 'Calendar event created.' });
-                      } catch (error) {
-                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
-                      }
-                    })();
-              left_button: Cancel
+            show_add_event: true
+            add_event_style: header
           popup_styles:
           - style: all
             styles: |
@@ -911,10 +764,10 @@ cards:
           content:
             type: calendar
             initial_view: dayGridMonth
-            entities:
-            - calendar.jacob
-            - calendar.sophie
-            - calendar.bears
+            entities: |
+              [[[
+                return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
+              ]]]
             card_mod:
               style: |
                 ha-card {
@@ -924,80 +777,8 @@ cards:
                 ha-full-calendar {
                   --calendar-height: min(72vh, 800px);
                 }
-          right_button: New event
-          right_button_close: false
-          right_button_action:
-            service: browser_mod.popup
-            data:
-              title: New calendar event
-              tag: newevent
-              content:
-              - name: entity_id
-                label: Calendar
-                required: true
-                selector:
-                  select:
-                    options:
-                    - value: calendar.jacob
-                      label: Jacob
-                    - value: calendar.sophie
-                      label: Sophie
-                    - value: calendar.bears
-                      label: Bears
-              - name: summary
-                label: Title
-                required: true
-                selector:
-                  text: {}
-              - name: start_date_time
-                label: Start
-                required: true
-                selector:
-                  datetime: {}
-              - name: end_date_time
-                label: End
-                required: true
-                selector:
-                  datetime: {}
-              - name: description
-                label: Description
-                selector:
-                  text:
-                    multiline: true
-              - name: location
-                label: Location
-                selector:
-                  text: {}
-              right_button: Create event
-              right_button_close: false
-              right_button_action:
-                service: browser_mod.javascript
-                data:
-                  code: |
-                    return (async () => {
-                      const allowedCalendars = ["calendar.jacob","calendar.sophie","calendar.bears"];
-                      if (!allowedCalendars.includes(data.entity_id) || !data.summary?.trim() ||
-                          !data.start_date_time || !data.end_date_time ||
-                          new Date(data.end_date_time) <= new Date(data.start_date_time)) {
-                        service('browser_mod.notification', { message: 'Choose a calendar, enter a title, and set an end after the start.' });
-                        return;
-                      }
-                      try {
-                        await hass.callService('calendar', 'create_event', {
-                          entity_id: data.entity_id,
-                          summary: data.summary.trim(),
-                          start_date_time: data.start_date_time,
-                          end_date_time: data.end_date_time,
-                          description: data.description || '',
-                          location: data.location || ''
-                        });
-                        await service('browser_mod.close_popup', { tag: 'newevent' });
-                        service('browser_mod.notification', { message: 'Calendar event created.' });
-                      } catch (error) {
-                        service('browser_mod.notification', { message: error.message || 'Could not create the calendar event.' });
-                      }
-                    })();
-              left_button: Cancel
+            show_add_event: true
+            add_event_style: header
           popup_styles:
           - style: all
             styles: |
