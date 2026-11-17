@@ -560,16 +560,22 @@ cards:
               [[[
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
-            card_mod:
-              style:
+            show_add_event: true
+            add_event_style: header
+          card_mod:
+            style:
+              hui-calendar-card$:
                 .: |
                   ha-card {
                     border: none;
                     box-shadow: none;
                     padding: 0;
+                    height: auto;
                   }
                   ha-full-calendar {
-                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
+                    height: auto;
+                    min-height: 0;
                   }
                 ha-full-calendar$: |
                   .header {
@@ -601,8 +607,6 @@ cards:
                     margin-top: 1px;
                     margin-bottom: 1px;
                   }
-            show_add_event: true
-            add_event_style: header
           popup_styles:
           - style: all
             styles: |
@@ -615,20 +619,22 @@ cards:
                 const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
                 const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
                 return `
-                  :host { ${palette} }
+                  ${palette}
                   ha-dialog {
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
-                  :host([wide]) ha-dialog {
-                    --dialog-surface-margin-top: 8px;
-                    --popup-max-height: calc(100svh - 16px);
-                  }
-                  :host([card]) .content .container {
-                    padding: 0 8px 8px;
+                  .content .container {
+                    padding: 0 8px 8px !important;
                   }
                 `;
               ]]]
+          - style: wide
+            styles: |
+              ha-dialog {
+                --dialog-surface-margin-top: 8px;
+                --popup-max-height: calc(100svh - 16px);
+              }
     styles:
       card:
       - padding: '0'
@@ -703,16 +709,22 @@ cards:
               [[[
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
-            card_mod:
-              style:
+            show_add_event: true
+            add_event_style: header
+          card_mod:
+            style:
+              hui-calendar-card$:
                 .: |
                   ha-card {
                     border: none;
                     box-shadow: none;
                     padding: 0;
+                    height: auto;
                   }
                   ha-full-calendar {
-                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
+                    height: auto;
+                    min-height: 0;
                   }
                 ha-full-calendar$: |
                   .header {
@@ -744,8 +756,6 @@ cards:
                     margin-top: 1px;
                     margin-bottom: 1px;
                   }
-            show_add_event: true
-            add_event_style: header
           popup_styles:
           - style: all
             styles: |
@@ -758,20 +768,22 @@ cards:
                 const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
                 const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
                 return `
-                  :host { ${palette} }
+                  ${palette}
                   ha-dialog {
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
-                  :host([wide]) ha-dialog {
-                    --dialog-surface-margin-top: 8px;
-                    --popup-max-height: calc(100svh - 16px);
-                  }
-                  :host([card]) .content .container {
-                    padding: 0 8px 8px;
+                  .content .container {
+                    padding: 0 8px 8px !important;
                   }
                 `;
               ]]]
+          - style: wide
+            styles: |
+              ha-dialog {
+                --dialog-surface-margin-top: 8px;
+                --popup-max-height: calc(100svh - 16px);
+              }
     styles:
       card:
       - padding: '0'
@@ -870,16 +882,22 @@ cards:
               [[[
                 return Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
               ]]]
-            card_mod:
-              style:
+            show_add_event: true
+            add_event_style: header
+          card_mod:
+            style:
+              hui-calendar-card$:
                 .: |
                   ha-card {
                     border: none;
                     box-shadow: none;
                     padding: 0;
+                    height: auto;
                   }
                   ha-full-calendar {
-                    --calendar-height: calc(min(80vh, 900px) + 80px);
+                    --calendar-height: min(calc(min(80vh, 900px) + 80px), calc(100dvh - 128px));
+                    height: auto;
+                    min-height: 0;
                   }
                 ha-full-calendar$: |
                   .header {
@@ -911,8 +929,6 @@ cards:
                     margin-top: 1px;
                     margin-bottom: 1px;
                   }
-            show_add_event: true
-            add_event_style: header
           popup_styles:
           - style: all
             styles: |
@@ -925,20 +941,22 @@ cards:
                 const entities = Object.keys(states).filter(entity => entity.startsWith("calendar.")).sort();
                 const palette = entities.map((entity, index) => colors[entity] ? `--color-${index + 1}: ${colors[entity]};` : "").join(" ");
                 return `
-                  :host { ${palette} }
+                  ${palette}
                   ha-dialog {
                     --popup-width: 1200px;
                     --popup-max-width: calc(100vw - 24px);
                   }
-                  :host([wide]) ha-dialog {
-                    --dialog-surface-margin-top: 8px;
-                    --popup-max-height: calc(100svh - 16px);
-                  }
-                  :host([card]) .content .container {
-                    padding: 0 8px 8px;
+                  .content .container {
+                    padding: 0 8px 8px !important;
                   }
                 `;
               ]]]
+          - style: wide
+            styles: |
+              ha-dialog {
+                --dialog-surface-margin-top: 8px;
+                --popup-max-height: calc(100svh - 16px);
+              }
     styles:
       card:
       - padding: '0'
