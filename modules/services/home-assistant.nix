@@ -467,6 +467,11 @@ in
           {
             platform = "caldav";
             url = "https://caldav.icloud.com/";
+            calendars = [
+              "Jacob"
+              "Sophie"
+              "Bears"
+            ];
             username = "!include ${config.sops.secrets.apple-username.path}";
             password = "!include ${config.sops.secrets.apple-token.path}";
           }
