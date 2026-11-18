@@ -53,7 +53,14 @@ in
   gotenberg = applicationPkgs.paperless.gotenberg;
   postgresql_17 = applicationPkgs.postgresql.postgresql_17;
   redis = applicationPkgs.redis.redis;
-  nginxStable = applicationPkgs.nginx.nginxStable;
+  nginxStable = applicationPkgs.nginx.nginxStable.overrideAttrs (finalAttrs: _: {
+    version = "1.30.7";
+    nginxVersion = finalAttrs.version;
+    src = prev.fetchurl {
+      url = "https://nginx.org/download/nginx-${finalAttrs.version}.tar.gz";
+      hash = "sha256-JWW1yDcFDpWPcPsPc8SOK8pFQq00n9NW9G+wxyYQvG4=";
+    };
+  });
   cloudflare-dyndns = applicationPkgs.cloudflare-dyndns.cloudflare-dyndns;
   ookla-speedtest = applicationPkgs.speedtest.ookla-speedtest;
   home-assistant =
