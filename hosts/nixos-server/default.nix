@@ -91,7 +91,7 @@ in
       dataDisks = lib.mapAttrs (_: mountOf) hdds;
 
       parityFiles = [
-        # "/mnt/parity1/snapraid.parity"
+        "/mnt/parity1/snapraid.parity"
       ];
 
       spinDownSeconds = 900; # idle spin-down (HDDs only)
@@ -159,14 +159,22 @@ in
     ) hdds;
   };
 
-  fileSystems = lib.mapAttrs' (
-    _: hdd:
-    lib.nameValuePair (mountOf hdd) {
-      device = "/dev/disk/by-id/ata-${hdd.model}_${hdd.serial}-part1";
-      fsType = "xfs";
-      options = [ "noatime" ];
-    }
-  ) hdds;
+  fileSystems =
+    (lib.mapAttrs' (
+      _: hdd:
+      lib.nameValuePair (mountOf hdd) {
+        device = "/dev/disk/by-id/ata-${hdd.model}_${hdd.serial}-part1";
+        fsType = "xfs";
+        options = [ "noatime" ];
+      }
+    ) hdds)
+    // {
+      "/mnt/parity1" = {
+        device = "/dev/disk/by-id/ata-ST10000VN000-3AK101_WP034V4F-part1";
+        fsType = "xfs";
+        options = [ "noatime" ];
+      };
+    };
 
   # Do not change after install unless you know what you're doing.
   system.stateVersion = "26.05";
