@@ -147,6 +147,12 @@ in
         sensor = "temp1";
         kind = "Nvme";
       };
+      parity1 = {
+        name = "parity1";
+        device = "ST10000VN000-3AK";
+        sensor = "temp1";
+        kind = "Hdd";
+      };
     }
     // lib.mapAttrs' (
       _: hdd:

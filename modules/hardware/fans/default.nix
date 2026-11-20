@@ -103,6 +103,7 @@ let
       sources = [
         "disk1"
         "disk2"
+        "parity1"
         "sandisk"
         "peaq"
         "gpu"
@@ -222,6 +223,7 @@ let
     chipset = curves.caseChipset;
     disk1 = curves.caseHdd;
     disk2 = curves.caseHdd;
+    parity1 = curves.caseHdd;
     sandisk = curves.caseSsd;
     peaq = curves.caseSsd;
     nvme = curves.caseNvme;

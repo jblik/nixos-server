@@ -206,7 +206,8 @@ let
     "/"
     "/boot"
   ]
-  ++ lib.attrValues storage.dataDisks;
+  ++ lib.attrValues storage.dataDisks
+  ++ map dirOf storage.parityFiles;
   mountMatcher = ''mountpoint=~"${lib.concatStringsSep "|" mounts}"'';
 
   server = {

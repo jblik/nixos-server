@@ -238,6 +238,9 @@ in
             (disk "Bulk (${storage.bulkMount})" storage.bulkMount)
           ]
           ++ map (mountPoint: disk (baseNameOf mountPoint) mountPoint) dataDisks
+          ++ map (mountPoint: disk (baseNameOf mountPoint) mountPoint) (
+            lib.unique (map dirOf storage.parityFiles)
+          )
           ++ lib.optionals (storage.fastPool != null) [ (pool "Fast pool" storage.fastPool) ]
           ++ [
             (disk "NVMe (system, scratch)" "/")
