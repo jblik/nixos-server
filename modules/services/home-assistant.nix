@@ -113,6 +113,7 @@ in
           ++ map (route: "sensor.${route.id}_*") routes;
         };
         automation = "!include automations.yaml";
+        scene = "!include scenes.yaml";
         sensor = lib.concatMap (
           counter:
           map
@@ -486,15 +487,11 @@ in
           {
             name = "Home Assistant";
             port = config.host.home-assistant.homekitPort;
+            filter.include_entity_globs = [
+              "light.*"
+              "scene.*"
+            ];
             filter.include_entities = [
-              "light.bed"
-              "light.bedroom"
-              "light.couch"
-              "light.donut"
-              "light.ball"
-              "light.monkey"
-              "light.table"
-              "light.tv"
               "sensor.alpstuga_air_quality_monitor_air_quality"
               "sensor.alpstuga_air_quality_monitor_carbon_dioxide"
               "sensor.alpstuga_air_quality_monitor_humidity"
