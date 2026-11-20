@@ -491,13 +491,19 @@ in
               "light.*"
               "scene.*"
             ];
+            filter.exclude_entities = [
+              "light.bedroom_1"
+              "light.bedroom_2"
+              "light.bedroom_3"
+              "scene.bedroom_dim"
+              "scene.bedroom_dim_2"
+            ];
             filter.include_entities = [
               "sensor.alpstuga_air_quality_monitor_air_quality"
               "sensor.alpstuga_air_quality_monitor_carbon_dioxide"
               "sensor.alpstuga_air_quality_monitor_humidity"
               "sensor.alpstuga_air_quality_monitor_pm2_5"
               "sensor.alpstuga_air_quality_monitor_temperature"
-              "vacuum.rocky"
             ];
           }
         ];
