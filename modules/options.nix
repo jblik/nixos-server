@@ -540,7 +540,7 @@ in
 
       syncInterval = lib.mkOption {
         type = lib.types.str;
-        default = "02:00";
+        default = "06:00";
         description = "systemd calendar spec for `snapraid sync`.";
       };
 
