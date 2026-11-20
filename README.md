@@ -292,17 +292,17 @@ through a Thread border router.
 
 ### Chromebook display
 
-The Chromebook automations keep the Companion app awake and control visibility
-through screen brightness. Below 10 lux for ten seconds, or when everyone leaves
-home, `script.chromebook_sleep` sets brightness to 0. Above 15 lux for two
-seconds while someone is home, `script.chromebook_wake` restores brightness to
-255 (100%). Between 10 and 15 lux, brightness stays unchanged. Startup and
-presence changes also apply the existing light and presence conditions.
-When `light.monkey` is on, brightness is always 100%, regardless of presence or
-light level. Turning Monkey off reapplies the dark-room and away conditions.
+The Chromebook automations control brightness through the Android Companion app.
+Wake sets brightness to 80/255, enables keep-screen-on, then enables automatic
+brightness. Sleep disables automatic brightness and sets brightness to 0.
+Wake requires someone home and either more than 15 lux for two seconds or Monkey
+on; sleep runs when everyone leaves or below 10 lux for ten seconds with Monkey
+off. Between 10 and 15 lux, brightness stays unchanged.
 
-Disable automatic brightness on the Chromebook. Both scripts enable
-keep-screen-on; neither changes the screen timeout or locks the device.
+Browser Mod remains necessary for the dashboard's weather, calendar and vacuum
+popups, independently of screen control. The restore automation expects the
+Companion app in the foreground, so Fully Kiosk Browser can cause repeated wake
+commands while the wake conditions hold.
 
 ### Dashboard cards
 
