@@ -27,7 +27,7 @@ let
           type = "m3u";
           "file.source" = "/channels.m3u";
           buffer = "ffmpeg";
-          tuner = 1;
+          tuner = 10;
         };
         xmltv = { };
         hdhr = { };
