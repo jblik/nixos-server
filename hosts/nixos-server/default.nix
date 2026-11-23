@@ -52,6 +52,7 @@ in
     };
 
     storage = {
+      syncInterval = "12:00";
       # Fast tier: ZFS mirror on the SanDisk + PEAQ SATA SSDs.
       # before adding something here: sudo zfs create -o mountpoint=legacy fast/{name}
       fastPool = "fast";
